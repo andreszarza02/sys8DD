@@ -1,0 +1,7 @@
+.fondo {
+  background-image: url("../img/maquinaFondo4.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 100vh;
+}
