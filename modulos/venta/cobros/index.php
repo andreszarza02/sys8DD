@@ -9,8 +9,13 @@ $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
 //Creamos sentencia
-$sql = "SELECT p.perm_descripcion, apu.asigperm_estado FROM asignacion_permiso_usuario apu JOIN 
-permisos p ON p.perm_codigo = apu.perm_codigo WHERE usu_codigo = $usuario;";
+$sql = "SELECT 
+            p.perm_descripcion, 
+            apu.asigperm_estado 
+         FROM asignacion_permiso_usuario apu 
+            JOIN permisos p ON p.perm_codigo = apu.perm_codigo 
+         WHERE usu_codigo = $usuario 
+         order by p.perm_codigo;";
 
 //Consultamos y convertimos en array
 $resultado = pg_query($conexion, $sql);
