@@ -112,7 +112,11 @@ const listarDetalle = () => {
       for (objeto of respuesta) {
         totalExe += parseFloat(objeto.exenta);
         totalG5 += parseFloat(objeto.grav5);
-        totalG10 += parseFloat(objeto.grav10);
+        if (objeto.tipit_codigo == "3") {
+          totalG10 += parseFloat(objeto.pevendet_precio);
+        } else {
+          totalG10 += parseFloat(objeto.grav10);
+        }
         tabla +=
           "<tr onclick='seleccionarFila2(" +
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
@@ -140,9 +144,17 @@ const listarDetalle = () => {
         tabla += "<td>";
         tabla += new Intl.NumberFormat("us-US").format(objeto.grav5);
         tabla += "</td>";
-        tabla += "<td>";
-        tabla += new Intl.NumberFormat("us-US").format(objeto.grav10);
-        tabla += "</td>";
+        if (objeto.tipit_codigo == "3") {
+          tabla += "<td>";
+          tabla += new Intl.NumberFormat("us-US").format(
+            objeto.pevendet_precio
+          );
+          tabla += "</td>";
+        } else {
+          tabla += "<td>";
+          tabla += new Intl.NumberFormat("us-US").format(objeto.grav10);
+          tabla += "</td>";
+        }
         tabla += "</tr>";
       }
       ///Calculamos el iva y los totales
@@ -627,6 +639,17 @@ const seleccionItem = (datos) => {
   Object.keys(datos).forEach((key) => {
     $("#" + key).val(datos[key]);
   });
+  //En caso de ser un servicio habilitamos la carga del precio
+  if (datos.tipit_codigo == 3) {
+    $("#pevendet_precio").removeAttr("disabled");
+    $("#pevendet_cantidad").val(0);
+    $(".foco2").attr("class", "form-line foco2 focused");
+    $("#pevendet_cantidad").prop("disabled", true);
+  } else {
+    $("#pevendet_precio").prop("disabled", true);
+    $("#pevendet_cantidad").val("");
+    $(".foco2").attr("class", "form-line foco2");
+  }
   $("#ulItem").html();
   $("#listaItem").attr("style", "display: none;");
   $(".it").attr("class", "form-line it focused");

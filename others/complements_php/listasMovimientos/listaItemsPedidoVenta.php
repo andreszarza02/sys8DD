@@ -15,8 +15,22 @@ $item = pg_escape_string($conexion, $_POST['item']);
 $sql = "select 
          i.it_codigo,
          i.tipit_codigo,
-         i.it_descripcion||' '||m.mod_codigomodelo as item,
-         i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion as item2,
+         (case 
+			i.tipit_codigo
+	     when 2
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo
+	         else 
+	         	i.it_descripcion 
+	     end) as item,
+     	(case 
+			i.tipit_codigo
+	     when 2
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion 
+	         else 
+	         	i.it_descripcion 
+	     end) as item2,
          t.tall_descripcion,
          um.unime_codigo,
          um.unime_descripcion,
@@ -25,8 +39,9 @@ $sql = "select
          join modelo m on m.mod_codigo=i.mod_codigo
          join talle t on t.tall_codigo=i.tall_codigo 
          join unidad_medida um on um.unime_codigo=i.unime_codigo
-         where it_descripcion ilike '%$item%' 
-         and tipit_codigo = 2 
+         where (i.it_descripcion ilike '%$item%' 
+         or m.mod_codigomodelo ilike '%$item%') 
+         and tipit_codigo in(2, 3) 
          and it_estado = 'ACTIVO'
       order by i.it_codigo;";
 

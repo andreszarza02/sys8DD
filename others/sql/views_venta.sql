@@ -1,6 +1,14 @@
+create or replace view v_pedido_venta_det as
 select 
 	pvd.*,
-	i.it_descripcion||' '||m.mod_codigomodelo as item,
+	(case 
+			pvd.tipit_codigo
+	     when 2
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo
+	        else 
+	         	i.it_descripcion 
+     end) as item,
 	t.tall_descripcion,
 	um.unime_codigo,
 	um.unime_descripcion,
@@ -11,11 +19,11 @@ select
 from pedido_venta_det pvd
 	join items i on i.it_codigo=pvd.it_codigo
 	and i.tipit_codigo=pvd.tipit_codigo
-	join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
-	join tipo_impuesto tim on tim.tipim_codigo=i.tipim_codigo
-	join modelo m on m.mod_codigo=i.mod_codigo
-	join talle t on t.tall_codigo=i.tall_codigo
-	join unidad_medida um on um.unime_codigo=i.unime_codigo
+		join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
+		join tipo_impuesto tim on tim.tipim_codigo=i.tipim_codigo
+		join modelo m on m.mod_codigo=i.mod_codigo
+		join talle t on t.tall_codigo=i.tall_codigo
+		join unidad_medida um on um.unime_codigo=i.unime_codigo
 order by pvd.peven_codigo;
 
 create or replace view v_pedido_venta_cab as
