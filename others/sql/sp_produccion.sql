@@ -884,7 +884,7 @@ begin
 			 values(prescodigo, presfecharegistro, presfechavencimiento, 'ACTIVO', 
 			 pevencodigo, usucodigo, succodigo, empcodigo, clicodigo);
 			 --Actualizamos el estado del pedido de venta seleccionado
-			 update pedido_venta_cab set peven_estado='PRESUPUESTADO' where peven_codigo=pevencodigo;
+			 update pedido_venta_cab set peven_estado='PRESUPUESTADO', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		 	 --Enviamos un mensaje de confirmacion
 			 raise notice 'EL PRESUPUESTO DE PRODUCCION FUE REGISTRADO CON EXITO';
 		 end if;
@@ -893,12 +893,12 @@ begin
     if operacion = 2 then 
 		--En este caso realizamos un borrado logico
     	update presupuesto_cab 
-		set pres_estado='ANULADO'
+		set pres_estado='ANULADO', usu_codigo=usucodigo
 		where pres_codigo=prescodigo;
 		--Actualizamos el estado del pedido de venta asociado a cabecera
-	    update pedido_venta_cab set peven_estado='ACTIVO' where peven_codigo=pevencodigo;
+	    update pedido_venta_cab set peven_estado='PENDIENTE', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		--Enviamos un mensaje de confirmacion
-		raise notice 'EL PRESUPUESTO DE PRODUCCION DETALLE FUE ANULADO CON EXITO';
+		raise notice 'EL PRESUPUESTO DE PRODUCCION FUE ANULADO CON EXITO';
     end if;
 	--consultamos el audit anterior
 	select coalesce(pres_audit, '') into presAudit from presupuesto_cab where pres_codigo=prescodigo;
@@ -911,7 +911,7 @@ begin
 		'procedimiento', upper(procedimiento),
 		'pres_fecharegistro', presfecharegistro,
 		'pres_fechavencimiento', presfechavencimiento,
-		'peven_codigo', peven_codigo,
+		'peven_codigo', pevencodigo,
 		'cli_codigo', clicodigo,
 		'cliente', upper(cliente),
 		'per_numerodocumento', pernumerodocumento,
@@ -1069,9 +1069,9 @@ begin
 		 insert into orden_presupuesto(orpre_codigo, orpro_codigo, pres_codigo)
 		 values(ultCodOrdenPresupuesto, orprocodigo, prescodigo);
 		 --Actualizamos el estado de presupuesto 
-		 update presupuesto_cab set pres_estado='APROBADO' where pres_codigo=prescodigo;
+		 update presupuesto_cab set pres_estado='APROBADO', usu_codigo=usucodigo where pres_codigo=prescodigo;
 		 --Actualizamos el estado del pedido venta que se haya ordenado
-		 update pedido_venta_cab set peven_estado='APROBADO' where peven_codigo=pevencodigo;
+		 update pedido_venta_cab set peven_estado='APROBADO', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		 --Auditamos orden presupuesto
 		 update orden_presupuesto 
 			 set orpre_audit = json_build_object(
@@ -1090,12 +1090,12 @@ begin
     if operacion = 2 then 
 		--En esta caso realizamos un borrado logico
     	update orden_produccion_cab 
-		set orpro_estado='ANULADO'
+		set orpro_estado='ANULADO', usu_codigo=usucodigo
 		where orpro_codigo=orprocodigo;
 		--Actualizamos el estado de presupuesto 
-	    update presupuesto_cab set pres_estado='ACTIVO' where pres_codigo=prescodigo;
+	    update presupuesto_cab set pres_estado='ACTIVO', usu_codigo=usucodigo where pres_codigo=prescodigo;
 		--Actualizamos el estado del pedido venta que se asocio a la orden una vez anulada
-	    update pedido_venta_cab set peven_estado='PRESUPUESTADO' where peven_codigo=pevencodigo;
+	    update pedido_venta_cab set peven_estado='PRESUPUESTADO', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		--Actualizamos el stock, en caso de que se tenga registros asociados en el detalle
 		for ord in c_orden loop
 			--Sacamos el codigo de componente produccion para individualizar las materias primas por producto
@@ -1403,7 +1403,7 @@ begin
 		 empcodigo
          );
 		 --Actualizamos el estado de la orden de produccion asociada a la produccion
-		 update orden_produccion_cab set orpro_estado='EN PRODUCCION' where orpro_codigo=orprocodigo; 
+		 update orden_produccion_cab set orpro_estado='EN PRODUCCION', usu_codigo=usucodigo where orpro_codigo=orprocodigo; 
 		 --Enviamos un mensaje de confirmacion de insercion
 		 raise notice 'LA PRODUCCION FUE REGISTRADA CON EXITO';
 		end if;
@@ -1412,10 +1412,10 @@ begin
     if operacion = 2 then 
 		--En esta caso realizamos un borrado logico
     	update produccion_cab 
-		set prod_estado='ANULADO'
+		set prod_estado='ANULADO', usu_codigo=usucodigo
 		where prod_codigo=prodcodigo;
 		--Actualizamos el estado de la orden de producciona asociada a la produccion anulada
-		update orden_produccion_cab set orpro_estado='ACTIVO' where orpro_codigo=orprocodigo;
+		update orden_produccion_cab set orpro_estado='ACTIVO', usu_codigo=usucodigo where orpro_codigo=orprocodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA PRODUCCION FUE ANULADA CON EXITO';
     end if;
@@ -1596,7 +1596,7 @@ begin
     	delete from etapa_produccion 
 		where prod_codigo=prodcodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo and tipet_codigo=tipetcodigo;
 		--Enviamos un mensaje de confirmacion de eliminacion
-		raise notice 'LA ETAPA DE PRODUCCION FUE ANULADA CON EXITO';
+		raise notice 'LA ETAPA DE PRODUCCION FUE ELIMINADA CON EXITO';
     end if;
 end
 $function$ 
@@ -1665,7 +1665,7 @@ begin
     if operacion = 2 then 
 		--En esta caso realizamos un borrado logico
     	update componente_produccion_cab 
-		set compro_estado='ANULADO'
+		set compro_estado='ANULADO', usu_codigo=usucodigo
 		where compro_codigo=comprocodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'EL COMPONENTE DE PRODUCCION FUE ANULADO CON EXITO';
@@ -1887,7 +1887,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update produccion_terminada_cab 
-		set proter_estado='ANULADO'
+		set proter_estado='ANULADO', usu_codigo=usucodigo
 		where proter_codigo=protercodigo;
 		--Actualizamos el stock en caso de que en detalle se haya sumado
 	    for produccionTerminadaDetalle in select * from produccion_terminada_det where proter_codigo=protercodigo loop
@@ -2056,7 +2056,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update mermas_cab 
-		set mer_estado='ANULADO'
+		set mer_estado='ANULADO', usu_codigo=usucodigo
 		where mer_codigo=mercodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA CABECERA DE MERMAS FUE ANULADA CON EXITO';
@@ -2189,7 +2189,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update control_calidad_cab 
-		set conca_estado='ANULADO'
+		set conca_estado='ANULADO', usu_codigo=usucodigo
 		where conca_codigo=concacodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA CABECERA DE CONTROL CALIDAD FUE ANULADA CON EXITO';
@@ -2337,7 +2337,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update costo_produccion_cab 
-		set copro_estado='ANULADO'
+		set copro_estado='ANULADO', usu_codigo=usucodigo
 		where copro_codigo=coprocodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA CABECERA DE COSTO PRODUCCION FUE ANULADA CON EXITO';

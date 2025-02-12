@@ -511,7 +511,7 @@ begin
     if operacion = 2 then 
 		--En esta parte se hace solo un borrado logico
     	update pedido_venta_cab 
-		set peven_estado='ANULADO'
+		set peven_estado='ANULADO', usu_codigo=usucodigo
 		where peven_codigo=pevencodigo;
 		raise notice 'EL PEDIDO DE VENTA FUE ANULADO CON EXITO';
     end if;
@@ -588,7 +588,7 @@ create or replace function sp_apertura_cierre(
     aperciemontocierre numeric,
     apercieestado varchar,
     operacion integer 
-) returns void as
+) returns void as	
 $function$
 declare ultcod integer;
 begin 
@@ -600,15 +600,15 @@ begin
      	elseif operacion = 1 then
 	     insert into apertura_cierre(apercie_codigo, suc_codigo, emp_codigo, caj_codigo, usu_codigo,
 	     apercie_fechahoraapertura, apercie_fechahoracierre, apercie_montoapertura, apercie_montocierre, apercie_estado)
-		 values(aperciecodigo, succodigo, empcodigo, cajcodigo, usucodigo, aperciefechahoraapertura, null,
-		 aperciemontoapertura, null, 'ABIERTO');
+		 values(aperciecodigo, succodigo, empcodigo, cajcodigo, usucodigo, aperciefechahoraapertura, aperciefechahoracierre,
+		 aperciemontoapertura, aperciemontocierre, 'ABIERTO');
 		 raise notice 'CAJA ABIERTA EXITOSAMENTE';
 		end if;
     end if;
     if operacion = 2 then 
     	update apertura_cierre 
 		set apercie_fechahoracierre=aperciefechahoracierre, apercie_montocierre=aperciemontocierre,
-		apercie_estado='CERRADO'
+		apercie_estado='CERRADO', usu_codigo=usucodigo
 		where apercie_codigo=aperciecodigo;
 		raise notice 'CAJA CERRADA EXITOSAMENTE';
     end if;

@@ -4970,7 +4970,7 @@ begin
     end if;
     if operacion = 2 then 
     	update pedido_compra_cab 
-		set pedco_estado='ANULADO'
+		set pedco_estado='ANULADO', usu_codigo=usucodigo
 		where pedco_codigo=pedcocodigo;
 		raise notice 'EL PEDIDO DE COMPRA FUE ANULADO CON EXITO';
     end if;
@@ -5160,7 +5160,7 @@ begin
     end if;
     if operacion = 2 then 
     	update presupuesto_proveedor_cab 
-		set prepro_estado='ANULADO'
+		set prepro_estado='ANULADO', usu_codigo=usucodigo
 		where prepro_codigo=preprocodigo;
 		raise notice 'EL PRESUPUESTO DEL PROVEEDOR FUE ANULADO CON EXITO';
     end if;
@@ -5302,9 +5302,9 @@ begin
 		 insert into presupuesto_orden(orcom_codigo, prepro_codigo, presor_codigo)
 		 values(orcomcodigo, preprocodigo, ultCodPresupuestoOrden);
 		 --Actualizamos el estado de presupuesto proveedor seleccionado
-		 update presupuesto_proveedor_cab set prepro_estado='APROBADO' where prepro_codigo=preprocodigo;
+		 update presupuesto_proveedor_cab set prepro_estado='APROBADO', usu_codigo=usucodigo where prepro_codigo=preprocodigo;
 		 --Actualizamos el estado del pedido compra que se haya ordenado
-		 update pedido_compra_cab set pedco_estado='APROBADO' where pedco_codigo=pedcocodigo;
+		 update pedido_compra_cab set pedco_estado='APROBADO', usu_codigo=usucodigo where pedco_codigo=pedcocodigo;
 		 update presupuesto_orden 
 			 set presor_audit = json_build_object(
 				'usu_codigo', usucodigo,
@@ -5320,12 +5320,12 @@ begin
     if operacion = 2 then 
     	--Anulamos la orden de compra cabecera
     	update orden_compra_cab 
-		set orcom_estado='ANULADO'
+		set orcom_estado='ANULADO', usu_codigo=usucodigo
 		where orcom_codigo=orcomcodigo;
 		--Activamos de nuevo el presupesto 
-		update presupuesto_proveedor_cab set prepro_estado='ACTIVO' where prepro_codigo=preprocodigo;
+		update presupuesto_proveedor_cab set prepro_estado='ACTIVO', usu_codigo=usucodigo where prepro_codigo=preprocodigo;
 		--Activamos el pedido de compra asociado al presupuesto
-		update pedido_compra_cab set pedco_estado='PENDIENTE' where pedco_codigo=pedcocodigo;
+		update pedido_compra_cab set pedco_estado='PENDIENTE', usu_codigo=usucodigo where pedco_codigo=pedcocodigo;
 		raise notice 'LA ORDEN DE COMPRA FUE ANULADA CON EXITO';
     end if;
 	--consultamos el audit anterior
@@ -5482,7 +5482,7 @@ begin
     end if;
     if operacion = 2 then 
     	update ajuste_inventario_cab 
-		set ajuin_estado='ANULADO'
+		set ajuin_estado='ANULADO', usu_codigo=usucodigo
 		where ajuin_codigo=ajuincodigo;
 		--Actualizamos el stock en caso de anular el registro
 	    if ajuintipoajuste='POSITIVO' then
@@ -5653,7 +5653,7 @@ begin
     if operacion = 2 then 
 		--En esta parte se hace solo un borrado logico
     	update pedido_venta_cab 
-		set peven_estado='ANULADO'
+		set peven_estado='ANULADO', usu_codigo=usucodigo
 		where peven_codigo=pevencodigo;
 		raise notice 'EL PEDIDO DE VENTA FUE ANULADO CON EXITO';
     end if;
@@ -5835,21 +5835,21 @@ begin
 		 	 insert into cuenta_pagar(comp_codigo, cuenpa_nrocuota, cuenpa_monto, cuenpa_saldo, cuenpa_estado)
 		 	 values(compcodigo, compcuota, 0, 0, 'ACTIVO');
 		 	 --Actualizamos estado de orden
-		 	 update orden_compra_cab set orcom_estado='COMPLETADO' where orcom_codigo=orcomcodigo;
+		 	 update orden_compra_cab set orcom_estado='COMPLETADO', usu_codigo=usucodigo where orcom_codigo=orcomcodigo;
 			 raise notice 'LA COMPRA FUE REGISTRADA CON EXITO';
 		end if;
     end if;
     if operacion = 2 then 
         --Anulamos compra cabecera
     	update compra_cab 
-		set comp_estado='ANULADO'
+		set comp_estado='ANULADO', usu_codigo=usucodigo
 		where comp_codigo=compcodigo;
 	    --Anulamos libro compra
 	    update libro_compra set licom_estado='ANULADO' where comp_codigo=compcodigo;
 	    --Anulamos cuenta pagar
 	    update cuenta_pagar set cuenpa_estado='ANULADO' where comp_codigo=compcodigo;
 	    --Activamos la orden compra seleccionada
-	    update orden_compra_cab set orcom_estado='ACTIVO' where orcom_codigo=orcomcodigo;
+	    update orden_compra_cab set orcom_estado='ACTIVO', usu_codigo=usucodigo where orcom_codigo=orcomcodigo;
 	    --Actualizamos el stock 
 	    for compraDet in select * from compra_det where comp_codigo=compcodigo loop
 	       	update stock set st_cantidad=st_cantidad-compraDet.compdet_cantidad 
@@ -6438,7 +6438,7 @@ begin
     if operacion = 2 then 
 		--Actualizamos estado de nota de compra
     	update nota_compra_cab 
-		set nocom_estado='ANULADO'
+		set nocom_estado='ANULADO', usu_codigo=usucodigo
 		where nocom_codigo=nocomcodigo;
 		--Si la nota es de credito sumamos stock al anular
 		if tipcocodigo = 1 then --suma
@@ -6465,7 +6465,7 @@ begin
 				--El valor de la suma lo actualizamos en cuenta pagar
 				perform sp_cuenta_pagar(compcodigo, totalSuma, totalSuma, 1, usucodigo, usulogin);
 				--Actualizamos el estado de compra cab
-				update compra_cab set comp_estado='ACTIVO' where comp_codigo=compcodigo;
+				update compra_cab set comp_estado='ACTIVO', usu_codigo=usucodigo where comp_codigo=compcodigo;
 				--Actualizamos el estado de libro compra y compra cab
 				for compra in c_compra_cab loop
 					--Auditamos compra cabecera 
@@ -6676,7 +6676,7 @@ begin
 					--Utilizamos el sp de de cuenta pagar para auditar la actualizacion de estado
 					perform sp_cuenta_pagar(compcodigo, 0, 0, 3, usucodigo, usulogin);
 					--Actualizamos el estado de compra cabecera
-					update compra_cab set comp_estado='ANULADO' where comp_codigo=compcodigo;
+					update compra_cab set comp_estado='ANULADO', usu_codigo=usucodigo where comp_codigo=compcodigo;
 					--Auditamos compra cab
 					for compra in c_compra_cab loop
 						--consultamos el audit anterior de compra cabecera
@@ -6723,7 +6723,7 @@ begin
 					--Utilizamos el sp de de cuenta pagar para auditar la actualizacion de estado
 					perform sp_cuenta_pagar(compcodigo, 0, 0, 3, usucodigo, usulogin);
 					--Actualizamos el estado de compra cabecera
-					update compra_cab set comp_estado='ACTIVO' where comp_codigo=compcodigo;
+					update compra_cab set comp_estado='ACTIVO', usu_codigo=usucodigo where comp_codigo=compcodigo;
 					--Auditamos compra cab
 					for compra in c_compra_cab loop
 						--consultamos el audit anterior de compra cabecera
@@ -6780,7 +6780,7 @@ begin
 				--Utilizamos el sp de de cuenta pagar para auditar la actualizacion de estado
 				perform sp_cuenta_pagar(compcodigo, 0, 0, 3, usucodigo, usulogin);
 				--Actualizamos el estado de compra cabecera
-				update compra_cab set comp_estado='ACTIVO' where comp_codigo=compcodigo;
+				update compra_cab set comp_estado='ACTIVO', usu_codigo=usucodigo where comp_codigo=compcodigo;
 				--Auditamos compra cab
 				for compra in c_compra_cab loop
 					--consultamos el audit anterior de compra cabecera
@@ -6949,7 +6949,7 @@ begin
 			 values(prescodigo, presfecharegistro, presfechavencimiento, 'ACTIVO', 
 			 pevencodigo, usucodigo, succodigo, empcodigo, clicodigo);
 			 --Actualizamos el estado del pedido de venta seleccionado
-			 update pedido_venta_cab set peven_estado='PRESUPUESTADO' where peven_codigo=pevencodigo;
+			 update pedido_venta_cab set peven_estado='PRESUPUESTADO', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		 	 --Enviamos un mensaje de confirmacion
 			 raise notice 'EL PRESUPUESTO DE PRODUCCION FUE REGISTRADO CON EXITO';
 		 end if;
@@ -6958,10 +6958,10 @@ begin
     if operacion = 2 then 
 		--En este caso realizamos un borrado logico
     	update presupuesto_cab 
-		set pres_estado='ANULADO'
+		set pres_estado='ANULADO', usu_codigo=usucodigo
 		where pres_codigo=prescodigo;
 		--Actualizamos el estado del pedido de venta asociado a cabecera
-	    update pedido_venta_cab set peven_estado='PENDIENTE' where peven_codigo=pevencodigo;
+	    update pedido_venta_cab set peven_estado='PENDIENTE', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		--Enviamos un mensaje de confirmacion
 		raise notice 'EL PRESUPUESTO DE PRODUCCION FUE ANULADO CON EXITO';
     end if;
@@ -7149,9 +7149,9 @@ begin
 		 insert into orden_presupuesto(orpre_codigo, orpro_codigo, pres_codigo)
 		 values(ultCodOrdenPresupuesto, orprocodigo, prescodigo);
 		 --Actualizamos el estado de presupuesto 
-		 update presupuesto_cab set pres_estado='APROBADO' where pres_codigo=prescodigo;
+		 update presupuesto_cab set pres_estado='APROBADO', usu_codigo=usucodigo where pres_codigo=prescodigo;
 		 --Actualizamos el estado del pedido venta que se haya ordenado
-		 update pedido_venta_cab set peven_estado='APROBADO' where peven_codigo=pevencodigo;
+		 update pedido_venta_cab set peven_estado='APROBADO', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		 --Auditamos orden presupuesto
 		 update orden_presupuesto 
 			 set orpre_audit = json_build_object(
@@ -7170,12 +7170,12 @@ begin
     if operacion = 2 then 
 		--En esta caso realizamos un borrado logico
     	update orden_produccion_cab 
-		set orpro_estado='ANULADO'
+		set orpro_estado='ANULADO', usu_codigo=usucodigo
 		where orpro_codigo=orprocodigo;
 		--Actualizamos el estado de presupuesto 
-	    update presupuesto_cab set pres_estado='ACTIVO' where pres_codigo=prescodigo;
+	    update presupuesto_cab set pres_estado='ACTIVO', usu_codigo=usucodigo where pres_codigo=prescodigo;
 		--Actualizamos el estado del pedido venta que se asocio a la orden una vez anulada
-	    update pedido_venta_cab set peven_estado='PRESUPUESTADO' where peven_codigo=pevencodigo;
+	    update pedido_venta_cab set peven_estado='PRESUPUESTADO', usu_codigo=usucodigo where peven_codigo=pevencodigo;
 		--Actualizamos el stock, en caso de que se tenga registros asociados en el detalle
 		for ord in c_orden loop
 			--Sacamos el codigo de componente produccion para individualizar las materias primas por producto
@@ -7491,7 +7491,7 @@ begin
 		 empcodigo
          );
 		 --Actualizamos el estado de la orden de produccion asociada a la produccion
-		 update orden_produccion_cab set orpro_estado='EN PRODUCCION' where orpro_codigo=orprocodigo; 
+		 update orden_produccion_cab set orpro_estado='EN PRODUCCION', usu_codigo=usucodigo where orpro_codigo=orprocodigo; 
 		 --Enviamos un mensaje de confirmacion de insercion
 		 raise notice 'LA PRODUCCION FUE REGISTRADA CON EXITO';
 		end if;
@@ -7500,10 +7500,10 @@ begin
     if operacion = 2 then 
 		--En esta caso realizamos un borrado logico
     	update produccion_cab 
-		set prod_estado='ANULADO'
+		set prod_estado='ANULADO', usu_codigo=usucodigo
 		where prod_codigo=prodcodigo;
 		--Actualizamos el estado de la orden de producciona asociada a la produccion anulada
-		update orden_produccion_cab set orpro_estado='ACTIVO' where orpro_codigo=orprocodigo;
+		update orden_produccion_cab set orpro_estado='ACTIVO', usu_codigo=usucodigo where orpro_codigo=orprocodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA PRODUCCION FUE ANULADA CON EXITO';
     end if;
@@ -7759,7 +7759,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update produccion_terminada_cab 
-		set proter_estado='ANULADO'
+		set proter_estado='ANULADO', usu_codigo=usucodigo
 		where proter_codigo=protercodigo;
 		--Actualizamos el stock en caso de que en detalle se haya sumado
 	    for produccionTerminadaDetalle in select * from produccion_terminada_det where proter_codigo=protercodigo loop
@@ -7928,7 +7928,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update mermas_cab 
-		set mer_estado='ANULADO'
+		set mer_estado='ANULADO', usu_codigo=usucodigo
 		where mer_codigo=mercodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA CABECERA DE MERMAS FUE ANULADA CON EXITO';
@@ -8062,7 +8062,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update control_calidad_cab 
-		set conca_estado='ANULADO'
+		set conca_estado='ANULADO', usu_codigo=usucodigo
 		where conca_codigo=concacodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA CABECERA DE CONTROL CALIDAD FUE ANULADA CON EXITO';
@@ -8211,7 +8211,7 @@ begin
     if operacion = 2 then
 		--En este caso realizamos un borrado logico
     	update costo_produccion_cab 
-		set copro_estado='ANULADO'
+		set copro_estado='ANULADO', usu_codigo=usucodigo
 		where copro_codigo=coprocodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'LA CABECERA DE COSTO PRODUCCION FUE ANULADA CON EXITO';
@@ -8303,7 +8303,7 @@ begin
     if operacion = 2 then 
 		--En esta caso realizamos un borrado logico
     	update componente_produccion_cab 
-		set compro_estado='ANULADO'
+		set compro_estado='ANULADO', usu_codigo=usucodigo
 		where compro_codigo=comprocodigo;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'EL COMPONENTE DE PRODUCCION FUE ANULADO CON EXITO';
@@ -8416,7 +8416,7 @@ begin
     if operacion = 2 then 
     	update apertura_cierre 
 		set apercie_fechahoracierre=aperciefechahoracierre, apercie_montocierre=aperciemontocierre,
-		apercie_estado='CERRADO'
+		apercie_estado='CERRADO', usu_codigo=usucodigo
 		where apercie_codigo=aperciecodigo;
 		raise notice 'CAJA CERRADA EXITOSAMENTE';
     end if;
@@ -9062,6 +9062,40 @@ $function$
 language plpgsql;
 
 --DML
+
+select 
+         i.it_codigo,
+         i.tipit_codigo,
+         (case 
+			i.tipit_codigo
+	     when 2
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo
+	         else 
+	         	i.it_descripcion 
+	     end) as item,
+     	(case 
+			i.tipit_codigo
+	     when 2
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion 
+	         else 
+	         	i.it_descripcion 
+	     end) as item2,
+         t.tall_descripcion,
+         um.unime_codigo,
+         um.unime_descripcion,
+         i.it_precio as pevendet_precio
+      from items i
+         join modelo m on m.mod_codigo=i.mod_codigo
+         join talle t on t.tall_codigo=i.tall_codigo 
+         join unidad_medida um on um.unime_codigo=i.unime_codigo
+         where (i.it_descripcion ilike '%%' 
+         or m.mod_codigomodelo ilike '%%') 
+         and tipit_codigo in(2, 3) 
+         and it_estado = 'ACTIVO'
+      order by i.it_codigo;
+
 select 
          pvc.peven_codigo,
          'Pedido Venta N°'||pvc.peven_codigo||' '||to_char(pvc.peven_fecha , 'DD-MM-YYYY') as pedido,
@@ -9071,7 +9105,7 @@ select
       from pedido_venta_cab pvc
          join cliente c on c.cli_codigo=pvc.cli_codigo
         	 join personas p on p.per_codigo=c.per_codigo
-      where p.per_numerodocumento ilike '%%' 
+      where (p.per_numerodocumento ilike '%%' and m.)
       and pvc.peven_estado='TERMINADA'
       and pvc.suc_codigo=1
       and pvc.emp_codigo=1
@@ -15651,7 +15685,14 @@ select * from v_compra_cab vcc where vcc.comp_estado <> 'ANULADO';
 create or replace view v_pedido_venta_det as
 select 
 	pvd.*,
-	i.it_descripcion||' '||m.mod_codigomodelo as item,
+	(case 
+			pvd.tipit_codigo
+	     when 2
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo
+	        else 
+	         	i.it_descripcion 
+     end) as item,
 	t.tall_descripcion,
 	um.unime_codigo,
 	um.unime_descripcion,
@@ -15662,11 +15703,11 @@ select
 from pedido_venta_det pvd
 	join items i on i.it_codigo=pvd.it_codigo
 	and i.tipit_codigo=pvd.tipit_codigo
-	join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
-	join tipo_impuesto tim on tim.tipim_codigo=i.tipim_codigo
-	join modelo m on m.mod_codigo=i.mod_codigo
-	join talle t on t.tall_codigo=i.tall_codigo
-	join unidad_medida um on um.unime_codigo=i.unime_codigo
+		join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
+		join tipo_impuesto tim on tim.tipim_codigo=i.tipim_codigo
+		join modelo m on m.mod_codigo=i.mod_codigo
+		join talle t on t.tall_codigo=i.tall_codigo
+		join unidad_medida um on um.unime_codigo=i.unime_codigo
 order by pvd.peven_codigo;
 
 select * from v_pedido_venta_det vpvd where vpvd.peven_codigo=1;
