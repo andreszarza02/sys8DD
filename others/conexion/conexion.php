@@ -1,11 +1,11 @@
 <?php
 class Conexion
 {
-   private $host = "localhost";
+   private $host = "10.100.99.1";
    private $port = "5432";
    private $dbname = "sys8DD";
    private $user = "postgres";
-   private $password = "123";
+   private $password = "Pokemon29";
    private $conexion;
 
    //postgres1 5432 postgres 123
