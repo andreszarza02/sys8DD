@@ -47,7 +47,7 @@ foreach ($permisos as $permiso) {
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Cobro</title>
+   <title>Cobros</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -71,6 +71,14 @@ foreach ($permisos as $permiso) {
             <?php if (isset($_SESSION['apertura']['habilitado']) == 'ABIERTO' or $_SESSION['usuario']['modu_descripcion'] == 'SISTEMA') {
 
                ?>
+
+               <?php if (!isset($_SESSION['apertura']['numero_caja'])) { ?>
+                  <div class="col-lg-12 col-md-12 col-sm-12">
+                     <div class="alert" style="font-weight: bold; background: #4DC18B;">
+                        LA CAJA NO SE ENCUENTRA ABIERTA, DE ESTA MANERA NO SE PUEDEN REGISTRAR LOS COBROS
+                     </div>
+                  </div>
+               <?php } ?>
 
                <!-- Formulario Cobro -->
                <div class="col-lg-12 col-md-12 col-sm-12">
@@ -99,30 +107,30 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-1">
+                           <div class="col-sm-2">
                               <div class="form-group form-float">
-                                 <div class="form-line foco">
-                                    <input type="text" class="form-control" id="apercie_codigo" disabled value="<?php if (isset($_SESSION['apertura']['numero'])) {
+                                 <div class="form-line <?php if (isset($_SESSION['apertura']['caja'])) {
+                                    echo "foco focused";
+                                 } else {
+                                    echo "foco";
+                                 } ?>">
+                                    <!-- Aqui se define el numero de apertura y cierre -->
+                                    <input type="hidden" id="apercie_codigo" value="<?php if (isset($_SESSION['apertura']['numero'])) {
                                        echo $_SESSION['apertura']['numero'];
                                     } else {
                                        echo "0";
                                     } ?>">
-                                    <label class="form-label">N° Apertura</label>
-                                 </div>
-                              </div>
-                           </div>
-                           <div class="col-sm-1">
-                              <div class="form-group form-float">
-                                 <div class="form-line foco">
+                                    <!-- Aqui se define el numero de caja abierta -->
                                     <input type="hidden" id="caj_codigo" value="<?php if (isset($_SESSION['apertura']['numero_caja'])) {
                                        echo $_SESSION['apertura']['numero_caja'];
                                     } else {
                                        echo "0";
                                     } ?>">
-                                    <input type="text" class="form-control" id="caj_descripcion" disabled value=" <?php if (isset($_SESSION['apertura']['caja'])) {
+                                    <!-- Aqui se define la descripcion de la caja abierta -->
+                                    <input type="text" class="form-control" id="caj_descripcion" disabled value="<?php if (isset($_SESSION['apertura']['caja'])) {
                                        echo $_SESSION['apertura']['caja'];
                                     } else {
-                                       echo "NDF";
+                                       echo null;
                                     } ?>">
                                     <label class="form-label">Caja</label>
                                  </div>
@@ -207,7 +215,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Detalle -->
-               <div id="detalle" style="display: none;">
+               <div id="detalle" style="display: block;">
                   <div id="tamañoDetalle" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -217,7 +225,28 @@ foreach ($permisos as $permiso) {
                         </div>
                         <div class="header">
                            <div class="row clearfix">
-                              <div class="col-sm-4">
+                              <div class="col-sm-6">
+                                 <div class="form-group form-float">
+                                    <div class="form-line">
+                                       <input type="text" class="form-control no-disabled2" id="ci" disabled
+                                          onkeyup="getVenta()">
+                                       <label class="form-label">CI</label>
+                                       <div id="listaVenta" style="display: none;">
+                                          <ul class="list-group" id="ulVenta" Style="height: 100px; overflow: auto"></ul>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="col-sm-2">
+                                 <div class="form-group form-float">
+                                    <div class="form-line vent">
+                                       <input type="hidden" id="ven_codigo" value="0">
+                                       <input type="text" class="form-control" id="factura" disabled>
+                                       <label class="form-label">Factura</label>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="col-sm-2">
                                  <div class="form-group form-float">
                                     <div class="form-line vent">
                                        <input type="text" class="form-control" id="cuota" disabled>
@@ -225,25 +254,12 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-4">
+                              <div class="col-sm-2">
                                  <div class="form-group form-float">
                                     <div class="form-line vent">
                                        <input type="hidden" id="cuenco_montototal" value="0">
                                        <input type="text" class="form-control" id="saldo" disabled>
                                        <label class="form-label">Monto Saldo</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-4">
-                                 <div class="form-group form-float">
-                                    <div class="form-line">
-                                       <input type="text" class="form-control no-disabled2" id="ci" disabled
-                                          onkeyup="getVenta()">
-                                       <label class="form-label">CI</label>
-                                       <div id="listaVenta" style="display: none;">
-                                          <ul class="list-group" id="ulVenta"
-                                             Style="height: 100px; width: 410px; overflow: auto"></ul>
-                                       </div>
                                     </div>
                                  </div>
                               </div>
@@ -253,24 +269,15 @@ foreach ($permisos as $permiso) {
                            <input type="hidden" id="operacion_detalle" value="0">
                            <input type="hidden" id="cobdet_codigo" value="0">
                            <div class="row clearfix">
-                              <div class="col-sm-4">
+                              <div class="col-sm-3">
                                  <div class="form-group form-float">
                                     <div class="form-line vent">
-                                       <input type="hidden" id="ven_codigo" value="0">
-                                       <input type="text" class="form-control" id="factura" disabled>
-                                       <label class="form-label">Factura</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-4">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="text" class="form-control" id="cliente" disabled onkeyup="getItem()">
+                                       <input type="text" class="form-control" id="cliente" disabled>
                                        <label class="form-label">Cliente</label>
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-4">
+                              <div class="col-sm-1">
                                  <div class="form-group form-float">
                                     <div class="form-line cob">
                                        <input type="text" class="form-control" id="cobdet_numerocuota" disabled>
@@ -278,7 +285,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-4">
+                              <div class="col-sm-2">
                                  <div class="form-group form-float">
                                     <div class="form-line vent">
                                        <input type="text" class="form-control" id="vent_montocuota" disabled>
@@ -286,7 +293,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-4">
+                              <div class="col-sm-2">
                                  <div class="form-group form-float">
                                     <div class="form-line vent">
                                        <input type="text" class="form-control" id="ven_interfecha" disabled>
@@ -294,7 +301,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-4 montoEfectivo" style="display: block;">
+                              <div class="col-sm-2 montoEfectivo" style="display: block;">
                                  <div class="form-group form-float">
                                     <div class="form-line cob2">
                                        <input type="text" class="form-control no-disabled2" id="cobdet_monto" disabled>
@@ -302,7 +309,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-4">
+                              <div class="col-sm-2">
                                  <div class="form-group form-float">
                                     <div class="form-line form">
                                        <input type="hidden" id="forco_codigo" value="0">
@@ -310,8 +317,8 @@ foreach ($permisos as $permiso) {
                                           onclick="getFormaCobro()">
                                        <label class="form-label">Forma Cobro</label>
                                        <div id="listaFormaCobro" style="display: none;">
-                                          <ul class="list-group" id="ulFormaCobro"
-                                             Style="height: 100px; width: 450px; overflow: auto"></ul>
+                                          <ul class="list-group" id="ulFormaCobro" Style="height: 100px; overflow: auto">
+                                          </ul>
                                        </div>
                                     </div>
                                  </div>
@@ -372,7 +379,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Tarjeta -->
-               <div id="cobroTarjeta" style="display: none;">
+               <div id="cobroTarjeta" style="display: block;">
                   <div id="tamañoCobroTarjeta" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -405,8 +412,7 @@ foreach ($permisos as $permiso) {
                                           onclick="getTipoTarjeta()">
                                        <label class="form-label">Tipo Tarjeta</label>
                                        <div id="listaTipoTar" style="display: none;">
-                                          <ul class="list-group" id="ulTipoTar"
-                                             Style="height: 100px; width: 200px; overflow: auto"></ul>
+                                          <ul class="list-group" id="ulTipoTar" Style="height: 100px; overflow: auto"></ul>
                                        </div>
                                     </div>
                                  </div>
@@ -422,7 +428,7 @@ foreach ($permisos as $permiso) {
                                        <label class="form-label">Entidad</label>
                                        <div id="listaEntidadTarjeta" style="display: none;">
                                           <ul class="list-group" id="ulEntidadTarjeta"
-                                             Style="height: 100px; width: 325px; overflow: auto"></ul>
+                                             Style="height: 100px; overflow: auto"></ul>
                                        </div>
                                     </div>
                                  </div>
@@ -435,7 +441,7 @@ foreach ($permisos as $permiso) {
                                        <label class="form-label">Marca Tarjeta</label>
                                        <div id="listaEntidadTarjeta" style="display: none;">
                                           <ul class="list-group" id="ulEntidadTarjeta"
-                                             Style="height: 100px; width: 325px; overflow: auto"></ul>
+                                             Style="height: 100px; overflow: auto"></ul>
                                        </div>
                                     </div>
                                  </div>
@@ -447,7 +453,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Cheque -->
-               <div id="cobroCheque" style="display: none;">
+               <div id="cobroCheque" style="display: block;">
                   <div id="tamañoCobroCheque" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -480,8 +486,7 @@ foreach ($permisos as $permiso) {
                                           onclick="getTipoCheque()">
                                        <label class="form-label">Tipo Cheque</label>
                                        <div id="listaTipoChe" style="display: none;">
-                                          <ul class="list-group" id="ulTipoChe"
-                                             Style="height: 100px; width: 200px; overflow: auto"></ul>
+                                          <ul class="list-group" id="ulTipoChe" Style="height: 100px; overflow: auto"></ul>
                                        </div>
                                     </div>
                                  </div>
@@ -503,7 +508,7 @@ foreach ($permisos as $permiso) {
                                        <label class="form-label">Entidad</label>
                                        <div id="listaEntidadCheque" style="display: none;">
                                           <ul class="list-group" id="ulEntidadCheque"
-                                             Style="height: 100px; width: 300px; overflow: auto"></ul>
+                                             Style="height: 100px; overflow: auto"></ul>
                                        </div>
                                     </div>
                                  </div>
@@ -532,8 +537,8 @@ foreach ($permisos as $permiso) {
                                     <th>FECHA</th>
                                     <th>CAJA</th>
                                     <th>USUARIO</th>
-                                    <th>EMPRESA</th>
                                     <th>SUCURSAL</th>
+                                    <th>EMPRESA</th>
                                     <th>ESTADO</th>
                                  </tr>
                               </thead>
