@@ -1,4 +1,66 @@
 --Procedimiento Almacenado
+--Red Pago
+create or replace function sp_red_pago(
+    redpacodigo integer,
+    redpadescripcion varchar,
+    redpaestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar
+) returns void as
+$function$
+declare redpaAudit text;
+begin 
+	--Validamos si la operacion es de insercion o modificacion
+    if operacion in(1,2) then
+		--Validamos que la descripcion no se repita, solo en caso de modificar un mismo registro
+        perform * from red_pago
+        where upper(redpa_descripcion) = upper(redpadescripcion)
+        and redpa_codigo != redpacodigo;
+        if found then
+			--En caso de que se cumpla la condicion, generamos una excepcion
+            raise exception '1';
+    	elseif operacion = 1 then
+				--En caso de que no se cumpla, procedemos con la insercion en caso de que la operacion sea 1
+	        	insert into red_pago(redpa_codigo, redpa_descripcion, redpa_estado)
+				values(redpacodigo, upper(redpadescripcion), 'ACTIVO');
+				--Enviamos un mensaje de confirmacion de insercion
+				raise notice 'LA RED DE PAGO FUE REGISTRADA CON EXITO';
+        elseif operacion = 2 then
+				--En caso de que no se cumpla, procedemos con la modificacion en caso de que la operacion sea 2
+        		update red_pago
+				set redpa_descripcion=upper(redpadescripcion), redpa_estado='ACTIVO'
+				where redpa_codigo=redpacodigo;
+				--Enviamos un mensaje de confirmacion de modificacion
+				raise notice 'LA RED DE PAGO FUE MODIFICADA CON EXITO';
+        end if;
+    end if;
+	--Validamos si la operacion es de eliminacion
+    if operacion = 3 then 
+		--En este caso se procede con un borrado logico
+    	update red_pago
+		set redpa_estado='INACTIVO'
+		where redpa_codigo=redpacodigo;
+		raise notice 'LA RED DE PAGO FUE ELIMINADA CON EXITO';
+    end if;
+	--Consultamos el audit anterior
+	select coalesce(redpa_audit, '') into redpaAudit from red_pago where redpa_codigo = redpacodigo;
+	--A los datos anteriores le agregamos los nuevos
+	update red_pago 
+	set redpa_audit = redpaAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'redpa_descripcion', upper(redpadescripcion),
+		'redpa_estado', upper(redpaestado)
+	)||','
+	where redpa_codigo = redpacodigo;
+end
+$function$ 
+language plpgsql;
+
 --Factura Venta
 create or replace function sp_factura_venta(
     succodigo integer,

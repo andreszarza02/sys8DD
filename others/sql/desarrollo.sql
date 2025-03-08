@@ -1390,7 +1390,88 @@ CREATE TABLE venta_det_auditoria (
                 CONSTRAINT venta_det_auditoria_pk PRIMARY KEY (vendetaud_codigo)
 );
 
+CREATE TABLE cobro_cab_auditoria (
+				cobaud_codigo INTEGER NOT NULL,
+				cobaud_fecha TIMESTAMP NOT NULL,
+                cobaud_procedimiento VARCHAR NOT NULL,
+                cob_codigo INTEGER NOT NULL,
+                cob_fecha TIMESTAMP NOT NULL,
+                cob_estado VARCHAR NOT NULL,
+                apercie_codigo INTEGER NOT NULL,
+                suc_codigo INTEGER NOT NULL,
+                emp_codigo INTEGER NOT NULL,
+                caj_codigo INTEGER NOT NULL,
+                usu_codigo INTEGER NOT NULL,
+                CONSTRAINT cobro_cab_auditoria_pk PRIMARY KEY (cobaud_codigo)
+);
+
+CREATE TABLE cobro_det_auditoria (
+				cobdetaud_codigo INTEGER NOT NULL,
+				usu_codigo INTEGER NOT NULL,
+				usu_login VARCHAR NOT NULL,
+				cobdetaud_fecha TIMESTAMP NOT NULL,
+                cobdetaud_procedimiento VARCHAR NOT NULL,
+                cobdet_codigo INTEGER NOT NULL,
+                cob_codigo INTEGER NOT NULL,
+                ven_codigo INTEGER NOT NULL,
+                cobdet_monto NUMERIC NOT NULL,
+                cobdet_numerocuota INTEGER NOT NULL,
+                forco_codigo INTEGER NOT NULL,
+                CONSTRAINT cobro_det_auditoria_pk PRIMARY KEY (cobdetaud_codigo)
+);
+
+CREATE TABLE cobro_tarjeta_auditoria (
+				cobtaaud_codigo INTEGER NOT NULL,
+				usu_codigo INTEGER NOT NULL,
+				usu_login VARCHAR NOT NULL,
+				cobtaaud_fecha TIMESTAMP NOT NULL,
+                cobtaaud_procedimiento VARCHAR NOT NULL,
+                cobta_codigo INTEGER NOT NULL,
+                cobta_numero VARCHAR NOT NULL,
+                cobta_monto NUMERIC NOT NULL,
+                cobta_tipotarjeta tipo_tarjeta NOT NULL,
+                entad_codigo INTEGER NOT NULL,
+                ent_codigo INTEGER NOT NULL,
+                marta_codigo INTEGER NOT NULL,
+                cobdet_codigo INTEGER NOT NULL,
+                cob_codigo INTEGER NOT NULL,
+                ven_codigo INTEGER NOT NULL,
+                CONSTRAINT cobro_tarjeta_auditoria_pk PRIMARY KEY (cobtaaud_codigo)
+);
+
+CREATE TABLE cobro_cheque_auditoria (
+				cocheaud_codigo INTEGER NOT NULL,
+				usu_codigo INTEGER NOT NULL,
+				usu_login VARCHAR NOT NULL,
+				cocheaud_fecha TIMESTAMP NOT NULL,
+                cocheaud_procedimiento VARCHAR NOT NULL,
+                coche_codigo INTEGER NOT NULL,
+                coche_numero VARCHAR NOT NULL,
+                coche_monto NUMERIC NOT NULL,
+                coche_tipocheque tipo_cheque NOT NULL,
+                coche_fechavencimiento DATE NOT NULL,
+                ent_codigo INTEGER NOT NULL,
+                cobdet_codigo INTEGER NOT NULL,
+                cob_codigo INTEGER NOT NULL,
+                ven_codigo INTEGER NOT NULL,
+                CONSTRAINT cobro_cheque_auditoria_pk PRIMARY KEY (cocheaud_codigo)
+);
+
+CREATE TABLE red_pago (
+                redpa_codigo INTEGER NOT NULL,
+                redpa_descripcion VARCHAR NOT NULL,
+                redpa_estado VARCHAR NOT NULL,
+                redpa_audit text NOT null,
+                CONSTRAINT red_pago_pk PRIMARY KEY (redpa_codigo)
+);
+
 --Alteracion de tablas
+ALTER TABLE cobro_tarjeta ADD constraint red_pago_cobro_tarjeta_fk
+FOREIGN KEY (redpa_codigo)
+REFERENCES red_pago (redpa_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
 ALTER TABLE cuenta_cobrar ADD constraint tipo_comprobante_cuenta_cobrar_fk
 FOREIGN KEY (tipco_codigo)
 REFERENCES tipo_comprobante (tipco_codigo)
@@ -1408,8 +1489,6 @@ FOREIGN KEY (tipco_codigo)
 REFERENCES tipo_comprobante (tipco_codigo)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
-
-select * from tipo_comprobante tc;
 
 ALTER TABLE factura_venta ADD constraint caja_factura_venta_fk
 FOREIGN KEY (caj_codigo)
@@ -1573,7 +1652,7 @@ REFERENCES items (it_codigo, tipit_codigo)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
 
-ALTER TABLE componente_produccion_det ADD CONSTRAINT sucursal_componente_produccion_cab_fk
+ALTER TABLE componente_produccion_cab ADD CONSTRAINT sucursal_componente_produccion_cab_fk
 FOREIGN KEY (suc_codigo, emp_codigo)
 REFERENCES sucursal (suc_codigo, emp_codigo)
 ON DELETE RESTRICT
@@ -1612,7 +1691,7 @@ ON UPDATE CASCADE;
 ALTER TABLE nota_venta_det ADD CONSTRAINT items_nota_venta_det_fk
 FOREIGN KEY (it_codigo, tipit_codigo)
 REFERENCES items (it_codigo, tipit_codigo)
-ON DELETE RESTRICTF
+ON DELETE RESTRICT
 ON UPDATE CASCADE;
 
 ALTER TABLE nota_venta_det ADD CONSTRAINT nota_venta_cab_nota_venta_det_fk
@@ -2095,12 +2174,6 @@ REFERENCES deposito (dep_codigo, suc_codigo, emp_codigo)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
 
-ALTER TABLE stock ADD CONSTRAINT unidad_medida_stock_fk
-FOREIGN KEY (unime_codigo)
-REFERENCES unidad_medida (unime_codigo)
-ON DELETE RESTRICT
-ON UPDATE CASCADE;
-
 ALTER TABLE ajuste_inventario_cab ADD CONSTRAINT usuario_ajuste_inventario_cab_fk
 FOREIGN KEY (usu_codigo)
 REFERENCES usuario (usu_codigo)
@@ -2257,12 +2330,6 @@ REFERENCES personas (per_codigo)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
 
-ALTER TABLE caja ADD CONSTRAINT sucursal_caja_fk
-FOREIGN KEY (suc_codigo, emp_codigo)
-REFERENCES sucursal (suc_codigo, emp_codigo)
-ON DELETE RESTRICT
-ON UPDATE CASCADE;
-
 ALTER TABLE entidad_adherida ADD CONSTRAINT marca_tarjeta_entidad_adherida_fk
 FOREIGN KEY (marta_codigo)
 REFERENCES marca_tarjeta (marta_codigo)
@@ -2296,6 +2363,12 @@ ON UPDATE CASCADE;
 ALTER TABLE items ADD CONSTRAINT talle_items_fk
 FOREIGN KEY (tall_codigo)
 REFERENCES talle (tall_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+ALTER TABLE items ADD CONSTRAINT unidad_medida_items_fk
+FOREIGN KEY (unime_codigo)
+REFERENCES unidad_medida (unime_codigo)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
 
@@ -2434,6 +2507,12 @@ ON UPDATE CASCADE;
 ALTER TABLE orden_produccion_det ADD CONSTRAINT deposito_orden_produccion_det_fk
 FOREIGN KEY (dep_codigo, suc_codigo, emp_codigo)
 REFERENCES deposito (dep_codigo, suc_codigo, emp_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+ALTER TABLE cobro_cab ADD CONSTRAINT tipo_comprobante_cobro_cab_fk
+FOREIGN KEY (tipco_codigo)
+REFERENCES tipo_comprobante (tipco_codigo)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
 
@@ -6027,6 +6106,9 @@ from deposito d
 	and d.dep_estado='ACTIVO';
 select sp_compra_det(1, 1, 1, 1, 1, 1, 20, 5000, 1);
 --Procedimiento almacenado compra detalle
+create database pruebaRestore;
+select * from personas p;
+select version();
 create or replace function sp_compra_det(
     compcodigo integer,
     itcodigo integer,
@@ -6088,6 +6170,8 @@ begin
 end
 $function$ 
 language plpgsql;
+
+select * from acceso a order by acc_codigo DESC;
 
 --Procedimiento almacenado libro compra
 select 
@@ -8777,7 +8861,9 @@ end
 $function$ 
 language plpgsql;
 
+select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=1;
 select sp_cobro_cab(0, '21/02/2024', 'ACTIVO', 1, 1, 1, 1, 3, 1);
+select coalesce(max(cob_codigo),0)+1 from cobro_cab
 create or replace function sp_cobro_cab(
     cobcodigo integer,
     cobfecha timestamp,
@@ -8787,35 +8873,73 @@ create or replace function sp_cobro_cab(
     empcodigo integer,
     cajcodigo integer,
     usucodigo integer,
+    tipcocodigo integer,
     operacion integer 
 ) returns void as
 $function$
-declare ultcod integer;
-		cobroDet record;
+declare cobroDet record;
+		ventaEstado varchar;
 begin 
+	 --Validamos si la operacion es de insercion 
      if operacion = 1 then
-      	--Generamos el ultimo codigo y cargamos la cabecera
-      	ultcod = (select coalesce(max(cob_codigo),0)+1 from cobro_cab);
-		insert into cobro_cab(cob_codigo, cob_fecha, cob_estado, apercie_codigo, suc_codigo, emp_codigo, caj_codigo, usu_codigo)
-		values(ultcod, cobfecha, 'ACTIVO', aperciecodigo, succodigo, empcodigo, cajcodigo, usucodigo);
+      	--Procedemos a insertar el nuevo registro en cobro cabecera
+		insert into cobro_cab(
+		cob_codigo, 
+		cob_fecha, 
+		cob_estado, 
+		apercie_codigo, 
+		suc_codigo, 
+		emp_codigo, 
+		caj_codigo, 
+		usu_codigo,
+		tipco_codigo
+		)
+		values(
+		cobcodigo, 
+		cobfecha, 
+		'ACTIVO', 
+		aperciecodigo, 
+		succodigo, 
+		empcodigo, 
+		cajcodigo, 
+		usucodigo,
+		tipcocodigo
+		);
+		--Enviamos un mensaje de confirmacion de insercion
 		raise notice 'EL COBRO FUE REGISTRADO CON EXITO';
     end if;
+	--Validamos si la operacion es de anulacion
     if operacion = 2 then 
-        --Anulamos cobro cabecera
+		--Consultamos el estado de venta cabecera
+		ventaEstado := (select ven_estado from venta_cab where ven_codigo=(select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=cobcodigo));
+        --En este caso realizamos un borrado logico
     	update cobro_cab 
-		set cob_estado='ANULADO'
+		set cob_estado='ANULADO', usu_codigo=usucodigo
 		where cob_codigo=cobcodigo;
-		--Actualizar cuentas a cobrar monto efectivo
+		--Actualizamos el monto saldo de cuentas a cobrar asociado al cobro anulado
 	    for cobroDet in select * from cobro_det where cob_codigo=cobcodigo loop
-	       	update cuenta_cobrar set cuenco_montosaldo=cuenco_montosaldo+cobroDet.cobdet_monto, cuenco_estado='ACTIVO'
+	       	update cuenta_cobrar 
+			set 
+			cuenco_saldo=cuenco_saldo+cobroDet.cobdet_monto, 
+			cuenco_estado='ACTIVO', 
+			tipco_codigo=5
 			where ven_codigo=cobroDet.ven_codigo;
-			update venta_cab set ven_estado='ACTIVO' where ven_codigo=cobroDet.ven_codigo;
         end loop;
-		raise notice 'EL COBRO FUE ANULADA CON EXITO';
+		--Actualizamos el estado de venta cabecera en caso de que sea cancelado
+		if ventaEstado = 'CANCELADO' then
+			update venta_cab 
+			set ven_estado='ACTIVO',
+			usu_codigo=usucodigo  
+			where ven_codigo=vencodigo;
+		end if;
+		--Enviamos un mensaje de confirmacion de anulacion
+		raise notice 'EL COBRO FUE ANULADO CON EXITO';
     end if;
 end
 $function$ 
 language plpgsql;
+
+select ven_estado from venta_cab where ven_codigo=1;
 
 select sp_cobro_det(0, 1, 1, 350000, 1, 1, 1);
 select coalesce(max(cobdet_codigo),0)+1 as codigodetalle from cobro_det;
@@ -8826,53 +8950,88 @@ create or replace function sp_cobro_det(
     cobdetmonto numeric,
     cobdetnumerocuota integer,
     forcocodigo integer,
-    cobtanumero varchar,
-    entadcodigo integer,
     cochenumero varchar,
     entcodigo integer,
+    usucodigo integer,
     operacion integer 
 ) returns void as
 $function$
-declare ultcod integer;
+declare ventaEstado varchar;
 begin 
-	if operacion = 1 and forcocodigo = 2 then
-      	--Validamos cobro_tarjeta
-      	perform * from cobro_tarjeta
-     	where cobta_numero=cobtanumero and entad_codigo=entadcodigo and cob_codigo=cobcodigo and ven_codigo=vencodigo;
-     	if found then
-     		 raise exception 'tarjeta';
-		end if;
-    end if;
+   --Validamos la operacion en este caso la insercion
+   --Validamos si es una insercion y si la forma de cobro es cheque 
    if operacion = 1 and forcocodigo = 3 then
-      	--Validamos cobro_cheque
+      	--Validamos que no se repita el numero de cheque 
       	perform * from cobro_cheque	
      	where coche_numero=cochenumero and ent_codigo=entcodigo;
      	if found then
+		     --En caso de ser asi generamos una excepcion
      		 raise exception 'cheque';
 		end if;
     end if;
     if operacion = 1 then
-      	--Generamos el ultimo codigo y cargamos el detalle
-		insert into cobro_det(cobdet_codigo, cob_codigo, ven_codigo, cobdet_monto, cobdet_numerocuota, forco_codigo)
-		values(cobdetcodigo, cobcodigo, vencodigo, cobdetmonto, cobdetnumerocuota, forcocodigo);
-		--Actualizar monto saldo de cuenta cobrar
-		update cuenta_cobrar set cuenco_montosaldo=cuenco_montosaldo-cobdetmonto
-		where ven_codigo=vencodigo;
-		raise notice 'EL COBRO DETALLE FUE REGISTRADO CON EXITO';
+		--Validamos que no se repita la forma de cobro en efectivo en un mismo cobro 
+      	perform * from cobro_det	
+     	where forco_codigo=1 and cob_codigo=cobcodigo and ven_codigo=vencodigo;
+     	if found then
+		     --En caso de ser asi generamos una excepcion
+     		 raise exception 'efectivo';
+		elseif operacion = 1 then
+			 --Insertamos nuevo registro en cobro detalle
+			 insert into cobro_det(
+			 cobdet_codigo, 
+			 cob_codigo, 
+			 ven_codigo, 	
+			 cobdet_monto, 
+			 cobdet_numerocuota, 	
+			 forco_codigo
+			 )
+			 values(
+			 (select coalesce(max(cobdet_codigo),0)+1 from cobro_det), 
+			 cobcodigo, 
+			 vencodigo, 
+			 cobdetmonto, 
+			 cobdetnumerocuota, 
+		  	 forcocodigo
+			);
+			--Actualizamos saldo y tipo de comprobante en cuenta cobrar
+			update cuenta_cobrar 
+			set cuenco_saldo=cuenco_saldo-cobdetmonto, 
+			tipco_codigo=5
+			where ven_codigo=vencodigo;
+			--Enviamos un mensaje de confirmacion de insercion
+			raise notice 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
+		end if;
     end if;
+	--Validamos si la operacion es de eliminacion
     if operacion = 2 then 
-        --Eliminamos el registro seleccionado
+		--Consultamos el estado de venta cabecera
+		ventaEstado := (select ven_estado from venta_cab where ven_codigo=vencodigo);
+        --Eliminamos el registro de cobro tarjeta en caso de que toque
     	if forcocodigo = 2 then
     	 delete from cobro_tarjeta where cobdet_codigo=cobdetcodigo;
     	end if;
+		--Eliminamos el registro de cobro cheque en caso de que toque
     	if forcocodigo = 3 then
     	 delete from cobro_cheque where cobdet_codigo=cobdetcodigo;
     	end if;
+		--Realizamos un borrado fisico de cobro detalle
     	delete from cobro_det where cobdet_codigo=cobdetcodigo;
-    	update cuenta_cobrar set cuenco_montosaldo=cuenco_montosaldo+cobdetmonto, cuenco_estado = 'ACTIVO'
+		--Actualizamos registro de cuenta cobrar
+    	update cuenta_cobrar 
+		set cuenco_saldo=cuenco_saldo+cobdetmonto, 
+			cuenco_estado='ACTIVO',
+			tipco_codigo=5
 		where ven_codigo=vencodigo;
-		update venta_cab set ven_estado = 'ACTIVO' where ven_codigo=vencodigo;
-		raise notice 'EL COBRO DETALLE FUE ELIMINADO CON EXITO';
+		--Actualizamos registro de venta cabecera en caso de que el mismo sea cancelado
+		if ventaEstado = 'CANCELADO' then
+			update venta_cab 
+			set ven_estado='ACTIVO',
+			usu_codigo=usucodigo  
+			where ven_codigo=vencodigo;
+		end if;
+		--Enviamos un mensaje de de confirmacion de eliminacion
+		raise notice 'EL DETALLE DEL COBRO FUE ELIMINADO CON EXITO';
     end if;
 end
 $function$ 
@@ -8932,19 +9091,14 @@ create or replace function sp_cobro_tarjeta(
 $function$
 declare ultcod integer;
 begin 
+	 --Validamos si la operacion es de insercion
      if operacion = 1 then
-      	--Validamos, generamos el ultimo codigo y cargamos cobro_tarjeta
-      	perform * from cobro_tarjeta
-     	where cobta_numero=cobtanumero and entad_codigo=entadcodigo and cob_codigo=cobcodigo and ven_codigo=vencodigo;
-     	if found then
-     		 raise exception 'tarjeta';
-     	elseif operacion = 1 then
-     	 	 --Insertamos cobro tarejta
-     		 ultcod = (select coalesce(max(cobta_codigo),0)+1 from cobro_tarjeta);
-		     insert into cobro_tarjeta(cobta_codigo, cobta_numero, cobta_monto, cobta_tipotarjeta, entad_codigo,
-		     ent_codigo, marta_codigo, cob_codigo, ven_codigo, cobdet_codigo)
-			 values(ultcod, cobtanumero, cobtamonto, cobtatipotarjeta, entadcodigo, entcodigo, martacodigo,
-			 cobcodigo, vencodigo, cobdetcodigo);
+     	--Procedemos con la insercion en cobro tarjeta
+     	ultcod = (select coalesce(max(cobta_codigo),0)+1 from cobro_tarjeta);
+		insert into cobro_tarjeta(cobta_codigo, cobta_numero, cobta_monto, cobta_tipotarjeta, entad_codigo,
+		ent_codigo, marta_codigo, cob_codigo, ven_codigo, cobdet_codigo)
+		values(ultcod, cobtanumero, cobtamonto, cobtatipotarjeta, entadcodigo, entcodigo, martacodigo,
+		cobcodigo, vencodigo, cobdetcodigo);
 		end if;
     end if;
 end
@@ -9057,6 +9211,68 @@ begin
 		end if;
 		 raise notice 'EL REGISTRO DE FACTURA VENTA SE INSERTO CON EXITO';
     end if;
+end
+$function$ 
+language plpgsql;
+
+--Procedimiento almacenado red_pago
+create or replace function sp_red_pago(
+    redpacodigo integer,
+    redpadescripcion varchar,
+    redpaestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar
+) returns void as
+$function$
+declare redpaAudit text;
+begin 
+	--Validamos si la operacion es de insercion o modificacion
+    if operacion in(1,2) then
+		--Validamos que la descripcion no se repita, solo en caso de modificar un mismo registro
+        perform * from red_pago
+        where upper(redpa_descripcion) = upper(redpadescripcion)
+        and redpa_codigo != redpacodigo;
+        if found then
+			--En caso de que se cumpla la condicion, generamos una excepcion
+            raise exception '1';
+    	elseif operacion = 1 then
+				--En caso de que no se cumpla, procedemos con la insercion en caso de que la operacion sea 1
+	        	insert into red_pago(redpa_codigo, redpa_descripcion, redpa_estado)
+				values(redpacodigo, upper(redpadescripcion), 'ACTIVO');
+				--Enviamos un mensaje de confirmacion de insercion
+				raise notice 'LA RED DE PAGO FUE REGISTRADA CON EXITO';
+        elseif operacion = 2 then
+				--En caso de que no se cumpla, procedemos con la modificacion en caso de que la operacion sea 2
+        		update red_pago
+				set redpa_descripcion=upper(redpadescripcion), redpa_estado='ACTIVO'
+				where redpa_codigo=redpacodigo;
+				--Enviamos un mensaje de confirmacion de modificacion
+				raise notice 'LA RED DE PAGO FUE MODIFICADA CON EXITO';
+        end if;
+    end if;
+	--Validamos si la operacion es de eliminacion
+    if operacion = 3 then 
+		--En este caso se procede con un borrado logico
+    	update red_pago
+		set redpa_estado='INACTIVO'
+		where redpa_codigo=redpacodigo;
+		raise notice 'LA RED DE PAGO FUE ELIMINADA CON EXITO';
+    end if;
+	--Consultamos el audit anterior
+	select coalesce(redpa_audit, '') into redpaAudit from red_pago where redpa_codigo = redpacodigo;
+	--A los datos anteriores le agregamos los nuevos
+	update red_pago 
+	set redpa_audit = redpaAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'redpa_descripcion', upper(redpadescripcion),
+		'redpa_estado', upper(redpaestado)
+	)||','
+	where redpa_codigo = redpacodigo;
 end
 $function$ 
 language plpgsql;
@@ -14923,6 +15139,8 @@ select
     					'ITEMS'
     	when table_name='maquinaria' then
     					'MAQUINARIA'
+    	when table_name='marca_tarjeta' then
+    					'MARCA TARJETA'
     	when table_name='modelo' then
     					'MODELO'
     	when table_name='modulo' then
@@ -14941,6 +15159,8 @@ select
     					'PERSONAS'
     	when table_name='proveedor' then
     					'PROVEEDOR'
+    	when table_name='red_pago' then
+    					'RED PAGO'
     	when table_name='seccion' then
     					'SECCION'
     	when table_name='sucursal' then
@@ -15055,6 +15275,8 @@ select
     					'/sys8DD/referenciales/compra/items/index.php'
     	when table_name='maquinaria' then
     					'/sys8DD/referenciales/produccion/maquinaria/index.php'
+    	when table_name='marca_tarjeta' then
+    					'/sys8DD/referenciales/venta/marca_tarjeta/index.php'
     	when table_name='modelo' then
     					'/sys8DD/referenciales/produccion/modelo/index.php'
     	when table_name='modulo' then
@@ -15073,6 +15295,8 @@ select
     					'/sys8DD/referenciales/produccion/personas/index.php'
     	when table_name='proveedor' then
     					'/sys8DD/referenciales/compra/proveedor/index.php'
+    	when table_name='red_pago' then
+    					'/sys8DD/referenciales/venta/red_pago/index.php'
     	when table_name='seccion' then
     					'/sys8DD/referenciales/produccion/seccion/index.php'
     	when table_name='sucursal' then
@@ -16183,6 +16407,12 @@ alter table venta_cab add column tipco_codigo integer;
 alter table libro_venta add column tipco_codigo integer;
 alter table cuenta_cobrar add column tipco_codigo integer;
 alter table venta_cab add column ven_timbrado varchar;
+alter table cobro_cab add column tipco_codigo integer;
+alter table cobro_cab_auditoria add column tipco_codigo integer;
+alter table cobro_tarjeta add column cobta_transaccion varchar;
+alter table cobro_tarjeta add column redpa_codigo integer;
+alter table cobro_tarjeta_auditoria add column cobta_transaccion varchar;
+alter table cobro_tarjeta_auditoria add column redpa_codigo integer;
 
 update items set unime_codigo = 1;
 

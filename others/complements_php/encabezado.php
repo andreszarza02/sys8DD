@@ -529,6 +529,9 @@ if (isset($_SESSION['apertura'])) {
                                  <a href="/sys8DD/referenciales/venta/marca_tarjeta/index.php">Marca Tarjeta</a>
                               </li>
                               <li>
+                                 <a href="/sys8DD/referenciales/venta/red_pago/index.php">Red Pago</a>
+                              </li>
+                              <li>
                                  <a href="/sys8DD/referenciales/venta/entidad_emisora/index.php">Entidad Emisora</a>
                               </li>
                               <li>
