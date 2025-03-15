@@ -1005,37 +1005,74 @@ language plpgsql;
 --Cobro Cabecera
 create or replace function sp_cobro_cab(
     cobcodigo integer,
-    cobfecha date,
+    cobfecha timestamp,
     cobestado varchar,
     aperciecodigo integer,
     succodigo integer,
     empcodigo integer,
     cajcodigo integer,
     usucodigo integer,
+    tipcocodigo integer,
     operacion integer 
 ) returns void as
 $function$
-declare ultcod integer;
-		cobroDet record;
+declare cobroDet record;
+		ventaEstado varchar;
 begin 
+	 --Validamos si la operacion es de insercion 
      if operacion = 1 then
-      	--Generamos el ultimo codigo y cargamos la cabecera
-      	ultcod = (select coalesce(max(cob_codigo),0)+1 from cobro_cab);
-		insert into cobro_cab(cob_codigo, cob_fecha, cob_estado, apercie_codigo, suc_codigo, emp_codigo, caj_codigo, usu_codigo)
-		values(ultcod, cobfecha, 'ACTIVO', aperciecodigo, succodigo, empcodigo, cajcodigo, usucodigo);
+      	--Procedemos a insertar el nuevo registro en cobro cabecera
+		insert into cobro_cab(
+		cob_codigo, 
+		cob_fecha, 
+		cob_estado, 
+		apercie_codigo, 
+		suc_codigo, 
+		emp_codigo, 
+		caj_codigo, 
+		usu_codigo,
+		tipco_codigo
+		)
+		values(
+		cobcodigo, 
+		cobfecha, 
+		'ACTIVO', 
+		aperciecodigo, 
+		succodigo, 
+		empcodigo, 
+		cajcodigo, 
+		usucodigo,
+		tipcocodigo
+		);
+		--Enviamos un mensaje de confirmacion de insercion
 		raise notice 'EL COBRO FUE REGISTRADO CON EXITO';
     end if;
+	--Validamos si la operacion es de anulacion
     if operacion = 2 then 
-        --Anulamos cobro cabecera
+		--Consultamos el estado de venta cabecera
+		ventaEstado := (select ven_estado from venta_cab where ven_codigo=(select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=cobcodigo));
+        --En este caso realizamos un borrado logico
     	update cobro_cab 
-		set cob_estado='ANULADO'
+		set cob_estado='ANULADO', usu_codigo=usucodigo
 		where cob_codigo=cobcodigo;
-		--Actualizar cuentas a cobrar monto efectivo
+		--Actualizamos el monto saldo de cuentas a cobrar asociado al cobro anulado
 	    for cobroDet in select * from cobro_det where cob_codigo=cobcodigo loop
-	       	update cuenta_cobrar set cuenco_montosaldo=cuenco_montosaldo+cobroDet.cobdet_monto, cuenco_estado='ACTIVO'
+	       	update cuenta_cobrar 
+			set 
+			cuenco_saldo=cuenco_saldo+cobroDet.cobdet_monto, 
+			cuenco_estado='ACTIVO', 
+			tipco_codigo=5
 			where ven_codigo=cobroDet.ven_codigo;
         end loop;
-		raise notice 'EL COBRO FUE ANULADA CON EXITO';
+		--Actualizamos el estado de venta cabecera en caso de que sea cancelado
+		if ventaEstado = 'CANCELADO' then
+			update venta_cab 
+			set ven_estado='ACTIVO',
+			usu_codigo=usucodigo  
+			where ven_codigo=vencodigo;
+		end if;
+		--Enviamos un mensaje de confirmacion de anulacion
+		raise notice 'EL COBRO FUE ANULADO CON EXITO';
     end if;
 end
 $function$ 
@@ -1049,52 +1086,100 @@ create or replace function sp_cobro_det(
     cobdetmonto numeric,
     cobdetnumerocuota integer,
     forcocodigo integer,
-    cobtanumero varchar,
-    entadcodigo integer,
     cochenumero varchar,
     entcodigo integer,
+    usucodigo integer,
+    cobtatransaccion varchar,
+    redpacodigo integer,
     operacion integer 
 ) returns void as
 $function$
-declare ultcod integer;
+declare ventaEstado varchar;
 begin 
-	if operacion = 1 and forcocodigo = 2 then
-      	--Validamos cobro_tarjeta
-      	perform * from cobro_tarjeta
-     	where cobta_numero=cobtanumero and entad_codigo=entadcodigo and cob_codigo=cobcodigo and ven_codigo=vencodigo;
+   --Validamos la operacion en este caso la insercion
+   --Validamos si es una insercion y si la forma de cobro es tarjeta
+   if operacion = 1 and forcocodigo = 2 then
+	   --Validamos que no se repita el numero de transaccion y la red de pago 
+      	perform * from cobro_tarjeta	
+     	where cobta_transaccion=cobtatransaccion and redpa_codigo=redpacodigo;
      	if found then
+		     --En caso de ser asi generamos una excepcion
      		 raise exception 'tarjeta';
 		end if;
-    end if;
+   end if;
+   --Validamos si es una insercion y si la forma de cobro es cheque 
    if operacion = 1 and forcocodigo = 3 then
-      	--Validamos cobro_cheque
+      	--Validamos que no se repita el numero de cheque 
       	perform * from cobro_cheque	
      	where coche_numero=cochenumero and ent_codigo=entcodigo;
      	if found then
+		     --En caso de ser asi generamos una excepcion
      		 raise exception 'cheque';
 		end if;
     end if;
     if operacion = 1 then
-      	--Generamos el ultimo codigo y cargamos el detalle
-		insert into cobro_det(cobdet_codigo, cob_codigo, ven_codigo, cobdet_monto, cobdet_numerocuota, forco_codigo)
-		values(cobdetcodigo, cobcodigo, vencodigo, cobdetmonto, cobdetnumerocuota, forcocodigo);
-		--Actualizar monto saldo de cuenta cobrar
-		update cuenta_cobrar set cuenco_montosaldo=cuenco_montosaldo-cobdetmonto
-		where ven_codigo=vencodigo;
-		raise notice 'EL COBRO DETALLE FUE REGISTRADO CON EXITO';
+		--Validamos que no se repita la forma de cobro en efectivo en un mismo cobro 
+      	perform * from cobro_det	
+     	where forco_codigo=1 and cob_codigo=cobcodigo and ven_codigo=vencodigo;
+     	if found then
+		     --En caso de ser asi generamos una excepcion
+     		 raise exception 'efectivo';
+		elseif operacion = 1 then
+			 --Insertamos nuevo registro en cobro detalle
+			 insert into cobro_det(
+			 cobdet_codigo, 
+			 cob_codigo, 
+			 ven_codigo, 	
+			 cobdet_monto, 
+			 cobdet_numerocuota, 	
+			 forco_codigo
+			 )
+			 values(
+			 (select coalesce(max(cobdet_codigo),0)+1 from cobro_det), 
+			 cobcodigo, 
+			 vencodigo, 
+			 cobdetmonto, 
+			 cobdetnumerocuota, 
+		  	 forcocodigo
+			);
+			--Actualizamos saldo y tipo de comprobante en cuenta cobrar
+			update cuenta_cobrar 
+			set cuenco_saldo=cuenco_saldo-cobdetmonto, 
+			tipco_codigo=5
+			where ven_codigo=vencodigo;
+			--Enviamos un mensaje de confirmacion de insercion
+			raise notice 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
+		end if;
     end if;
+	--Validamos si la operacion es de eliminacion
     if operacion = 2 then 
-        --Eliminamos el registro seleccionado
+		--Consultamos el estado de venta cabecera
+		ventaEstado := (select ven_estado from venta_cab where ven_codigo=vencodigo);
+        --Eliminamos el registro de cobro tarjeta en caso de que toque
     	if forcocodigo = 2 then
     	 delete from cobro_tarjeta where cobdet_codigo=cobdetcodigo;
     	end if;
+		--Eliminamos el registro de cobro cheque en caso de que toque
     	if forcocodigo = 3 then
     	 delete from cobro_cheque where cobdet_codigo=cobdetcodigo;
     	end if;
+		--Realizamos un borrado fisico de cobro detalle
     	delete from cobro_det where cobdet_codigo=cobdetcodigo;
-    	update cuenta_cobrar set cuenco_montosaldo=cuenco_montosaldo+cobdetmonto
+		--Actualizamos registro de cuenta cobrar
+    	update cuenta_cobrar 
+		set cuenco_saldo=cuenco_saldo+cobdetmonto, 
+			cuenco_estado='ACTIVO',
+			tipco_codigo=5
 		where ven_codigo=vencodigo;
-		raise notice 'EL COBRO DETALLE FUE ELIMINADO CON EXITO';
+		--Actualizamos registro de venta cabecera en caso de que el mismo sea cancelado
+		if ventaEstado = 'CANCELADO' then
+			update venta_cab 
+			set ven_estado='ACTIVO',
+			usu_codigo=usucodigo  
+			where ven_codigo=vencodigo;
+		end if;
+		--Enviamos un mensaje de de confirmacion de eliminacion
+		raise notice 'EL DETALLE DEL COBRO FUE ELIMINADO CON EXITO';
     end if;
 end
 $function$ 
@@ -1114,27 +1199,33 @@ create or replace function sp_cobro_cheque(
     operacion integer
 ) returns void as
 $function$
-declare ultcod integer;
 begin 
+	 --Validamos si la operacion es de insercion
      if operacion = 1 then
-      	--Validamos, generamos el ultimo codigo y cargamos cobro_cheque
-      	perform * from cobro_cheque
-     	where coche_numero=cochenumero and ent_codigo=entcodigo;
-     	if found then
-     		 raise exception 'cheque';
-     	elseif operacion = 1 then
-     	 	 --Insertamos cobro cheque
-     		 ultcod = (select coalesce(max(coche_codigo),0)+1 from cobro_cheque);
-		     insert into cobro_cheque(coche_codigo, coche_numero, coche_monto, coche_tipocheque, coche_fechavencimiento,
-		     ent_codigo, cob_codigo, ven_codigo, cobdet_codigo)
-			 values(ultcod, cochenumero, cochemonto, cochetipocheque, cochefechavencimiento, entcodigo, cobcodigo,
-			 vencodigo, cobdetcodigo);
+     	--Insertamos registro en cobro cheque
+		insert into cobro_cheque(
+		coche_codigo, 	
+		coche_numero, 
+		coche_monto, 
+		coche_tipocheque, 
+		coche_fechavencimiento,
+		ent_codigo, 
+		cob_codigo, 
+		ven_codigo, 
+		cobdet_codigo
+		)
+		values(
+		(select coalesce(max(coche_codigo),0)+1 from cobro_cheque), 
+		cochenumero, 
+		cochemonto, 
+		cochetipocheque, 
+		cochefechavencimiento, 
+		entcodigo, 
+		cobcodigo,
+		vencodigo, 
+		cobdetcodigo
+		);
 		end if;
-    end if;
-    if operacion = 2 then 
-        --Eliminamos el registro de cobro cheque
-    	delete from cobro_cheque where cobdet_codigo=cobdetcodigo;
-    end if;
 end
 $function$ 
 language plpgsql;
@@ -1151,29 +1242,43 @@ create or replace function sp_cobro_tarjeta(
     cobcodigo integer,
     vencodigo integer,
     cobdetcodigo integer,
+    cobtatransaccion varchar,
+    redpacodigo integer,
     operacion integer 
 ) returns void as
 $function$
-declare ultcod integer;
 begin 
+	 --Validamos si la operacion es de insercion
      if operacion = 1 then
-      	--Validamos, generamos el ultimo codigo y cargamos cobro_tarjeta
-      	perform * from cobro_tarjeta
-     	where cobta_numero=cobtanumero and entad_codigo=entadcodigo and cob_codigo=cobcodigo and ven_codigo=vencodigo;
-     	if found then
-     		 raise exception 'tarjeta';
-     	elseif operacion = 1 then
-     	 	 --Insertamos cobro tarejta
-     		 ultcod = (select coalesce(max(cobta_codigo),0)+1 from cobro_tarjeta);
-		     insert into cobro_tarjeta(cobta_codigo, cobta_numero, cobta_monto, cobta_tipotarjeta, entad_codigo,
-		     ent_codigo, marta_codigo, cob_codigo, ven_codigo, cobdet_codigo)
-			 values(ultcod, cobtanumero, cobtamonto, cobtatipotarjeta, entadcodigo, entcodigo, martacodigo,
-			 cobcodigo, vencodigo, cobdetcodigo);
-		end if;
-    end if;
-    if operacion = 2 then 
-        --Eliminamos el registro de cobro tarjeta
-    	delete from cobro_tarjeta where cobdet_codigo=cobdetcodigo;
+     	--Procedemos con la insercion en cobro tarjeta
+		insert into cobro_tarjeta(
+		cobta_codigo, 
+		cobta_numero, 
+		cobta_monto, 
+		cobta_tipotarjeta, 
+		entad_codigo,
+		ent_codigo, 
+		marta_codigo, 
+		cob_codigo, 
+		ven_codigo, 
+		cobdet_codigo,
+		cobta_transaccion,
+		redpa_codigo
+		)
+		values(
+		(select coalesce(max(cobta_codigo),0)+1 from cobro_tarjeta), 
+		cobtanumero, 
+		cobtamonto, 
+		cobtatipotarjeta, 
+		entadcodigo, 
+		entcodigo, 
+		martacodigo,
+		cobcodigo, 
+		vencodigo, 
+		cobdetcodigo,
+		cobtatransaccion,
+		redpacodigo
+		);
     end if;
 end
 $function$ 

@@ -221,3 +221,76 @@ from nota_venta_det nvd
    join unidad_medida um on um.unime_codigo=s.unime_codigo
    join tipo_impuesto ti2 on ti2.tipim_codigo=i.tipim_codigo
 order by nvd.notven_codigo;
+
+create or replace view v_cobro_cab as
+select 
+	cc.cob_codigo,
+	cc.cob_fecha,
+	c.caj_descripcion,
+	u.usu_login,
+	e.emp_razonsocial,
+	s.suc_descripcion,
+	cc.cob_estado
+from cobro_cab cc
+	join apertura_cierre ac on ac.apercie_codigo=cc.apercie_codigo
+	join caja c on c.caj_codigo=ac.caj_codigo
+	join sucursal s on s.suc_codigo=ac.suc_codigo
+	and s.emp_codigo=ac.emp_codigo
+	join empresa e on e.emp_codigo=s.emp_codigo
+	join usuario u on u.usu_codigo=ac.usu_codigo
+order by cc.cob_codigo;
+
+create or replace view v_cobro_det as
+select
+	cd.cob_codigo, 
+	vc.ven_numfactura as factura,
+	p.per_nombre||' '||p.per_apellido as cliente,
+	fc.forco_descripcion,
+	cd.cobdet_numerocuota,
+	cd.cobdet_monto,
+	vc.ven_cuota as cuota,
+	cc.cuenco_saldo as saldo,
+	cd.cobdet_codigo,
+	cc.ven_codigo,
+	vc.ven_montocuota,
+	vc.ven_interfecha,
+	cd.forco_codigo,
+	ct.cobta_numero,
+	ct.cobta_monto,
+	ct.cobta_tipotarjeta,
+	ct.entad_codigo,
+	ct.ent_codigo,
+	ct.marta_codigo,
+	ct.cobta_transaccion,
+	rp.redpa_codigo,
+	rp.redpa_descripcion,
+	cc2.coche_numero,
+	cc2.coche_monto,
+	cc2.coche_tipocheque,
+	cc2.coche_fechavencimiento,
+	cc2.ent_codigo as ent_codigo2,
+	ee.ent_razonsocial,
+	mt.marta_descripcion,
+	ee2.ent_razonsocial as ent_razonsocial2,
+	cc.cuenco_monto
+from cobro_det cd
+	join cobro_cab cc3 on cc3.cob_codigo=cd.cob_codigo
+	join cuenta_cobrar cc on cc.ven_codigo=cd.ven_codigo
+	join venta_cab vc on vc.ven_codigo=cc.ven_codigo
+	join cliente c on c.cli_codigo=vc.cli_codigo
+	join personas p on p.per_codigo=c.per_codigo
+	join forma_cobro fc on fc.forco_codigo=cd.forco_codigo
+		left join cobro_tarjeta ct on ct.cob_codigo=cd.cob_codigo 
+		and ct.ven_codigo=cd.ven_codigo
+		and ct.cobdet_codigo=cd.cobdet_codigo
+		left join entidad_adherida ea on ea.entad_codigo=ct.entad_codigo
+		and ea.ent_codigo=ct.ent_codigo
+		and ea.marta_codigo=ct.marta_codigo
+		left join entidad_emisora ee on ee.ent_codigo=ea.ent_codigo
+		left join marca_tarjeta mt on mt.marta_codigo=ea.marta_codigo
+		left join red_pago rp on rp.redpa_codigo=ct.redpa_codigo 
+		left join cobro_cheque cc2 on cc2.cob_codigo=cd.cob_codigo
+		and cc2.ven_codigo=cd.ven_codigo
+		and cc2.cobdet_codigo=cd.cobdet_codigo
+		left join entidad_emisora ee2 on ee2.ent_codigo=cc2.ent_codigo
+order by cd.cobdet_codigo;
