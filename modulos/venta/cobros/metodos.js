@@ -1,3 +1,4 @@
+//Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
     method: "GET",
@@ -9,6 +10,20 @@ const actualizacionCabecera = () => {
   });
 };
 
+//Consulta  y establece el codigo en cabecera
+const getCodigo = () => {
+  $.ajax({
+    method: "POST",
+    url: "controlador.php",
+    data: {
+      consulta: 1,
+    },
+  }).done(function (respuesta) {
+    $("#cob_codigo").val(respuesta.cob_codigo);
+  });
+};
+
+//Se encarga de validar el monto en el detalle
 const validarMontoDetalle = () => {
   let montoSaldo = parseFloat($("#saldo").val());
   let formaCobro = $("#forco_codigo").val();
@@ -61,6 +76,7 @@ const validarMontoDetalle = () => {
   }
 };
 
+//Controla que todos los inputs de detalle no se pasen con valores vacios, esta validacion se realiza en base a la forma de cobro
 const controlVacio2 = () => {
   let formaCobro = $("#forco_codigo").val();
   let condicion = false;
@@ -154,7 +170,7 @@ const controlVacio2 = () => {
 };
 
 //Limpia los input del detalle
-const cleanDetail = () => {
+const LimpiarDetalle = () => {
   $("#detalle input").each(function () {
     $(this).val("");
   });
@@ -182,7 +198,7 @@ const cleanDetail = () => {
 };
 
 //Obtienen la clave subrogada de cobro detalle
-const getNumberCodDet = () => {
+const getCodigoDetalle = () => {
   $.ajax({
     method: "POST",
     url: "controladorDetalle2.php",
@@ -195,7 +211,7 @@ const getNumberCodDet = () => {
 };
 
 //Establece el numero de cuota por venta
-const shareCount = () => {
+const getNumeroCuota = () => {
   $.ajax({
     method: "POST",
     url: "controladorDetalle3.php",
@@ -210,8 +226,8 @@ const shareCount = () => {
   });
 };
 
-//Actulaiza el estado de cuenta a cobrar, una vez se termina de pagar en su totalidad la venta
-const updateStateCount = () => {
+//Actualiza el estado de cuenta a cobrar, una vez se termina de pagar en su totalidad la venta
+const actualizarEstadoCuenta = () => {
   $.ajax({
     method: "POST",
     url: "controladorDetalle3.php",
@@ -223,7 +239,7 @@ const updateStateCount = () => {
 };
 
 //Valida el monto total para actualizar el estado de cuenta a cobrar
-const totalCount = (montoTotal, montoDetalle) => {
+const totalCuenta = (montoTotal, montoDetalle) => {
   $.ajax({
     method: "POST",
     url: "controladorDetalle3.php",
@@ -235,13 +251,13 @@ const totalCount = (montoTotal, montoDetalle) => {
     let monto = parseFloat(respuesta.montoventa) + parseFloat(montoDetalle);
 
     if (monto == montoTotal) {
-      updateStateCount();
+      actualizarEstadoCuenta();
     }
   });
 };
 
 //Valida que la suma del detalle, para que no supere al monto de la cuota
-const sumValidationDetail = (montoDetalle, montoCuota) => {
+const sumaValidacionDetalle = (montoDetalle, montoCuota) => {
   $.ajax({
     method: "POST",
     url: "controladorDetalle3.php",
@@ -255,7 +271,7 @@ const sumValidationDetail = (montoDetalle, montoCuota) => {
     sumDetalle = parseFloat(respuesta.totalventa) + parseFloat(montoDetalle);
 
     if (sumDetalle <= parseFloat(montoCuota)) {
-      totalCount($("#cuenco_montototal").val(), montoDetalle);
+      totalCuenta($("#cuenco_montototal").val(), montoDetalle);
       grabarDetalle();
     } else {
       swal(
@@ -267,6 +283,7 @@ const sumValidationDetail = (montoDetalle, montoCuota) => {
   });
 };
 
+//Permite aplicar un formato de tabla a la lista de cobro cabecera
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -282,6 +299,7 @@ function formatoTabla() {
   });
 }
 
+//Consulta y lista los datos en cobro cabecera
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador
@@ -309,10 +327,10 @@ const listar = () => {
         tabla += objeto.usu_login;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.emp_razonsocial;
+        tabla += objeto.suc_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.suc_descripcion;
+        tabla += objeto.emp_razonsocial;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.cob_estado;
@@ -328,6 +346,7 @@ const listar = () => {
     });
 };
 
+//Consulta y lista los datos en cobro detalle
 const listarDetalle = () => {
   $.ajax({
     //solicitamos los datos al controladorDetalle
@@ -366,6 +385,7 @@ const listarDetalle = () => {
   });
 };
 
+//Habilita botones en cabecera
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -376,6 +396,7 @@ const habilitarBotones = (booleano) => {
   }
 };
 
+//Habilita botones en el detalle
 const habilitarBotones2 = (booleano) => {
   if (booleano) {
     $(".botonesExtra3").attr("style", "display: block;");
@@ -386,6 +407,7 @@ const habilitarBotones2 = (booleano) => {
   }
 };
 
+//Saca el disabled de los inputs
 const habilitarCampos = (booleano) => {
   if (booleano) {
     $(".no-disabled").removeAttr("disabled");
@@ -394,6 +416,7 @@ const habilitarCampos = (booleano) => {
   }
 };
 
+//Obtiene la fecha y hora actual
 const getTimestamp = () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -407,34 +430,35 @@ const getTimestamp = () => {
   return fechaHora;
 };
 
+//Se encarga de generar el reporte de cobro
 const imprimir = () => {
   let cobro = $("#cob_codigo").val();
   window.location =
     "/sys8DD/report/ventas/reporte/reporte_cobro.php?cob_codigo=" + cobro;
 };
 
+//Metodo que establece el alta en cabecera
 const nuevo = () => {
   $("#operacion_cabecera").val(1);
   habilitarCampos(true);
   $(".activar").attr("class", "form-line activar focused");
-  $(".est").attr("class", "form-line est focused");
-  $("#cob_codigo").val(0);
+  getCodigo();
+  $("#cob_fecha").val(getTimestamp());
   $("#cob_estado").val("ACTIVO");
-  $("#apercie_codigo").val("");
-  $("#caj_descripcion").val("");
   $("#cabecera").attr("style", "display: none");
   $("#detalle").attr("style", "display: none");
   habilitarBotones(false);
   actualizacionCabecera();
-  $("#cob_fecha").val(getTimestamp());
+  $(".foco").attr("class", "form-line foco focused");
   $(".foco2").attr("class", "form-line foco2 focused");
+  $(".est").attr("class", "form-line est focused");
 };
 
 const nuevoDetalle = () => {
-  getNumberCodDet();
+  getCodigoDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
-  cleanDetail();
+  LimpiarDetalle();
   $("#cobdet_monto").val(0);
   $(".cob2").attr("class", "form-line cob2 focused");
   $("#cobta_monto").val(0);
@@ -506,6 +530,7 @@ const grabarCobroCheque = () => {
   });
 };
 
+//Pasa parametros en el controlador para guardarlos en cabecera
 const grabar = () => {
   $.ajax({
     //Enviamos datos al controlador
@@ -686,17 +711,17 @@ const confirmar2 = () => {
       if (isConfirm) {
         if ($("#operacion_detalle").val() == 1) {
           if ($("#forco_codigo").val() == 1) {
-            sumValidationDetail(
+            sumaValidacionDetalle(
               $("#cobdet_monto").val(),
               $("#vent_montocuota").val()
             );
           } else if ($("#forco_codigo").val() == 2) {
-            sumValidationDetail(
+            sumaValidacionDetalle(
               $("#cobta_monto").val(),
               $("#vent_montocuota").val()
             );
           } else if ($("#forco_codigo").val() == 3) {
-            sumValidationDetail(
+            sumaValidacionDetalle(
               $("#coche_monto").val(),
               $("#vent_montocuota").val()
             );
@@ -780,7 +805,7 @@ const seleccionVenta = (datos) => {
   $("#ulVenta").html();
   $("#listaVenta").attr("style", "display: none;");
   $(".vent").attr("class", "form-line vent focused");
-  shareCount();
+  getNumeroCuota();
   $("#forco_descripcion").removeAttr("disabled");
 };
 

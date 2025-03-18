@@ -99,10 +99,10 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-1">
+                           <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line foco2">
-                                    <input type="text" class="form-control no-disabled" id="cob_fecha" disabled>
+                                    <input type="text" class="form-control" id="cob_fecha" disabled>
                                     <label class="form-label">Fecha</label>
                                  </div>
                               </div>
@@ -169,7 +169,7 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-2">
+                           <div class="col-sm-1">
                               <div class="form-group form-float">
                                  <div class="form-line est">
                                     <input type="text" class="form-control" id="cob_estado" disabled>
