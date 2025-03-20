@@ -90,6 +90,7 @@ foreach ($permisos as $permiso) {
                      </div>
                      <div class="body">
                         <input type="hidden" id="operacion_cabecera" value="0">
+                        <input type="hidden" id="tipco_codigo" value="5">
                         <div class="row clearfix">
                            <div class="col-sm-1">
                               <div class="form-group form-float">
@@ -323,6 +324,37 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
+                              <!-- <div class="col-sm-12">
+                                 <div class="header" style="background: #4DC18B;">
+                                    <h2 style="color: white; font-weight: bold;"><small
+                                          style="color: white; font-weight: bold;">Formas de pago</small>
+                                    </h2>
+                                 </div>
+                              </div>
+                              <div class="col-sm-2">
+                                 <div class="demo-checkbox">
+                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
+                                    <label for="md_checkbox_1">TEAL</label>
+                                 </div>
+                              </div>
+                              <div class="col-sm-2">
+                                 <div class="demo-checkbox">
+                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
+                                    <label for="md_checkbox_1">TEAL</label>
+                                 </div>
+                              </div>
+                              <div class="col-sm-2">
+                                 <div class="demo-checkbox">
+                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
+                                    <label for="md_checkbox_1">TEAL</label>
+                                 </div>
+                              </div>
+                              <div class="col-sm-2">
+                                 <div class="demo-checkbox">
+                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
+                                    <label for="md_checkbox_1">TEAL</label>
+                                 </div>
+                              </div> -->
                            </div>
 
                            <!-- Botones Detalle -->

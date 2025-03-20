@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,8 +13,8 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   $estado = $_POST['cob_estado'];
-   $cob_estado = str_replace("'", "''", $estado);
+   //Recibimos y definimos las variables
+   $cob_estado = pg_escape_string($conexion, $_POST['cob_estado']);
 
    $sql = "select sp_cobro_cab(
       {$_POST['cob_codigo']}, 
@@ -23,6 +25,7 @@ if (isset($_POST['operacion_cabecera'])) {
       {$_POST['emp_codigo']}, 
       {$_POST['caj_codigo']}, 
       {$_POST['usu_codigo']},  
+      {$_POST['tipco_codigo']},  
       {$_POST['operacion_cabecera']}
       )";
 
@@ -45,8 +48,9 @@ if (isset($_POST['operacion_cabecera'])) {
    echo json_encode($datos);
 
 } else {
+
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_cobro_cab";
+   $sql = "select * from v_cobro_cab vcc where vcc.cob_estado <> 'ANULADO';";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);

@@ -469,8 +469,11 @@ const nuevoDetalle = () => {
   $("#tablaDet").attr("style", "display: none");
 };
 
+//Metodo que establece la baja en cabecera
 const anular = () => {
   $("#operacion_cabecera").val(2);
+  $("#cob_estado").val("ANULADO");
+  $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
 };
 
@@ -483,6 +486,7 @@ const eliminar = () => {
   $("#operacion_detalle").val(2);
 };
 
+//Se encarga de limpiar campos
 const limpiarCampos = () => {
   window.location.reload(true);
 };
@@ -545,6 +549,7 @@ const grabar = () => {
       suc_codigo: $("#suc_codigo").val(),
       usu_codigo: $("#usu_codigo").val(),
       cob_estado: $("#cob_estado").val(),
+      tipco_codigo: $("#tipco_codigo").val(),
       operacion_cabecera: $("#operacion_cabecera").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
@@ -771,6 +776,7 @@ const controlVacio = () => {
   }
 };
 
+//Envia a los inputs de cabecera los seleccionado en la tabla de cabecera
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -778,10 +784,11 @@ const seleccionarFila = (objetoJSON) => {
   });
 
   $(".activar").attr("class", "form-line activar focused");
+  $(".foco").attr("class", "form-line foco focused");
   $(".foco2").attr("class", "form-line foco2 focused");
   $(".est").attr("class", "form-line est focused");
-
   $("#detalle").attr("style", "display: block;");
+  actualizacionCabecera();
   listarDetalle();
 };
 
