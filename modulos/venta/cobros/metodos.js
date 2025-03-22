@@ -459,6 +459,7 @@ const nuevoDetalle = () => {
   habilitarCampos(false);
   habilitarBotones2(false);
   LimpiarDetalle();
+  $("#ven_codigo").val(0);
   $("#cobdet_monto").val(0);
   $(".cob2").attr("class", "form-line cob2 focused");
   $("#cobta_monto").val(0);
@@ -913,6 +914,52 @@ const showCards = () => {
   }
 };
 
+//Busca, filtra y muestra las formas de cobro
+// const getFormaCobro = () => {
+//   $.ajax({
+//     //Solicitamos los datos a listaFormaCobro
+//     method: "POST",
+//     url: "/sys8DD/others/complements_php/listas/listaFormaCobro.php",
+//     data: {
+//       ven_codigo: $("#ven_codigo").val(),
+//       cob_codigo: $("#cob_codigo").val(),
+//     },
+//   }) //Individualizamos los datos del array y lo separamos por lista
+//     .done(function (lista) {
+//       let opciones = "<option value='0'>Forma Cobro</option>";
+//       let filas =
+//         "<li data-original-index='0'><a class='' tabindex='0' style='' data-tokens='null'><span class='text'>Forma Cobro</span></a></li>";
+//       let contador = 1;
+//       $.each(lista, function (i, objeto) {
+//         opciones +=
+//           "<option value=" +
+//           objeto.forco_codigo +
+//           ">" +
+//           objeto.forco_descripcion +
+//           "</option>";
+//         filas +=
+//           "<li data-original-index='" +
+//           objeto.forco_codigo +
+//           "'><a class='' tabindex='0' style='' data-tokens='null'><span class='text'>" +
+//           objeto.forco_descripcion +
+//           "</span></a></li>";
+//         contador++;
+//       });
+
+//       //cargamos la lista
+//       $("#forco_descripcion").html(opciones);
+//       $(".inner").html(filas);
+//       //hacemos visible la lista
+//       // $("#listaFormaCobro").attr(
+//       //   "style",
+//       //   "display: block; position:absolute; z-index: 3000;"
+//       // );
+//     })
+//     .fail(function (a, b, c) {
+//       swal("ERROR", c, "error");
+//     });
+// };
+
 const seleccionFormaCobro = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -921,7 +968,7 @@ const seleccionFormaCobro = (datos) => {
   $("#ulFormaCobro").html();
   $("#listaFormaCobro").attr("style", "display: none;");
   $(".form").attr("class", "form-line form focused");
-  showCards();
+  //showCards();
 };
 
 const getFormaCobro = () => {
@@ -937,12 +984,16 @@ const getFormaCobro = () => {
     .done(function (lista) {
       let fila = "";
       $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionFormaCobro(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.forco_descripcion +
-          "</li>";
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionFormaCobro(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.forco_descripcion +
+            "</li>";
+        }
       });
 
       //cargamos la lista
@@ -950,7 +1001,7 @@ const getFormaCobro = () => {
       //hacemos visible la lista
       $("#listaFormaCobro").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {

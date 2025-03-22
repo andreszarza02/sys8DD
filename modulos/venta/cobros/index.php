@@ -216,7 +216,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Detalle -->
-               <div id="detalle" style="display: block;">
+               <div id="detalle" style="display: none;">
                   <div id="tamañoDetalle" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -314,7 +314,7 @@ foreach ($permisos as $permiso) {
                                  <div class="form-group form-float">
                                     <div class="form-line form">
                                        <input type="hidden" id="forco_codigo" value="0">
-                                       <input type="text" class="form-control" id="forco_descripcion" disabled
+                                       <input type="text" class="form-control no-disabled2" id="forco_descripcion" disabled
                                           onclick="getFormaCobro()">
                                        <label class="form-label">Forma Cobro</label>
                                        <div id="listaFormaCobro" style="display: none;">
@@ -324,36 +324,10 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <!-- <div class="col-sm-12">
-                                 <div class="header" style="background: #4DC18B;">
-                                    <h2 style="color: white; font-weight: bold;"><small
-                                          style="color: white; font-weight: bold;">Formas de pago</small>
-                                    </h2>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2">
-                                 <div class="demo-checkbox">
-                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
-                                    <label for="md_checkbox_1">TEAL</label>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2">
-                                 <div class="demo-checkbox">
-                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
-                                    <label for="md_checkbox_1">TEAL</label>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2">
-                                 <div class="demo-checkbox">
-                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
-                                    <label for="md_checkbox_1">TEAL</label>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2">
-                                 <div class="demo-checkbox">
-                                    <input type="checkbox" id="md_checkbox_1" class="chk-col-teal" checked />
-                                    <label for="md_checkbox_1">TEAL</label>
-                                 </div>
+                              <!-- <div class="col-sm-2" onclick="getFormaCobro()">
+                                 <select class="form-control show-tick" id="forco_descripcion">
+                                    <option value="0">Forma Cobro</option>
+                                 </select>
                               </div> -->
                            </div>
 
@@ -411,7 +385,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Tarjeta -->
-               <div id="cobroTarjeta" style="display: block;">
+               <div id="cobroTarjeta" style="display: none;">
                   <div id="tamañoCobroTarjeta" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -444,7 +418,8 @@ foreach ($permisos as $permiso) {
                                           onclick="getTipoTarjeta()">
                                        <label class="form-label">Tipo Tarjeta</label>
                                        <div id="listaTipoTar" style="display: none;">
-                                          <ul class="list-group" id="ulTipoTar" Style="height: 100px; overflow: auto"></ul>
+                                          <ul class="list-group" id="ulTipoTar" Style="height: 100px; overflow: auto">
+                                          </ul>
                                        </div>
                                     </div>
                                  </div>
@@ -485,7 +460,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Cheque -->
-               <div id="cobroCheque" style="display: block;">
+               <div id="cobroCheque" style="display: none;">
                   <div id="tamañoCobroCheque" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -518,7 +493,8 @@ foreach ($permisos as $permiso) {
                                           onclick="getTipoCheque()">
                                        <label class="form-label">Tipo Cheque</label>
                                        <div id="listaTipoChe" style="display: none;">
-                                          <ul class="list-group" id="ulTipoChe" Style="height: 100px; overflow: auto"></ul>
+                                          <ul class="list-group" id="ulTipoChe" Style="height: 100px; overflow: auto">
+                                          </ul>
                                        </div>
                                     </div>
                                  </div>
