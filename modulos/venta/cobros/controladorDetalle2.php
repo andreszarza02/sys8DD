@@ -65,7 +65,9 @@ if (isset($_POST['forma']) == 2) {
    echo json_encode($response);
 
 
-} else if (isset($_POST['consulta']) == '1') {
+}
+
+if (isset($_POST['consulta']) == '1') {
 
    $sql = "select coalesce(max(cobdet_codigo),0)+1 as codigodetalle from cobro_det";
 

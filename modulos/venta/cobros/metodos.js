@@ -23,6 +23,51 @@ const getCodigo = () => {
   });
 };
 
+//Se encarga de establecer el codigo de la forma de cobro
+const setFormaCobro = (efectivo, tarjeta, cheque) => {
+  //Validamos el valor de los parametros
+  if (efectivo == 1) {
+    //Si es efectivo, establecemos el valor de la forma de cobro y ocultamos los inputs de tarjeta y cheque
+    $("#forco_codigo").val(1);
+    $("#forco_simbolo").attr("style", "display: none;");
+  }
+
+  if (tarjeta == 1) {
+    //Si es tarjeta, establecemos el valor de la forma de cobro y ocultamos los inputs de efectivo y cheque
+    $("#forco_codigo").val(2);
+    $(".montoEfectivo").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $(".cliente").attr("class", "col-sm-3");
+    $(".cuota").attr("class", "col-sm-3");
+    $(".montoCuota").attr("class", "col-sm-3");
+    $(".intervalo").attr("class", "col-sm-3");
+    //Falta habilitar el card de tarjeta
+  }
+
+  if (cheque == 1) {
+    //Si es cheque, establecemos el valor de la forma de cobro y ocultamos los inputs de efectivo y tarjeta
+    $("#forco_codigo").val(3);
+    $(".montoEfectivo").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $(".cliente").attr("class", "col-sm-3");
+    $(".cuota").attr("class", "col-sm-3");
+    $(".montoCuota").attr("class", "col-sm-3");
+    $(".intervalo").attr("class", "col-sm-3");
+    //Falta habilitar el card de cheque
+  }
+};
+
+//Establece el tamaño de 2 inputs en el detalle
+const setInputsDetalle = () => {
+  if ($("#forco_codigo").val() == 0 || $("#forco_codigo").val() == 1) {
+    $(".cliente").attr("class", "col-sm-4 cliente");
+    $(".montoEfectivo").attr("class", "col-sm-3 montoEfectivo");
+  } else {
+    $(".cliente").attr("class", "col-sm-3 cliente");
+    $(".montoEfectivo").attr("class", "col-sm-2 montoEfectivo");
+  }
+};
+
 //Se encarga de validar el monto en el detalle
 const validarMontoDetalle = () => {
   let montoSaldo = parseFloat($("#saldo").val());
@@ -468,6 +513,8 @@ const nuevoDetalle = () => {
   $(".coche2").attr("class", "form-line coche2 focused");
   $("#operacion_detalle").val(1);
   $("#tablaDet").attr("style", "display: none");
+  $("#forco_codigo").val(404);
+  $("#forco_simbolo").attr("style", "display: block;");
 };
 
 //Metodo que establece la baja en cabecera
@@ -805,6 +852,7 @@ const seleccionarFila2 = (objetoJSON) => {
   $(".form").attr("class", "form-line form focused");
 };
 
+//Envia a los input de ventassd lo seleccionado en el autocompletado
 const seleccionVenta = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -814,9 +862,10 @@ const seleccionVenta = (datos) => {
   $("#listaVenta").attr("style", "display: none;");
   $(".vent").attr("class", "form-line vent focused");
   getNumeroCuota();
-  $("#forco_descripcion").removeAttr("disabled");
+  //$("#forco_descripcion").removeAttr("disabled");
 };
 
+//Busca, filtra y muestra las ventas
 const getVenta = () => {
   $.ajax({
     //Solicitamos los datos a listaVenta
@@ -829,12 +878,16 @@ const getVenta = () => {
     .done(function (lista) {
       let fila = "";
       $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionVenta(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.venta +
-          "</li>";
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionVenta(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.venta +
+            "</li>";
+        }
       });
 
       //cargamos la lista
@@ -842,7 +895,7 @@ const getVenta = () => {
       //hacemos visible la lista
       $("#listaVenta").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {
@@ -1179,4 +1232,7 @@ const salir = () => {
   window.location = "/sys8DD/menu.php";
 };
 
+//Siempre que se cargue la pagina se ejecutaran estas funciones
 listar();
+//Ejecutamos la validaacion de los inputs, cada 1 segundo
+setInterval(setInputsDetalle, 10);
