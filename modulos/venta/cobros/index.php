@@ -316,24 +316,24 @@ foreach ($permisos as $permiso) {
                               <div class="col-sm-2" style="display: none;" id="forco_simbolo">
                                  <input type="hidden" id="forco_codigo" value="0">
                                  <div class="icon-button-demo">
-                                    <div class="col-sm-4" id="forco_efectivo">
+                                    <div class="col-sm-4 contenedorEfectivo">
                                        <button type="button"
                                           class="btn bg-teal btn-circle waves-effect  waves-circle waves-float"
-                                          onclick="setFormaCobro(1, 0, 0)">
+                                          id="forco_efectivo">
                                           <i class="material-icons">attach_money</i>
                                        </button>
                                     </div>
-                                    <div class="col-sm-4" id="forco_tarjeta">
+                                    <div class="col-sm-4">
                                        <button type="button"
                                           class="btn bg-teal btn-circle waves-effect  waves-circle waves-float"
-                                          onclick="setFormaCobro(0, 1, 0)">
+                                          id="forco_tarjeta">
                                           <i class="material-icons">credit_card</i>
                                        </button>
                                     </div>
-                                    <div class="col-sm-4" id="forco_cheque">
+                                    <div class="col-sm-4">
                                        <button type="button"
                                           class="btn bg-teal btn-circle waves-effect  waves-circle waves-float"
-                                          onclick="setFormaCobro(0, 0, 1)">
+                                          id="forco_cheque">
                                           <i class="material-icons">local_atm</i>
                                        </button>
                                     </div>

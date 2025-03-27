@@ -23,18 +23,29 @@ const getCodigo = () => {
   });
 };
 
+//Establece el tamaño de 2 inputs en el detalle
+const setInputsDetalle = () => {
+  if ($("#forco_codigo").val() == 0 || $("#forco_codigo").val() == 1) {
+    $(".cliente").attr("class", "col-sm-4 cliente");
+    $(".montoEfectivo").attr("class", "col-sm-3 montoEfectivo");
+  } else {
+    $(".cliente").attr("class", "col-sm-3 cliente");
+    $(".montoEfectivo").attr("class", "col-sm-2 montoEfectivo");
+  }
+};
+
 //Se encarga de establecer el codigo de la forma de cobro
-const setFormaCobro = (efectivo, tarjeta, cheque) => {
+const setFormaCobro = (descripcion, codigo) => {
   //Validamos el valor de los parametros
-  if (efectivo == 1) {
+  if (descripcion == "EFECTIVO") {
     //Si es efectivo, establecemos el valor de la forma de cobro y ocultamos los inputs de tarjeta y cheque
-    $("#forco_codigo").val(1);
+    $("#forco_codigo").val(codigo);
     $("#forco_simbolo").attr("style", "display: none;");
   }
 
-  if (tarjeta == 1) {
+  if (descripcion == "TARJETA") {
     //Si es tarjeta, establecemos el valor de la forma de cobro y ocultamos los inputs de efectivo y cheque
-    $("#forco_codigo").val(2);
+    $("#forco_codigo").val(codigo);
     $(".montoEfectivo").attr("style", "display: none;");
     $("#forco_simbolo").attr("style", "display: none;");
     $(".cliente").attr("class", "col-sm-3");
@@ -44,9 +55,9 @@ const setFormaCobro = (efectivo, tarjeta, cheque) => {
     //Falta habilitar el card de tarjeta
   }
 
-  if (cheque == 1) {
+  if (descripcion == "CHEQUE") {
     //Si es cheque, establecemos el valor de la forma de cobro y ocultamos los inputs de efectivo y tarjeta
-    $("#forco_codigo").val(3);
+    $("#forco_codigo").val(codigo);
     $(".montoEfectivo").attr("style", "display: none;");
     $("#forco_simbolo").attr("style", "display: none;");
     $(".cliente").attr("class", "col-sm-3");
@@ -57,15 +68,69 @@ const setFormaCobro = (efectivo, tarjeta, cheque) => {
   }
 };
 
-//Establece el tamaño de 2 inputs en el detalle
-const setInputsDetalle = () => {
-  if ($("#forco_codigo").val() == 0 || $("#forco_codigo").val() == 1) {
-    $(".cliente").attr("class", "col-sm-4 cliente");
-    $(".montoEfectivo").attr("class", "col-sm-3 montoEfectivo");
-  } else {
-    $(".cliente").attr("class", "col-sm-3 cliente");
-    $(".montoEfectivo").attr("class", "col-sm-2 montoEfectivo");
-  }
+//Consulta las formas de cobro y las establece por boton
+const getFormaCobro = () => {
+  $.ajax({
+    //Solicitamos los datos a listaFormaCobro
+    method: "GET",
+    url: "/sys8DD/others/complements_php/listas/listaFormaCobro.php",
+  }) //Individualizamos los datos del array y lo separamos por fromas de cobro
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        //EFECTIVO
+        if (objeto.forco_descripcion == "EFECTIVO") {
+          $("#forco_efectivo").attr(
+            "onclick",
+            "setFormaCobro('" +
+              objeto.forco_descripcion +
+              "', " +
+              objeto.forco_codigo +
+              ")"
+          );
+        }
+        //TARJETA
+        if (objeto.forco_descripcion == "TARJETA") {
+          $("#forco_tarjeta").attr(
+            "onclick",
+            "setFormaCobro('" +
+              objeto.forco_descripcion +
+              "', " +
+              objeto.forco_codigo +
+              ")"
+          );
+        }
+        //CHEQUE
+        if (objeto.forco_descripcion == "CHEQUE") {
+          $("#forco_cheque").attr(
+            "onclick",
+            "setFormaCobro('" +
+              objeto.forco_descripcion +
+              "', " +
+              objeto.forco_codigo +
+              ")"
+          );
+        }
+      });
+    });
+};
+
+//Valida que no se muestre el boton de efectivo en caso de que ya se encuentre registrado en la base de datos
+const validarTipoEfectivo = () => {
+  $.ajax({
+    //Consultamos si el tipo efectivo ya se encuentra cargado en en cobro detalle
+    method: "POST",
+    url: "/sys8DD/modulos/venta/cobros/controladorDetalle2.php",
+    data: {
+      cob_codigo: $("#cob_codigo").val(),
+      consulta: "2",
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      if (lista.forco_descripcion == "EFECTIVO") {
+        $(".contenedorEfectivo").attr("style", "display: none;");
+      }
+    });
 };
 
 //Se encarga de validar el monto en el detalle
@@ -499,6 +564,7 @@ const nuevo = () => {
   $(".est").attr("class", "form-line est focused");
 };
 
+//Metodo que establece el alta en detalle
 const nuevoDetalle = () => {
   getCodigoDetalle();
   habilitarCampos(false);
@@ -830,14 +896,14 @@ const seleccionarFila = (objetoJSON) => {
   Object.keys(objetoJSON).forEach(function (propiedad) {
     $("#" + propiedad).val(objetoJSON[propiedad]);
   });
-
   $(".activar").attr("class", "form-line activar focused");
   $(".foco").attr("class", "form-line foco focused");
   $(".foco2").attr("class", "form-line foco2 focused");
   $(".est").attr("class", "form-line est focused");
   $("#detalle").attr("style", "display: block;");
-  actualizacionCabecera();
   listarDetalle();
+  getFormaCobro();
+  validarTipoEfectivo();
 };
 
 const seleccionarFila2 = (objetoJSON) => {
@@ -965,101 +1031,6 @@ const showCards = () => {
     $("#cobta_numero").val("sin numero");
     $("#entad_codigo").val("0");
   }
-};
-
-//Busca, filtra y muestra las formas de cobro
-// const getFormaCobro = () => {
-//   $.ajax({
-//     //Solicitamos los datos a listaFormaCobro
-//     method: "POST",
-//     url: "/sys8DD/others/complements_php/listas/listaFormaCobro.php",
-//     data: {
-//       ven_codigo: $("#ven_codigo").val(),
-//       cob_codigo: $("#cob_codigo").val(),
-//     },
-//   }) //Individualizamos los datos del array y lo separamos por lista
-//     .done(function (lista) {
-//       let opciones = "<option value='0'>Forma Cobro</option>";
-//       let filas =
-//         "<li data-original-index='0'><a class='' tabindex='0' style='' data-tokens='null'><span class='text'>Forma Cobro</span></a></li>";
-//       let contador = 1;
-//       $.each(lista, function (i, objeto) {
-//         opciones +=
-//           "<option value=" +
-//           objeto.forco_codigo +
-//           ">" +
-//           objeto.forco_descripcion +
-//           "</option>";
-//         filas +=
-//           "<li data-original-index='" +
-//           objeto.forco_codigo +
-//           "'><a class='' tabindex='0' style='' data-tokens='null'><span class='text'>" +
-//           objeto.forco_descripcion +
-//           "</span></a></li>";
-//         contador++;
-//       });
-
-//       //cargamos la lista
-//       $("#forco_descripcion").html(opciones);
-//       $(".inner").html(filas);
-//       //hacemos visible la lista
-//       // $("#listaFormaCobro").attr(
-//       //   "style",
-//       //   "display: block; position:absolute; z-index: 3000;"
-//       // );
-//     })
-//     .fail(function (a, b, c) {
-//       swal("ERROR", c, "error");
-//     });
-// };
-
-const seleccionFormaCobro = (datos) => {
-  //Enviamos los datos a su respectivo input
-  Object.keys(datos).forEach((key) => {
-    $("#" + key).val(datos[key]);
-  });
-  $("#ulFormaCobro").html();
-  $("#listaFormaCobro").attr("style", "display: none;");
-  $(".form").attr("class", "form-line form focused");
-  //showCards();
-};
-
-const getFormaCobro = () => {
-  $.ajax({
-    //Solicitamos los datos a listaFormaCobro
-    method: "POST",
-    url: "/sys8DD/others/complements_php/listas/listaFormaCobro.php",
-    data: {
-      ven_codigo: $("#ven_codigo").val(),
-      cob_codigo: $("#cob_codigo").val(),
-    },
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        if (objeto.dato1 == "NSE") {
-          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
-        } else {
-          fila +=
-            "<li class='list-group-item' onclick='seleccionFormaCobro(" +
-            JSON.stringify(objeto) +
-            ")'>" +
-            objeto.forco_descripcion +
-            "</li>";
-        }
-      });
-
-      //cargamos la lista
-      $("#ulFormaCobro").html(fila);
-      //hacemos visible la lista
-      $("#listaFormaCobro").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000; width:100%;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
 };
 
 const seleccionTipoTarjeta = (datos) => {
