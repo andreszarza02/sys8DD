@@ -89,19 +89,16 @@ if ($consulta == '1') {
 //Si la consulta es 2, consultamos si se repite la forma de pago efectivo en el detalle
 if ($consulta == '2') {
 
-   // $sql = "select distinct 
-   //          fc.forco_descripcion 
-   //       from cobro_det cd 
-   //       join forma_cobro fc on fc.forco_codigo=cd.forco_codigo 
-   //       where cd.cob_codigo={$_POST['cob_codigo']} 
-   //       and fc.forco_descripcion='EFECTIVO';";
+   $sql = "select distinct 
+            fc.forco_descripcion 
+         from cobro_det cd 
+         join forma_cobro fc on fc.forco_codigo=cd.forco_codigo 
+         where cd.cob_codigo={$_POST['cob_codigo']} 
+         and fc.forco_descripcion='EFECTIVO';";
 
-   // $result = pg_query($conexion, $sql);
+   $result = pg_query($conexion, $sql);
 
-   $prueba = ['forco_descripcion' => 'EFECTIVO'];
-
-   // $dato = pg_fetch_assoc($result);
-   $dato = $prueba;
+   $dato = pg_fetch_assoc($result);
 
    echo json_encode($dato);
 

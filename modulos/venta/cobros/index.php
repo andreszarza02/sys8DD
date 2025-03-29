@@ -315,6 +315,7 @@ foreach ($permisos as $permiso) {
                               <!-- Botones que determinan el tipo de cobro -->
                               <div class="col-sm-2" style="display: none;" id="forco_simbolo">
                                  <input type="hidden" id="forco_codigo" value="0">
+                                 <input type="hidden" id="forco_descripcion" value="0">
                                  <div class="icon-button-demo">
                                     <div class="col-sm-4 contenedorEfectivo">
                                        <button type="button"
@@ -338,24 +339,7 @@ foreach ($permisos as $permiso) {
                                        </button>
                                     </div>
                                  </div>
-                                 <!-- <div class="form-group form-float">
-                                    <div class="form-line form">
-                                       <input type="hidden" id="forco_codigo" value="0">
-                                       <input type="text" class="form-control no-disabled2" id="forco_descripcion" disabled
-                                          onclick="getFormaCobro()">
-                                       <label class="form-label">Forma Cobro</label>
-                                       <div id="listaFormaCobro" style="display: none;">
-                                          <ul class="list-group" id="ulFormaCobro" Style="height: 100px; overflow: auto">
-                                          </ul>
-                                       </div>
-                                    </div>
-                                 </div> -->
                               </div>
-                              <!-- <div class="col-sm-2" onclick="getFormaCobro()">
-                                 <select class="form-control show-tick" id="forco_descripcion">
-                                    <option value="0">Forma Cobro</option>
-                                 </select>
-                              </div> -->
                            </div>
 
                            <!-- Botones Detalle -->
