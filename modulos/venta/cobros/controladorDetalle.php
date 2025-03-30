@@ -18,12 +18,25 @@ if (isset($_POST['operacion_detalle'])) {
 
    $cobta_transaccion = pg_escape_string($conexion, $_POST['cobta_transaccion']);
 
+   $forco_descripcion = pg_escape_string($conexion, $_POST['forco_descripcion']);
+
+   $cobdet_monto = 0;
+
+   //Validamos la forma de cobro, para cargar el monto de detalle
+   if ($forco_descripcion == 'EFECTIVO') {
+      $cobdet_monto = $_POST['cobdet_monto'];
+   } else if ($forco_descripcion == 'TARJETA') {
+      $cobdet_monto = $_POST['cobta_monto'];
+   } else if ($forco_descripcion == 'CHEQUE') {
+      $cobdet_monto = $_POST['coche_monto'];
+   }
+
    //Definimos la sentencia a consultar
    $sql = "select sp_cobro_det(
       {$_POST['cobdet_codigo']}, 
       {$_POST['cob_codigo']}, 
       {$_POST['ven_codigo']}, 
-      {$_POST['cobdet_monto']}, 
+      $cobdet_monto, 
       {$_POST['cobdet_numerocuota']}, 
       {$_POST['forco_codigo']},  
       '$coche_numero',  

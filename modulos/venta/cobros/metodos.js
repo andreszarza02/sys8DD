@@ -44,8 +44,10 @@ const setFormaCobro = (descripcion, codigo) => {
     $("#forco_simbolo").attr("style", "display: none;");
     $("#cobta_transaccion").val("sin_definir");
     $("#redpa_codigo").val("0");
+    $("#cobta_monto").val("0");
     $("#coche_numero").val("sin_definir");
     $("#ent_codigo2").val("0");
+    $("#coche_monto").val("0");
   }
 
   if (descripcion == "TARJETA") {
@@ -61,6 +63,7 @@ const setFormaCobro = (descripcion, codigo) => {
     $("#cobroTarjeta").attr("style", "display: block;");
     $("#coche_numero").val("sin_definir");
     $("#ent_codigo2").val("0");
+    $("#coche_monto").val("0");
   }
 
   if (descripcion == "CHEQUE") {
@@ -76,6 +79,7 @@ const setFormaCobro = (descripcion, codigo) => {
     $("#cobroCheque").attr("style", "display: block;");
     $("#cobta_transaccion").val("sin_definir");
     $("#redpa_codigo").val("0");
+    $("#cobta_monto").val("0");
   }
 };
 
@@ -147,16 +151,16 @@ const validarTipoEfectivo = () => {
 //Se encarga de validar el monto en el detalle
 const validarMontoDetalle = () => {
   let montoSaldo = parseFloat($("#saldo").val());
-  let formaCobro = $("#forco_codigo").val();
+  let formaCobro = $("#forco_descripcion").val();
   let validacion = true;
 
-  if (formaCobro == "1") {
+  if (formaCobro == "EFECTIVO") {
     let efectivo = parseFloat($("#cobdet_monto").val());
 
     if (efectivo > montoSaldo) {
       swal(
         "AVISO!",
-        "EL MONTO EN EFECTIVO ES MAYOR QUE EL SALDO A PAGAR",
+        "EL MONTO EN EFECTIVO ES MAYOR QUE EL SALDO A COBRAR",
         "error"
       );
 
@@ -164,13 +168,13 @@ const validarMontoDetalle = () => {
     }
   }
 
-  if (formaCobro == "2") {
+  if (formaCobro == "TARJETA") {
     let tarjeta = parseFloat($("#cobta_monto").val());
 
     if (tarjeta > montoSaldo) {
       swal(
         "AVISO!",
-        "EL MONTO EN TARJETA ES MAYOR QUE EL SALDO A PAGAR",
+        "EL MONTO EN TARJETA ES MAYOR QUE EL SALDO A COBRAR",
         "error"
       );
 
@@ -178,13 +182,13 @@ const validarMontoDetalle = () => {
     }
   }
 
-  if (formaCobro == "3") {
+  if (formaCobro == "CHEQUE") {
     let cheque = parseFloat($("#coche_monto").val());
 
     if (cheque > montoSaldo) {
       swal(
         "AVISO!",
-        "EL MONTO EN CHEQUE ES MAYOR QUE EL SALDO A PAGAR",
+        "EL MONTO EN CHEQUE ES MAYOR QUE EL SALDO A COBRAR",
         "error"
       );
 
@@ -259,15 +263,26 @@ const controlVacio2 = () => {
       condicion = true;
     } else if ($("#cobta_tipotarjeta").val() == "") {
       condicion = true;
+    } else if ($("#entad_codigo").val() == "0") {
+      condicion = true;
+    } else if ($("#ent_codigo").val() == "0") {
+      condicion = true;
     } else if ($("#ent_razonsocial").val() == "") {
       condicion = true;
     } else if ($("#marta_descripcion").val() == "") {
       condicion = true;
     }
-  } else if (formaCobro == 3) {
+  } else if (formaCobro == "CHEQUE") {
+    //Solo se ejecuta si es cheque
     if ($("#ven_codigo").val() == "0") {
       condicion = true;
+    } else if ($("#ci").val() == "") {
+      condicion = true;
     } else if ($("#factura").val() == "") {
+      condicion = true;
+    } else if ($("#cuota").val() == "") {
+      condicion = true;
+    } else if ($("#saldo").val() == "") {
       condicion = true;
     } else if ($("#cliente").val() == "") {
       condicion = true;
@@ -277,7 +292,7 @@ const controlVacio2 = () => {
       condicion = true;
     } else if ($("#ven_interfecha").val() == "") {
       condicion = true;
-    } else if ($("#forco_descripcion").val() == "") {
+    } else if ($("#forco_codigo").val() == "0") {
       condicion = true;
     } else if ($("#coche_numero").val() == "") {
       condicion = true;
@@ -286,6 +301,8 @@ const controlVacio2 = () => {
     } else if ($("#coche_tipocheque").val() == "") {
       condicion = true;
     } else if ($("#coche_fechavencimiento").val() == "") {
+      condicion = true;
+    } else if ($("#ent_codigo2").val() == "0") {
       condicion = true;
     } else if ($("#ent_razonsocial2").val() == "") {
       condicion = true;
@@ -301,6 +318,7 @@ const controlVacio2 = () => {
       type: "error",
     });
   } else {
+    //Se encarga de validar que el monto en el detalle no supere al saldo a cobrar
     validarMontoDetalle();
   }
 };
@@ -369,6 +387,7 @@ const actualizarEstadoCuenta = () => {
     url: "controladorDetalle3.php",
     data: {
       ven_codigo: $("#ven_codigo").val(),
+      usu_codigo: $("#usu_codigo").val(),
       consulta: "5",
     },
   });
@@ -387,6 +406,7 @@ const totalCuenta = (montoTotal, montoDetalle) => {
     let monto = parseFloat(respuesta.montoventa) + parseFloat(montoDetalle);
 
     if (monto == montoTotal) {
+      //Al terminar el pago en su totalidad, se actualiza el estado de cuenta a cobrar
       actualizarEstadoCuenta();
     }
   });
@@ -404,10 +424,10 @@ const sumaValidacionDetalle = (montoDetalle, montoCuota) => {
     },
   }).done(function (respuesta) {
     let sumDetalle = 0;
-    sumDetalle = parseFloat(respuesta.totalventa) + parseFloat(montoDetalle);
+    sumDetalle = parseFloat(respuesta.totalcobro) + parseFloat(montoDetalle);
 
     if (sumDetalle <= parseFloat(montoCuota)) {
-      totalCuenta($("#cuenco_montototal").val(), montoDetalle);
+      totalCuenta($("#cuenco_monto").val(), montoDetalle);
       grabarDetalle();
     } else {
       swal(
@@ -489,7 +509,7 @@ const listarDetalle = () => {
     method: "POST",
     url: "controladorDetalle.php",
     data: {
-      codigo: $("#cob_codigo").val(),
+      cobro: $("#cob_codigo").val(),
     },
   }).done(function (respuesta) {
     //individualizamos el array de objetos y lo separamos por filas
@@ -740,13 +760,16 @@ const grabarDetalle = () => {
       cob_codigo: $("#cob_codigo").val(),
       ven_codigo: $("#ven_codigo").val(),
       cobdet_monto: $("#cobdet_monto").val(),
+      cobta_monto: $("#cobta_monto").val(),
+      coche_monto: $("#coche_monto").val(),
       cobdet_numerocuota: $("#cobdet_numerocuota").val(),
       forco_codigo: $("#forco_codigo").val(),
+      forco_descripcion: $("#forco_descripcion").val(),
       coche_numero: $("#coche_numero").val(),
       ent_codigo2: $("#ent_codigo2").val(),
       usu_codigo: $("#usu_codigo").val(),
-      cobta_transaccion: $("#cobta_transaccion").val(),
-      redpa_codigo: $("#redpa_codigo").val(),
+      cobta_transaccion: "sin_definir",
+      redpa_codigo: 0,
       operacion_detalle: $("#operacion_detalle").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
@@ -857,20 +880,20 @@ const confirmar2 = () => {
       //validamos el monto a cobrar
       if (isConfirm) {
         if ($("#operacion_detalle").val() == 1) {
-          if ($("#forco_codigo").val() == 1) {
+          if ($("#forco_descripcion").val() == "EFECTIVO") {
             sumaValidacionDetalle(
               $("#cobdet_monto").val(),
-              $("#vent_montocuota").val()
+              $("#ven_montocuota").val()
             );
-          } else if ($("#forco_codigo").val() == 2) {
+          } else if ($("#forco_descripcion").val() == "TARJETA") {
             sumaValidacionDetalle(
               $("#cobta_monto").val(),
-              $("#vent_montocuota").val()
+              $("#ven_montocuota").val()
             );
-          } else if ($("#forco_codigo").val() == 3) {
+          } else if ($("#forco_descripcion").val() == "CHEQUE") {
             sumaValidacionDetalle(
               $("#coche_monto").val(),
-              $("#vent_montocuota").val()
+              $("#ven_montocuota").val()
             );
           }
         } else {

@@ -72,29 +72,37 @@ if ($consulta == '2') {
 //Permite obtener el monto total, para no sobrepasar el monto cuota
 if ($consulta == '3') {
 
-   //guardamos los parametros recibidos
+   //Recibimos y definimos las variables
    $ven_codigo = $_POST['ven_codigo'];
    $cob_codigo = $_POST['cob_codigo'];
 
    //calculamos el total por cobro y venta
-   $sql = "select coalesce(sum(cd.cobdet_monto), 0) as totalventa from cobro_det cd where cd.ven_codigo=$ven_codigo and cd.cob_codigo=$cob_codigo";
+   $sql = "select 
+               coalesce(sum(cd.cobdet_monto), 0) as totalcobro 
+            from cobro_det cd 
+            where cd.ven_codigo=$ven_codigo 
+            and cd.cob_codigo=$cob_codigo";
 
    $result = pg_query($conexion, $sql);
 
    $dato = pg_fetch_assoc($result);
 
+   //El utlimo parametro convierte strings a enteros o decimales, para evitar problemas de formato en el json
    echo json_encode($dato, JSON_NUMERIC_CHECK);
 
 }
 
-//Evalua el si la venta ya se pago en su totalidad
+//Evalua si la venta ya se pago en su totalidad
 if ($consulta == '4') {
 
-   //guardamos los parametros recibidos
+   //Recibimos y definimos las variables
    $ven_codigo = $_POST['ven_codigo'];
 
    //calculamos el total por venta
-   $sql = "select coalesce(sum(cd.cobdet_monto), 0) as montoventa from cobro_det cd where cd.ven_codigo = $ven_codigo";
+   $sql = "select    
+               coalesce(sum(cd.cobdet_monto), 0) as montoventa 
+          from cobro_det cd 
+          where cd.ven_codigo = $ven_codigo";
 
    $result = pg_query($conexion, $sql);
 
@@ -107,12 +115,19 @@ if ($consulta == '4') {
 //Actualiza el estado de la cuenta cobrar una vez la venta fue cancelada en su totalidad
 if ($consulta == '5') {
 
-   //guardamos los parametros recibidos
+   //Recibimos y definimos las variables  
    $ven_codigo = $_POST['ven_codigo'];
+   $usu_codigo = $_POST['usu_codigo'];
 
    //Actualizamos el estado de la cuentas
-   $sql = "update cuenta_cobrar set cuenco_estado = 'CANCELADO' where ven_codigo = $ven_codigo;
-   update venta_cab set ven_estado = 'CANCELADO' where ven_codigo = $ven_codigo;";
+   $sql = "update cuenta_cobrar  
+           set cuenco_estado = 'CANCELADO', 
+           tipco_codigo = 5    
+           where ven_codigo = $ven_codigo;
+           update venta_cab 
+           set ven_estado = 'CANCELADO',
+           usu_codigo = $usu_codigo 
+           where ven_codigo = $ven_codigo;";
 
    $result = pg_query($conexion, $sql);
 
