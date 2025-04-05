@@ -11,26 +11,22 @@ $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
 //Recibimos y definimos las variables
-$entidad = pg_escape_string($conexion, $_POST['ent_razonsocial']);
+$redpa_descripcion = pg_escape_string($conexion, $_POST['redpa_descripcion']);
 
 //Establecemos y mostramos la consulta
-$sql = "select 
-         ea.entad_codigo,
-         ea.ent_codigo,
-         ea.marta_codigo,
-         ee.ent_razonsocial||' '||mt.marta_descripcion as entidades,
-         ee.ent_razonsocial,
-         mt.marta_descripcion
-      from entidad_adherida ea 
-         join entidad_emisora ee on ee.ent_codigo=ea.ent_codigo
-         join marca_tarjeta mt on mt.marta_codigo=ea.marta_codigo
-      where ee.ent_razonsocial ilike '%$entidad%' and ea.entad_estado = 'ACTIVO'";
+$sql = "select
+         rp.redpa_codigo,
+         rp.redpa_descripcion 
+         from red_pago rp 
+      where rp.redpa_descripcion ilike '%$redpa_descripcion%'
+      and redpa_estado = 'ACTIVO'
+      order by redpa_codigo;";
 
 $resultado = pg_query($conexion, $sql);
 $datos = pg_fetch_all($resultado);
 
 //validamos si se encontro algun valor
-if (!isset($datos[0]['entad_codigo'])) {
+if (!isset($datos[0]['redpa_codigo'])) {
    $datos = [['dato1' => 'NSE', 'dato2' => 'NO SE ENCUENTRA']];
 }
 

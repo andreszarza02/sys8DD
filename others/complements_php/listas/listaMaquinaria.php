@@ -2,6 +2,7 @@
 
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 

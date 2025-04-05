@@ -1,4 +1,5 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
 
@@ -13,21 +14,32 @@ $conexion = $objConexion->getConexion();
 $consulta = $_POST['consulta'] ?? 0;
 $forma_cobro = $_POST['forma'] ?? 0;
 
-//Si la forma es 1 ejecutamos el sp de cobro con tarjeta
-if (isset($_POST['forma']) == 1) {
+//Si la forma de cobroo es tarjeta ejecutamos el sp cobro tarjeta
+if (isset($_POST['forma']) == "TARJETA") {
 
-   //Cargamos el procedimiento almacenado
+   //Recibimos y definimos las variables
+   $cobta_numero = pg_escape_string($conexion, $_POST['cobta_numero']);
+
+   $cobta_monto = str_replace(",", ".", $_POST['cobta_monto']);
+
+   $cobta_tipotarjeta = pg_escape_string($conexion, $_POST['cobta_tipotarjeta']);
+
+   $cobta_transaccion = pg_escape_string($conexion, $_POST['cobta_transaccion']);
+
+   //Definimos la sentencia SQL a ejecuatar
    $sql = "select sp_cobro_tarjeta(
       0, 
-      '{$_POST['cobta_numero']}', 
-      {$_POST['cobta_monto']}, 
-      '{$_POST['cobta_tipotarjeta']}',
+      '$cobta_numero', 
+      $cobta_monto, 
+      '$cobta_tipotarjeta',
       {$_POST['entad_codigo']},
       {$_POST['ent_codigo']},
       {$_POST['marta_codigo']},
       {$_POST['cob_codigo']},
       {$_POST['ven_codigo']},
       {$_POST['cobdet_codigo']},
+      '$cobta_transaccion',
+      {$_POST['redpa_codigo']},
       {$_POST['operacion_detalle']}
       )";
 
@@ -43,8 +55,8 @@ if (isset($_POST['forma']) == 1) {
 
 }
 
-//Si la forma es 2 ejecutamos el sp de cobro con cheque
-if (isset($_POST['forma']) == 2) {
+//Si la forma de cobro es cheque ejecutamos el sp cobro cheque
+if (isset($_POST['forma']) == "CHEQUE") {
 
    //Cargamos el procedimiento almacenado
    $sql = "select sp_cobro_cheque(

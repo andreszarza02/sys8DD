@@ -24,11 +24,11 @@ if (isset($_POST['operacion_detalle'])) {
 
    //Validamos la forma de cobro, para cargar el monto de detalle
    if ($forco_descripcion == 'EFECTIVO') {
-      $cobdet_monto = $_POST['cobdet_monto'];
+      $cobdet_monto = str_replace(",", ".", $_POST['cobdet_monto']);
    } else if ($forco_descripcion == 'TARJETA') {
-      $cobdet_monto = $_POST['cobta_monto'];
+      $cobdet_monto = str_replace(",", ".", $_POST['cobta_monto']);
    } else if ($forco_descripcion == 'CHEQUE') {
-      $cobdet_monto = $_POST['coche_monto'];
+      $cobdet_monto = str_replace(",", ".", $_POST['coche_monto']);
    }
 
    //Definimos la sentencia a consultar

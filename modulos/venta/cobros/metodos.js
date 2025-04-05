@@ -619,10 +619,6 @@ const nuevoDetalle = () => {
   $("#ven_codigo").val(0);
   $("#cobdet_monto").val(0);
   $(".cob2").attr("class", "form-line cob2 focused");
-  //   $("#cobta_monto").val(0);
-  //   $(".cobta2").attr("class", "form-line cobta2 focused");
-  //   $("#coche_monto").val(0);
-  //   $(".coche2").attr("class", "form-line coche2 focused");
   $("#operacion_detalle").val(1);
   $("#tablaDet").attr("style", "display: none");
   $("#forco_codigo").val(404);
@@ -820,6 +816,7 @@ const grabarDetalle = () => {
     });
 };
 
+//Establece los mensajes pára agregar y anular cabecera
 const confirmar = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_cabecera").val();
@@ -854,6 +851,7 @@ const confirmar = () => {
   );
 };
 
+//Establece los mensajes pára agregar y eliminar detalle
 const confirmar2 = () => {
   //solicitamos el value del input operacion_detalle
   let oper = $("#operacion_detalle").val();
@@ -1029,6 +1027,7 @@ const getVenta = () => {
     });
 };
 
+//Envia a los input de tipo tarjeta lo seleccionado en el autocompletado
 const seleccionTipoTarjeta = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -1039,6 +1038,7 @@ const seleccionTipoTarjeta = (datos) => {
   $(".tipTar").attr("class", "form-line tipTar focused");
 };
 
+//Busca, filtra y muestra los tipos de tarjeta
 const getTipoTarjeta = () => {
   $.ajax({
     //Solicitamos los datos a listaTipoTarjeta
@@ -1061,7 +1061,100 @@ const getTipoTarjeta = () => {
       //hacemos visible la lista
       $("#listaTipoTar").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    });
+};
+
+//Envia a los input de entidad adherida lo seleccionado en el autocompletado
+const seleccionEntidadAdherida = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulEntidadTarjeta").html();
+  $("#listaEntidadTarjeta").attr("style", "display: none;");
+  $(".ent").attr("class", "form-line ent focused");
+};
+
+//Busca, filtra y muestra las entidades adheridas
+const getEntidadAdherida = () => {
+  $.ajax({
+    //Solicitamos los datos a listaEntidadAdherida
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaEntidadAdherida.php",
+    data: {
+      ent_razonsocial: $("#ent_razonsocial").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionEntidadAdherida(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.entidades +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulEntidadTarjeta").html(fila);
+      //hacemos visible la lista
+      $("#listaEntidadTarjeta").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+//Envia a los input de red de pago lo seleccionado en el autocompletado
+const seleccionRedPago = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulRedPago").html();
+  $("#listaRedPago").attr("style", "display: none;");
+  $(".redpa").attr("class", "form-line redpa focused");
+};
+
+//Busca, filtra y muestra las redes de pago
+const getRedPago = () => {
+  $.ajax({
+    //Solicitamos los datos a listaRedPago
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaRedPago.php",
+    data: {
+      redpa_descripcion: $("#redpa_descripcion").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionRedPago(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.redpa_descripcion +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulRedPago").html(fila);
+      //hacemos visible la lista
+      $("#listaRedPago").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {
@@ -1143,49 +1236,6 @@ const getEntidad = () => {
       $("#ulEntidadCheque").html(fila);
       //hacemos visible la lista
       $("#listaEntidadCheque").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
-};
-
-const seleccionEntidadAdherida = (datos) => {
-  //Enviamos los datos a su respectivo input
-  Object.keys(datos).forEach((key) => {
-    $("#" + key).val(datos[key]);
-  });
-  $("#ulEntidadTarjeta").html();
-  $("#listaEntidadTarjeta").attr("style", "display: none;");
-  $(".ent").attr("class", "form-line ent focused");
-};
-
-const getEntidadAdherida = () => {
-  $.ajax({
-    //Solicitamos los datos a listaEntidadAdherida
-    method: "POST",
-    url: "/sys8DD/others/complements_php/listas/listaEntidadAdherida.php",
-    data: {
-      ent_razonsocial: $("#ent_razonsocial").val(),
-    },
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionEntidadAdherida(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.entidades +
-          "</li>";
-      });
-
-      //cargamos la lista
-      $("#ulEntidadTarjeta").html(fila);
-      //hacemos visible la lista
-      $("#listaEntidadTarjeta").attr(
         "style",
         "display: block; position:absolute; z-index: 3000;"
       );
