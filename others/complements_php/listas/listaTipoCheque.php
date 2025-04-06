@@ -1,4 +1,5 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
 
@@ -7,4 +8,5 @@ $datos = [['coche_tipocheque' => 'A LA VISTA'], ['coche_tipocheque' => 'DIFERIDO
 
 //Convertimos el array a un formato JSON
 echo json_encode($datos);
+
 ?>

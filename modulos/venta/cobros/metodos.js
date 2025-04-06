@@ -259,7 +259,7 @@ const controlVacio2 = () => {
       condicion = true;
     } else if ($("#cobta_numero").val() == "") {
       condicion = true;
-    } else if ($("#cobta_monto").val() == "0") {
+    } else if ($("#cobta_monto").val() == "") {
       condicion = true;
     } else if ($("#cobta_tipotarjeta").val() == "") {
       condicion = true;
@@ -270,6 +270,12 @@ const controlVacio2 = () => {
     } else if ($("#ent_razonsocial").val() == "") {
       condicion = true;
     } else if ($("#marta_descripcion").val() == "") {
+      condicion = true;
+    } else if ($("#cobta_transaccion").val() == "") {
+      condicion = true;
+    } else if ($("#redpa_codigo").val() == "") {
+      condicion = true;
+    } else if ($("#redpa_descripcion").val() == "") {
       condicion = true;
     }
   } else if (formaCobro == "CHEQUE") {
@@ -296,19 +302,17 @@ const controlVacio2 = () => {
       condicion = true;
     } else if ($("#coche_numero").val() == "") {
       condicion = true;
-    } else if ($("#coche_monto").val() == "0") {
+    } else if ($("#coche_monto").val() == "") {
       condicion = true;
     } else if ($("#coche_tipocheque").val() == "") {
       condicion = true;
     } else if ($("#coche_fechavencimiento").val() == "") {
       condicion = true;
-    } else if ($("#ent_codigo2").val() == "0") {
+    } else if ($("#ent_codigo2").val() == "") {
       condicion = true;
     } else if ($("#ent_razonsocial2").val() == "") {
       condicion = true;
     }
-  } else {
-    condicion = true;
   }
 
   if (condicion) {
@@ -318,8 +322,12 @@ const controlVacio2 = () => {
       type: "error",
     });
   } else {
-    //Se encarga de validar que el monto en el detalle no supere al saldo a cobrar
-    validarMontoDetalle();
+    if ($("#operacion_detalle").val() == 1) {
+      //Se encarga de validar que el monto en el detalle no supere al saldo a cobrar
+      validarMontoDetalle();
+    } else {
+      confirmar2();
+    }
   }
 };
 
@@ -394,7 +402,7 @@ const actualizarEstadoCuenta = () => {
 };
 
 //Valida el monto total para actualizar el estado de cuenta a cobrar
-const totalCuenta = (montoTotal, montoDetalle) => {
+const totalCuenta = (montoTotal) => {
   $.ajax({
     method: "POST",
     url: "controladorDetalle3.php",
@@ -403,7 +411,7 @@ const totalCuenta = (montoTotal, montoDetalle) => {
       consulta: "4",
     },
   }).done(function (respuesta) {
-    let monto = parseFloat(respuesta.montoventa) + parseFloat(montoDetalle);
+    let monto = parseFloat(respuesta.montoventa);
 
     if (monto == montoTotal) {
       //Al terminar el pago en su totalidad, se actualiza el estado de cuenta a cobrar
@@ -427,7 +435,6 @@ const sumaValidacionDetalle = (montoDetalle, montoCuota) => {
     sumDetalle = parseFloat(respuesta.totalcobro) + parseFloat(montoDetalle);
 
     if (sumDetalle <= parseFloat(montoCuota)) {
-      totalCuenta($("#cuenco_monto").val(), montoDetalle);
       grabarDetalle();
     } else {
       swal(
@@ -621,7 +628,14 @@ const nuevoDetalle = () => {
   $(".cob2").attr("class", "form-line cob2 focused");
   $("#operacion_detalle").val(1);
   $("#tablaDet").attr("style", "display: none");
+  //Establece el formato de interfaz
   $("#forco_codigo").val(404);
+  $(".cuota").attr("class", "col-sm-1 cuota");
+  $(".montoCuota").attr("class", "col-sm-2 montoCuota");
+  $(".intervalo").attr("class", "col-sm-2 intervalo");
+  $(".montoEfectivo").attr("style", "display: block;");
+  $("#cobroTarjeta").attr("style", "display: none;");
+  $("#cobroCheque").attr("style", "display: none;");
   $("#forco_simbolo").attr("style", "display: block;");
 };
 
@@ -633,11 +647,61 @@ const anular = () => {
   habilitarBotones(false);
 };
 
+//Metodo que establece la baja en detalle
 const eliminar = () => {
-  $("#coche_numero").val("sin numero");
-  $("#ent_codigo2").val("0");
-  $("#cobta_numero").val("sin numero");
-  $("#entad_codigo").val("0");
+  $("#tablaDet").attr("style", "display: none");
+  if ($("#forco_descripcion").val() == "EFECTIVO") {
+    $(".montoEfectivo").attr("style", "display: block;");
+    $("#cobroTarjeta").attr("style", "display: none;");
+    $("#cobroCheque").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $("#cobta_transaccion").val("sin_definir");
+    $("#redpa_codigo").val("0");
+    $("#cobta_monto").val("0");
+    $("#coche_numero").val("sin_definir");
+    $("#ent_codigo2").val("0");
+    $("#coche_monto").val("0");
+    $(".cliente").attr("class", "col-sm-4 cliente");
+    $(".cuota").attr("class", "col-sm-1 cuota");
+    $(".montoCuota").attr("class", "col-sm-2 montoCuota");
+    $(".intervalo").attr("class", "col-sm-2 intervalo");
+    $(".montoEfectivo").attr("class", "col-sm-3 montoEfectivo");
+  }
+  if ($("#forco_descripcion").val() == "TARJETA") {
+    $(".montoEfectivo").attr("style", "display: none;");
+    $("#cobroCheque").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $(".cliente").attr("class", "col-sm-3 cliente");
+    $(".cuota").attr("class", "col-sm-3 cuota");
+    $(".montoCuota").attr("class", "col-sm-3 montoCuota");
+    $(".intervalo").attr("class", "col-sm-3 intervalo");
+    $("#cobroTarjeta").attr("style", "display: block;");
+    $("#coche_numero").val("sin_definir");
+    $("#ent_codigo2").val("0");
+    $("#coche_monto").val("0");
+    $(".cobta").attr("class", "form-line cobta focused");
+    $(".cobta2").attr("class", "form-line cobta2 focused");
+    $(".tipTar").attr("class", "form-line tipTar focused");
+    $(".ent").attr("class", "form-line ent focused");
+    $(".redpa").attr("class", "form-line redpa focused");
+  }
+  if ($("#forco_descripcion").val() == "CHEQUE") {
+    $(".montoEfectivo").attr("style", "display: none;");
+    $("#cobroTarjeta").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $(".cliente").attr("class", "col-sm-3 cliente");
+    $(".cuota").attr("class", "col-sm-3 cuota");
+    $(".montoCuota").attr("class", "col-sm-3 montoCuota");
+    $(".intervalo").attr("class", "col-sm-3 intervalo");
+    $("#cobroCheque").attr("style", "display: block;");
+    $("#cobta_transaccion").val("sin_definir");
+    $("#redpa_codigo").val("0");
+    $("#cobta_monto").val("0");
+    $(".coche").attr("class", "form-line coche focused");
+    $(".coche2").attr("class", "form-line coche2 focused");
+    $(".tipChe").attr("class", "form-line tipChe focused");
+    $(".ent").attr("class", "form-line ent focused");
+  }
   habilitarBotones2(false);
   $("#operacion_detalle").val(2);
 };
@@ -647,9 +711,10 @@ const limpiarCampos = () => {
   window.location.reload(true);
 };
 
+//Pasa parametros en el controlador para guardarlos en cobro tarjeta
 const grabarCobroTarjeta = () => {
   $.ajax({
-    //Enviamos datos al controlador detalle
+    //Enviamos datos al controlador detalle 2
     method: "POST",
     url: "controladorDetalle2.php",
     data: {
@@ -662,13 +727,15 @@ const grabarCobroTarjeta = () => {
       cob_codigo: $("#cob_codigo").val(),
       ven_codigo: $("#ven_codigo").val(),
       cobdet_codigo: $("#cobdet_codigo").val(),
+      cobta_transaccion: $("#cobta_transaccion").val(),
+      redpa_codigo: $("#redpa_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
-      forco_codigo: $("forco_codigo").val(),
-      forma: 1,
+      forma: $("#forco_descripcion").val(),
     },
   });
 };
 
+//Pasa parametros en el controlador para guardarlos en cobro cheque
 const grabarCobroCheque = () => {
   $.ajax({
     //Enviamos datos al controlador detalle
@@ -684,8 +751,7 @@ const grabarCobroCheque = () => {
       ven_codigo: $("#ven_codigo").val(),
       cobdet_codigo: $("#cobdet_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
-      forco_codigo: $("forco_codigo").val(),
-      forma: 2,
+      forma: $("#forco_descripcion").val(),
     },
   });
 };
@@ -764,8 +830,9 @@ const grabarDetalle = () => {
       coche_numero: $("#coche_numero").val(),
       ent_codigo2: $("#ent_codigo2").val(),
       usu_codigo: $("#usu_codigo").val(),
-      cobta_transaccion: "sin_definir",
-      redpa_codigo: 0,
+      cobta_transaccion: $("#cobta_transaccion").val(),
+      redpa_codigo: $("#redpa_codigo").val(),
+      cuenco_monto: $("#cuenco_monto").val(),
       operacion_detalle: $("#operacion_detalle").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
@@ -969,11 +1036,64 @@ const seleccionarFila2 = (objetoJSON) => {
   Object.keys(objetoJSON).forEach(function (propiedad) {
     $("#" + propiedad).val(objetoJSON[propiedad]);
   });
-
+  //Interfaz de detalle
   $(".vent").attr("class", "form-line vent focused");
   $(".cob").attr("class", "form-line cob focused");
   $(".cob2").attr("class", "form-line cob2 focused");
-  $(".form").attr("class", "form-line form focused");
+  $(".btnEliminar").removeAttr("style");
+  //Validacion de interfaz por forma de cobro
+  if (objetoJSON.forco_descripcion == "EFECTIVO") {
+    $(".montoEfectivo").attr("style", "display: block;");
+    $("#cobroTarjeta").attr("style", "display: none;");
+    $("#cobroCheque").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $("#cobta_transaccion").val("sin_definir");
+    $("#redpa_codigo").val("0");
+    $("#cobta_monto").val("0");
+    $("#coche_numero").val("sin_definir");
+    $("#ent_codigo2").val("0");
+    $("#coche_monto").val("0");
+    $(".cliente").attr("class", "col-sm-4 cliente");
+    $(".cuota").attr("class", "col-sm-1 cuota");
+    $(".montoCuota").attr("class", "col-sm-2 montoCuota");
+    $(".intervalo").attr("class", "col-sm-2 intervalo");
+    $(".montoEfectivo").attr("class", "col-sm-3 montoEfectivo");
+  }
+  if (objetoJSON.forco_descripcion == "TARJETA") {
+    $(".montoEfectivo").attr("style", "display: none;");
+    $("#cobroCheque").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $(".cliente").attr("class", "col-sm-3 cliente");
+    $(".cuota").attr("class", "col-sm-3 cuota");
+    $(".montoCuota").attr("class", "col-sm-3 montoCuota");
+    $(".intervalo").attr("class", "col-sm-3 intervalo");
+    $("#cobroTarjeta").attr("style", "display: block;");
+    $("#coche_numero").val("sin_definir");
+    $("#ent_codigo2").val("0");
+    $("#coche_monto").val("0");
+    $(".cobta").attr("class", "form-line cobta focused");
+    $(".cobta2").attr("class", "form-line cobta2 focused");
+    $(".tipTar").attr("class", "form-line tipTar focused");
+    $(".ent").attr("class", "form-line ent focused");
+    $(".redpa").attr("class", "form-line redpa focused");
+  }
+  if (objetoJSON.forco_descripcion == "CHEQUE") {
+    $(".montoEfectivo").attr("style", "display: none;");
+    $("#cobroTarjeta").attr("style", "display: none;");
+    $("#forco_simbolo").attr("style", "display: none;");
+    $(".cliente").attr("class", "col-sm-3 cliente");
+    $(".cuota").attr("class", "col-sm-3 cuota");
+    $(".montoCuota").attr("class", "col-sm-3 montoCuota");
+    $(".intervalo").attr("class", "col-sm-3 intervalo");
+    $("#cobroCheque").attr("style", "display: block;");
+    $("#cobta_transaccion").val("sin_definir");
+    $("#redpa_codigo").val("0");
+    $("#cobta_monto").val("0");
+    $(".coche").attr("class", "form-line coche focused");
+    $(".coche2").attr("class", "form-line coche2 focused");
+    $(".tipChe").attr("class", "form-line tipChe focused");
+    $(".ent").attr("class", "form-line ent focused");
+  }
 };
 
 //Envia a los input de ventas lo seleccionado en el autocompletado
@@ -1162,6 +1282,7 @@ const getRedPago = () => {
     });
 };
 
+//Envia a los input de tipo cheque lo seleccionado en el autocompletado
 const seleccionTipoCheque = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -1172,6 +1293,7 @@ const seleccionTipoCheque = (datos) => {
   $(".tipChe").attr("class", "form-line tipChe focused");
 };
 
+//Busca, filtra y muestra los tipos de cheque
 const getTipoCheque = () => {
   $.ajax({
     //Solicitamos los datos a listaTipoCheque
@@ -1188,13 +1310,12 @@ const getTipoCheque = () => {
           objeto.coche_tipocheque +
           "</li>";
       });
-
       //cargamos la lista
       $("#ulTipoChe").html(fila);
       //hacemos visible la lista
       $("#listaTipoChe").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {
@@ -1202,6 +1323,7 @@ const getTipoCheque = () => {
     });
 };
 
+//Envia a los input de entidad lo seleccionado en el autocompletado
 const seleccionEntidad = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -1212,6 +1334,7 @@ const seleccionEntidad = (datos) => {
   $(".ent").attr("class", "form-line ent focused");
 };
 
+//Busca, filtra y muestra las entidades
 const getEntidad = () => {
   $.ajax({
     //Solicitamos los datos a listaEntidad
@@ -1224,20 +1347,23 @@ const getEntidad = () => {
     .done(function (lista) {
       let fila = "";
       $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionEntidad(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.ent_razonsocial2 +
-          "</li>";
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionEntidad(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.ent_razonsocial2 +
+            "</li>";
+        }
       });
-
       //cargamos la lista
       $("#ulEntidadCheque").html(fila);
       //hacemos visible la lista
       $("#listaEntidadCheque").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {
@@ -1245,11 +1371,12 @@ const getEntidad = () => {
     });
 };
 
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };
 
 //Siempre que se cargue la pagina se ejecutaran estas funciones
 listar();
-//Ejecutamos la validaacion de los inputs, cada 1 segundo
+//Ejecutamos la validaacion de los inputs, cada 10 milisegundos
 setInterval(setInputsDetalle, 10);

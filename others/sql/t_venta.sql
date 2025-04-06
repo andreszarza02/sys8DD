@@ -1031,7 +1031,7 @@ BEGIN
             usuCodigo, 
             usuLogin,  
             current_timestamp,
-            'ALTA',       
+            'BAJA',       
             OLD.cobta_codigo,
 			OLD.cobta_numero,
 			OLD.cobta_monto,

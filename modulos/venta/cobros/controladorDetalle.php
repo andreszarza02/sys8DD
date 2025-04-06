@@ -31,6 +31,11 @@ if (isset($_POST['operacion_detalle'])) {
       $cobdet_monto = str_replace(",", ".", $_POST['coche_monto']);
    }
 
+   //Validamos la operacion detalle, para cargar el monto de detalle
+   if ($_POST['operacion_detalle'] == "2") {
+      $cobdet_monto = str_replace(",", ".", $_POST['cobdet_monto']);
+   }
+
    //Definimos la sentencia a consultar
    $sql = "select sp_cobro_det(
       {$_POST['cobdet_codigo']}, 
@@ -75,7 +80,33 @@ if (isset($_POST['operacion_detalle'])) {
 
    } else {
 
-      //En caso de que no exsista error, enviamos el mensaje de exito
+      //En caso de que no exsista error, validamos si con la insercion ya se culmino la deuda
+      $sql2 = "select    
+               coalesce(sum(cd.cobdet_monto), 0) as montoventa 
+          from cobro_det cd 
+          join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
+          where cc.cob_estado='ACTIVO' and
+          cd.ven_codigo = {$_POST['ven_codigo']}";
+
+      $result2 = pg_query($conexion, $sql2);
+
+      $dato2 = pg_fetch_assoc($result2);
+
+      if ($dato2['montoventa'] == $_POST['cuenco_monto']) {
+         //Si la sumatoria del monto venta es igual al monto de cuenta cobrar, procedemos con la actualizacion de estado
+         $sql3 = "update cuenta_cobrar  
+           set cuenco_estado = 'CANCELADO', 
+           tipco_codigo = 5    
+           where ven_codigo = {$_POST['ven_codigo']};
+           update venta_cab 
+           set ven_estado = 'CANCELADO',
+           usu_codigo = {$_POST['usu_codigo']} 
+           where ven_codigo = {$_POST['ven_codigo']};";
+
+         $result3 = pg_query($conexion, $sql3);
+      }
+
+      //Al terminar enviamos un mensaje de exito
       $response = array(
          "mensaje" => pg_last_notice($conexion),
          "tipo" => "info"

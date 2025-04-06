@@ -228,7 +228,7 @@ foreach ($permisos as $permiso) {
                            <div class="row clearfix">
                               <div class="col-sm-6">
                                  <div class="form-group form-float">
-                                    <div class="form-line">
+                                    <div class="form-line vent">
                                        <input type="text" class="form-control no-disabled2" id="ci" disabled
                                           onkeyup="getVenta()">
                                        <label class="form-label">CI</label>
@@ -352,7 +352,8 @@ foreach ($permisos as $permiso) {
                                     </button>
                                  <?php } ?>
                                  <?php if ($btnEliminar === true) { ?>
-                                    <button type="button" class="btn btn-primary waves-effect" onclick="eliminar()">
+                                    <button type="button" class="btn btn-primary waves-effect btnEliminar"
+                                       onclick="eliminar()" style="display: none;">
                                        <i class="material-icons">delete</i>
                                        <span>ELIMINAR</span>
                                     </button>

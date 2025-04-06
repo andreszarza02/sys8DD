@@ -1067,9 +1067,9 @@ begin
 		--Actualizamos el estado de venta cabecera en caso de que sea cancelado
 		if ventaEstado = 'CANCELADO' then
 			update venta_cab 
-			set ven_estado='ACTIVO',
+			set ven_estado='TERMINADA',
 			usu_codigo=usucodigo  
-			where ven_codigo=vencodigo;
+			where ven_codigo=(select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=cobcodigo);
 		end if;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'EL COBRO FUE ANULADO CON EXITO';
@@ -1117,39 +1117,42 @@ begin
      		 raise exception 'cheque';
 		end if;
     end if;
-    if operacion = 1 then
-		--Validamos que no se repita la forma de cobro en efectivo en un mismo cobro 
+	--Validamos si la operacion es de insercion y si la forma de cobro es efectivo
+	if operacion = 1 and forcocodigo = 1 then
+		--Validamos que no se repita 2 veces la forma de cobro efectivo en el detalle
       	perform * from cobro_det	
-     	where forco_codigo=1 and cob_codigo=cobcodigo and ven_codigo=vencodigo;
+     	where forco_codigo=forcocodigo and cob_codigo=cobcodigo and ven_codigo=vencodigo;
      	if found then
 		     --En caso de ser asi generamos una excepcion
      		 raise exception 'efectivo';
-		elseif operacion = 1 then
-			 --Insertamos nuevo registro en cobro detalle
-			 insert into cobro_det(
-			 cobdet_codigo, 
-			 cob_codigo, 
-			 ven_codigo, 	
-			 cobdet_monto, 
-			 cobdet_numerocuota, 	
-			 forco_codigo
-			 )
-			 values(
-			 (select coalesce(max(cobdet_codigo),0)+1 from cobro_det), 
-			 cobcodigo, 
-			 vencodigo, 
-			 cobdetmonto, 
-			 cobdetnumerocuota, 
-		  	 forcocodigo
-			);
-			--Actualizamos saldo y tipo de comprobante en cuenta cobrar
-			update cuenta_cobrar 
-			set cuenco_saldo=cuenco_saldo-cobdetmonto, 
-			tipco_codigo=5
-			where ven_codigo=vencodigo;
-			--Enviamos un mensaje de confirmacion de insercion
-			raise notice 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
 		end if;
+    end if;
+	--Validamos si la operacion es de insercion
+    if operacion = 1 then
+		--Insertamos nuevo registro en cobro detalle
+		insert into cobro_det(
+		cobdet_codigo, 
+		cob_codigo, 
+		ven_codigo, 	
+		cobdet_monto, 
+		cobdet_numerocuota, 	
+		forco_codigo
+		)
+		values(
+		(select coalesce(max(cobdet_codigo),0)+1 from cobro_det), 
+		cobcodigo, 
+		vencodigo, 
+		cobdetmonto, 
+		cobdetnumerocuota, 
+		forcocodigo
+		);
+		--Actualizamos saldo y tipo de comprobante en cuenta cobrar
+		update cuenta_cobrar 
+		set cuenco_saldo=cuenco_saldo-cobdetmonto, 
+		tipco_codigo=5
+		where ven_codigo=vencodigo;
+		--Enviamos un mensaje de confirmacion de insercion
+		raise notice 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
     end if;
 	--Validamos si la operacion es de eliminacion
     if operacion = 2 then 
@@ -1174,7 +1177,7 @@ begin
 		--Actualizamos registro de venta cabecera en caso de que el mismo sea cancelado
 		if ventaEstado = 'CANCELADO' then
 			update venta_cab 
-			set ven_estado='ACTIVO',
+			set ven_estado='TERMINADA',
 			usu_codigo=usucodigo  
 			where ven_codigo=vencodigo;
 		end if;

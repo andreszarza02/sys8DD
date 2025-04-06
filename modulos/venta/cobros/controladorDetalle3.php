@@ -102,7 +102,9 @@ if ($consulta == '4') {
    $sql = "select    
                coalesce(sum(cd.cobdet_monto), 0) as montoventa 
           from cobro_det cd 
-          where cd.ven_codigo = $ven_codigo";
+          join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
+          where cc.cob_estado='ACTIVO' and
+          cd.ven_codigo = $ven_codigo";
 
    $result = pg_query($conexion, $sql);
 

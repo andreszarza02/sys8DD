@@ -12,7 +12,6 @@ $conexion = $objConexion->getConexion();
 
 //Recibimos y definimos las variables
 $consulta = $_POST['consulta'] ?? 0;
-$forma_cobro = $_POST['forma'] ?? 0;
 
 //Si la forma de cobroo es tarjeta ejecutamos el sp cobro tarjeta
 if (isset($_POST['forma']) == "TARJETA") {
@@ -47,10 +46,11 @@ if (isset($_POST['forma']) == "TARJETA") {
    $result = pg_query($conexion, $sql);
 
    $response = array(
-      "mensaje" => pg_last_notice($conexion),
+      "mensaje" => "INSERCION EXITOSA",
       "tipo" => "success"
    );
 
+   //Devolvemos un mensaje de exito
    echo json_encode($response);
 
 }
@@ -58,12 +58,19 @@ if (isset($_POST['forma']) == "TARJETA") {
 //Si la forma de cobro es cheque ejecutamos el sp cobro cheque
 if (isset($_POST['forma']) == "CHEQUE") {
 
+   //Recibimos y definimos las variables
+   $coche_numero = pg_escape_string($conexion, $_POST['coche_numero']);
+
+   $coche_monto = str_replace(",", ".", $_POST['coche_monto']);
+
+   $coche_tipocheque = pg_escape_string($conexion, $_POST['coche_tipocheque']);
+
    //Cargamos el procedimiento almacenado
    $sql = "select sp_cobro_cheque(
       0, 
-      '{$_POST['coche_numero']}', 
-      {$_POST['coche_monto']},
-      '{$_POST['coche_tipocheque']}',
+      '$coche_numero', 
+      $coche_monto,
+      '$coche_tipocheque',
       '{$_POST['coche_fechavencimiento']}',
       {$_POST['ent_codigo2']},
       {$_POST['cob_codigo']},
@@ -76,10 +83,11 @@ if (isset($_POST['forma']) == "CHEQUE") {
    $result = pg_query($conexion, $sql);
 
    $response = array(
-      "mensaje" => pg_last_notice($conexion),
+      "mensaje" => "INSERCION EXITOSA",
       "tipo" => "success"
    );
 
+   //Devolvemos un mensaje de exito
    echo json_encode($response);
 
 
