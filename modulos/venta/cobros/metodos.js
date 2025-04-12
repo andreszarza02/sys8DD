@@ -539,7 +539,7 @@ const listarDetalle = () => {
       tabla += objeto.cobdet_numerocuota;
       tabla += "</td>";
       tabla += "<td>";
-      tabla += objeto.cobdet_monto;
+      tabla += new Intl.NumberFormat("us-US").format(objeto.cobdet_monto);
       tabla += "</td>";
       tabla += "</tr>";
     }
@@ -591,13 +591,6 @@ const getTimestamp = () => {
   const fechaHora = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 
   return fechaHora;
-};
-
-//Se encarga de generar el reporte de cobro
-const imprimir = () => {
-  let cobro = $("#cob_codigo").val();
-  window.location =
-    "/sys8DD/report/ventas/reporte/reporte_cobro.php?cob_codigo=" + cobro;
 };
 
 //Metodo que establece el alta en cabecera
@@ -704,6 +697,33 @@ const eliminar = () => {
   }
   habilitarBotones2(false);
   $("#operacion_detalle").val(2);
+};
+
+//Se encarga de generar el recibo
+const imprimir = () => {
+  let cobro = $("#cob_codigo").val();
+  window.location =
+    "/sys8DD/report/ventas/reporte/reporte_impresion_cobro.php?cob_codigo=" +
+    cobro;
+};
+
+//Envia el recibo por correo al cliente
+const enviarRecibo = () => {
+  $.ajax({
+    //Enviamos datos al backend para generar el correo
+    method: "POST",
+    url: "/sys8DD/others/complements_php/correo/correo_envio_cobro.php",
+    data: {
+      cob_codigo: $("#cob_codigo").val(),
+    },
+  }) //Establecemos un mensaje segun el contenido de la respuesta
+    .done(function (respuesta) {
+      swal({
+        title: "RESPUESTA!",
+        text: respuesta.mensaje,
+        type: respuesta.tipo,
+      });
+    });
 };
 
 //Se encarga de limpiar campos
