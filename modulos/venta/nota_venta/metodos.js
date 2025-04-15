@@ -773,6 +773,7 @@ const getTipoComprobante = () => {
     });
 };
 
+//Busca y muestra los items
 const seleccionItem = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
