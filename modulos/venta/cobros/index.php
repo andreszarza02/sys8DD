@@ -24,6 +24,7 @@ $permisos = pg_fetch_all($resultado);
 $btnNuevo = false;
 $btnAnular = false;
 $btnEliminar = false;
+$btnEnviar = false;
 
 foreach ($permisos as $permiso) {
    if (($permiso['perm_descripcion'] === 'NUEVO') && ($permiso['asigperm_estado'] === 'ACTIVO')) {
@@ -235,7 +236,7 @@ foreach ($permisos as $permiso) {
                                     <div class="form-line vent">
                                        <input type="text" class="form-control no-disabled2" id="ci" disabled
                                           onkeyup="getVenta()">
-                                       <label class="form-label">CI</label>
+                                       <label class="form-label">Documento Cliente</label>
                                        <div id="listaVenta" style="display: none;">
                                           <ul class="list-group" id="ulVenta" Style="height: 100px; overflow: auto"></ul>
                                        </div>

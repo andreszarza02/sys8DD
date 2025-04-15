@@ -1,3 +1,4 @@
+//Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
     method: "GET",
@@ -9,6 +10,20 @@ const actualizacionCabecera = () => {
   });
 };
 
+//Consulta  y establece el codigo en cabecera
+const getCodigo = () => {
+  $.ajax({
+    method: "POST",
+    url: "controlador.php",
+    data: {
+      consulta: 1,
+    },
+  }).done(function (respuesta) {
+    $("#notven_codigo").val(respuesta.notven_codigo);
+  });
+};
+
+//Permite aplicar un formato de tabla a la lista de cabecera
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -24,6 +39,7 @@ function formatoTabla() {
   });
 }
 
+//Consulta y lista los datos en la grilla de cabecera
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador
@@ -82,6 +98,7 @@ const listar = () => {
     });
 };
 
+//Consulta y lista los datos en la grilla de detalle
 const listarDetalle = () => {
   $.ajax({
     //solicitamos los datos al controladorDetalle
@@ -214,6 +231,7 @@ const listarDetalle = () => {
     });
 };
 
+//Habilita botones en cabecera
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -224,6 +242,7 @@ const habilitarBotones = (booleano) => {
   }
 };
 
+//Habilita botones en el detallle
 const habilitarBotones2 = (booleano) => {
   if (booleano) {
     $(".botonesExtra3").attr("style", "display: block;");
@@ -234,6 +253,7 @@ const habilitarBotones2 = (booleano) => {
   }
 };
 
+//Saca el disabled de los inputs
 const habilitarCampos = (booleano) => {
   if (booleano) {
     $(".no-disabled").removeAttr("disabled");
@@ -242,6 +262,7 @@ const habilitarCampos = (booleano) => {
   }
 };
 
+//Obtiene la fecha actual
 const getTimestamp = () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -329,29 +350,25 @@ const imprimir = () => {
     "/sys8DD/report/ventas/reporte/reporte_notas.php?notven_codigo=" + nota;
 };
 
+//Metodo que establece el alta en cabecera
 const nuevo = () => {
   $("#operacion_cabecera").val(1);
   habilitarCampos(true);
-  $(".foco").attr("class", "form-line foco");
-  $(".vent").attr("class", "form-line vent");
-  $(".tip").attr("class", "form-line tip");
-  $(".con").attr("class", "form-line con");
-  $("#notven_codigo").val(0);
+  //getCodigo();
   $("#notven_numeronota").val("");
   $("#notven_fecha").val(getTimestamp());
-  $(".foco2").attr("class", "form-line foco2 focused");
-  $("#cli_codigo").val(0);
-  $("#cliente").val("");
-  $("#factura").val("");
-  $("#tipco_codigo").val(0);
   $("#tipco_descripcion").val("");
   $("#notven_concepto").val("");
-  $("#cedula").val("");
-  $("#ven_tipofactura").val("");
-  $("#vent_montocuota").val("");
+  $("#per_numerodocumento").val("");
+  $("#cliente").val("");
+  $("#ven_codigo").val("");
+  $("#ven_numfactura").val("");
   $("#notven_estado").val("ACTIVO");
+  $(".foco").attr("class", "form-line foco");
+  $(".foco2").attr("class", "form-line foco2 focused");
+  $(".tip").attr("class", "form-line tip");
+  $(".vent").attr("class", "form-line vent");
   $(".est").attr("class", "form-line est focused");
-  $("#ci").attr("style", "display: none");
   actualizacionCabecera();
   habilitarBotones(false);
   $("#cabecera").attr("style", "display: none");
@@ -692,6 +709,70 @@ const seleccionarFila2 = (objetoJSON) => {
   $(".foco3").attr("class", "form-line foco3 focused");
 };
 
+//Envia a los input de tipo comprobante lo seleccionado en el autocompletado
+const seleccionTipoComprobante = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulTC").html();
+  $("#listaTC").attr("style", "display: none;");
+  $(".tip").attr("class", "form-line tip focused");
+
+  //   if ($("#tipco_codigo").val() == "1") {
+  //     getConcepto();
+  //   }
+
+  //   if ($("#tipco_codigo").val() == "2") {
+  //     $("#notven_concepto").val("COSTO EXTRA");
+  //     $(".con").attr("class", "form-line con focused");
+  //   }
+
+  //   if ($("#tipco_codigo").val() == "3") {
+  //     $("#notven_concepto").val("ENVIO");
+  //     $(".con").attr("class", "form-line con focused");
+  //   }
+  //Mostramos el search de factura
+  //   showBuscador();
+};
+
+//Busca, filtra y muestra los tipos de comprobantes
+const getTipoComprobante = () => {
+  $.ajax({
+    //Solicitamos los datos a listaTipoComprobante
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaTipoComprobante.php",
+    data: {
+      tipco_descripcion: $("#tipco_descripcion").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionTipoComprobante(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.tipco_descripcion +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulTC").html(fila);
+      //hacemos visible la lista
+      $("#listaTC").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width: 100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
 const seleccionItem = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -800,65 +881,6 @@ const getVenta = () => {
       $("#ulVenta").html(fila);
       //hacemos visible la lista
       $("#listaVenta").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
-};
-
-const seleccionTipoComprobante = (datos) => {
-  //Enviamos los datos a su respectivo input
-  Object.keys(datos).forEach((key) => {
-    $("#" + key).val(datos[key]);
-  });
-  $("#ulTC").html();
-  $("#listaTC").attr("style", "display: none;");
-  $(".tip").attr("class", "form-line tip focused");
-
-  if ($("#tipco_codigo").val() == "1") {
-    getConcepto();
-  }
-
-  if ($("#tipco_codigo").val() == "2") {
-    $("#notven_concepto").val("COSTO EXTRA");
-    $(".con").attr("class", "form-line con focused");
-  }
-
-  if ($("#tipco_codigo").val() == "3") {
-    $("#notven_concepto").val("ENVIO");
-    $(".con").attr("class", "form-line con focused");
-  }
-  //Mostramos el search de factura
-  showBuscador();
-};
-
-const getTipoComprobante = () => {
-  $.ajax({
-    //Solicitamos los datos a listaTipoComprobante
-    method: "POST",
-    url: "/sys8DD/others/complements_php/listas/listaTipoComprobante.php",
-    data: {
-      tipco_descripcion: $("#tipco_descripcion").val(),
-    },
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionTipoComprobante(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.tipco_descripcion +
-          "</li>";
-      });
-
-      //cargamos la lista
-      $("#ulTC").html(fila);
-      //hacemos visible la lista
-      $("#listaTC").attr(
         "style",
         "display: block; position:absolute; z-index: 3000;"
       );

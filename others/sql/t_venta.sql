@@ -419,7 +419,7 @@ BEGIN
         VALUES (
             (SELECT COALESCE(MAX(venaud_codigo), 0) + 1 FROM venta_cab_auditoria),   
 			current_timestamp,
-			'BAJA',
+			(case NEW.ven_estado when 'ANULADO' then 'BAJA' else 'MODIFICACION' end),
             NEW.ven_codigo,
 			NEW.ven_fecha,
 			NEW.ven_numfactura,

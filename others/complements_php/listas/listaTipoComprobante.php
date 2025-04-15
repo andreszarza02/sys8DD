@@ -1,4 +1,5 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
 
@@ -32,4 +33,5 @@ if (!isset($datos[0]['tipco_codigo'])) {
 }
 
 echo json_encode($datos);
+
 ?>
