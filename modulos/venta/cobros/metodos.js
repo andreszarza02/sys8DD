@@ -616,10 +616,10 @@ const nuevoDetalle = () => {
   habilitarCampos(false);
   habilitarBotones2(false);
   LimpiarDetalle();
+  $("#operacion_detalle").val(1);
   $("#ven_codigo").val(0);
   $("#cobdet_monto").val(0);
   $(".cob2").attr("class", "form-line cob2 focused");
-  $("#operacion_detalle").val(1);
   $("#tablaDet").attr("style", "display: none");
   //Establece el formato de interfaz
   $("#forco_codigo").val(404);

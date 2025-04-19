@@ -488,3 +488,64 @@ begin
 end
 $function$ 
 language plpgsql;
+
+-- configuraciones
+create or replace function sp_configuraciones(
+    configcodigo integer,
+    configvalidacion varchar,
+    configdescripcion varchar,
+    configestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar
+) returns void as
+$function$
+-- Declaramos las variables a utilizar
+declare configAudit text;
+begin 
+	-- Validamos si la operacion es de insercion o modificacion
+    if operacion in(1,2) then
+		--En caso de que sea una insercion
+        if operacion = 1 then
+				-- Procedemos con la insercion
+	        	insert into configuraciones(config_codigo, config_validacion, config_descripcion, config_estado)
+				values(configcodigo, upper(configvalidacion), upper(configdescripcion),'ACTIVO');
+				raise notice 'LA CONFIGURACION REGISTRADA CON EXITO';
+        elseif operacion = 2 then
+				-- En caso de que ser una modificacion
+				-- Procedemos con la modificacion
+        		update configuraciones
+				set 
+					config_validacion=upper(configvalidacion), 
+					config_descripcion=upper(configdescripcion),  
+					config_estado='ACTIVO'
+				where config_codigo=configcodigo;
+				raise notice 'LA CONFIGURACION FUE MODIFICADA CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de eliminacion
+    if operacion = 3 then 
+		--En caso de ser asi procedemos con la eliminacion logica
+    	update configuraciones
+		set config_estado='INACTIVO'
+		where config_codigo=configcodigo;
+		raise notice 'LA CONFIGURACION FUE BORRADA CON EXITO';
+    end if;
+	--consultamos el audit anterior
+	select coalesce(config_audit, '') into configAudit from configuraciones where config_codigo = configcodigo;
+	--a los datos anteriores le agragamos los nuevos
+	update configuraciones 
+	set config_audit = configAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'config_validacion', upper(configvalidacion),
+		'config_descripcion', upper(configdescripcion),
+		'config_estado', upper(configestado)
+	)||','
+	where config_codigo = configcodigo;
+end
+$function$ 
+language plpgsql;

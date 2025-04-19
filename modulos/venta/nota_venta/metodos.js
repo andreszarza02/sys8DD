@@ -1,3 +1,17 @@
+//Se encarga de bloquear los codigos o id para que no se carguen por consola
+const bloquearInputs = () => {
+  //Esto se puede mejorar metiendo en un bucle trayendo el atributo id de todos los inputs que sea hidden
+  /*document
+     .getElementById("notven_codigo")
+     .addEventListener("keydown", function (e) {
+       e.preventDefault(); // Bloquea edición por teclado
+     });
+   
+   Object.defineProperty(document.getElementById("notven_codigo"), "value", {
+     writable: false,
+   });*/
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -375,19 +389,24 @@ const nuevo = () => {
   $("#detalle").attr("style", "display: none");
 };
 
+//Metodo que establece el alta en detalle
 const nuevoDetalle = () => {
   $("#operacion_detalle").val(1);
   habilitarCampos(false);
   habilitarBotones2(false);
-  $("#descripcion").val("");
+  $("#dep_descripcion").val("");
+  $("#it_descripcion").val("");
   $("#tall_descripcion").val("");
   $("#notvendet_cantidad").val("");
   $("#unime_descripcion").val("");
   $("#notvendet_precio").val("");
+  $(".dep").attr("class", "form-line dep");
   $(".it").attr("class", "form-line it");
   $(".foco3").attr("class", "form-line foco3");
+  $("#tablaDet").attr("style", "display: none");
 };
 
+//Meto
 const anular = () => {
   $("#operacion_cabecera").val(2);
   habilitarBotones(false);
@@ -773,51 +792,99 @@ const getTipoComprobante = () => {
     });
 };
 
-//Busca y muestra los items
+//Envia al input de deposito lo seleccionado en el autocompletado
+const seleccionDeposito = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulDeposito").html();
+  $("#listaDeposito").attr("style", "display: none;");
+  $(".dep").attr("class", "form-line dep focused");
+};
+
+//Busca, filtra y muestra los depositos
+const getDeposito = () => {
+  $.ajax({
+    //Solicitamos los datos a listaDeposito
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaDeposito.php",
+    data: {
+      suc_codigo: $("#suc_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
+      dep_descripcion: $("#dep_descripcion").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionDeposito(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.dep_descripcion +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulDeposito").html(fila);
+      //hacemos visible la lista
+      $("#listaDeposito").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+//Envia a los input de items lo seleccionado en el autocompletado
 const seleccionItem = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
     $("#" + key).val(datos[key]);
   });
-
-  if (datos.tipit_codigo == 3) {
-    $("#descripcion").val(datos.it_descripcion);
-  }
-
   $("#ulItem").html();
   $("#listaItem").attr("style", "display: none;");
   $(".it").attr("class", "form-line it focused");
   $(".foco3").attr("class", "form-line foco3 focused");
-  controlServicio();
+  //Determina que inputs tocar y cuales no
+  controlInputsDetalle(
+    $("#tipit_descripcion").val(),
+    $("#tipco_descripcion").val()
+  );
 };
 
+//Busca, filtra y muestra los items
 const getItem = () => {
   $.ajax({
     //Solicitamos los datos a listaItemsNotaVenta
     method: "POST",
     url: "/sys8DD/others/complements_php/listasMovimientos/listaItemsNotaVenta.php",
     data: {
-      tipco_codigo: $("#tipco_codigo").val(),
+      tipco_descripcion: $("#tipco_descripcion").val(),
       ven_codigo: $("#ven_codigo").val(),
-      descripcion: $("#descripcion").val(),
+      dep_codigo: $("#dep_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
+      suc_codigo: $("#suc_codigo").val(),
+      it_descripcion: $("#it_descripcion").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
       let fila = "";
       $.each(lista, function (i, objeto) {
-        if (objeto.tipit_codigo !== "3") {
-          fila +=
-            "<li class='list-group-item' onclick='seleccionItem(" +
-            JSON.stringify(objeto) +
-            ")'>" +
-            objeto.descripcion +
-            "</li>";
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
         } else {
           fila +=
             "<li class='list-group-item' onclick='seleccionItem(" +
             JSON.stringify(objeto) +
             ")'>" +
-            objeto.it_descripcion +
+            objeto.it_descripcion2 +
             "</li>";
         }
       });
@@ -827,7 +894,7 @@ const getItem = () => {
       //hacemos visible la lista
       $("#listaItem").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {
@@ -936,17 +1003,34 @@ const showBuscador = () => {
   $("#ci").attr("style", "display: block;");
 };
 
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };
 
-const controlServicio = () => {
-  let tipoItem = $("#tipit_codigo").val();
-  if (tipoItem == "3") {
+//Dependiendo del tipo de item y del tipo de comprobante se habilitaran o deshabilitaran algunos inputs
+const controlInputsDetalle = (tipoItem, tipoComprobante) => {
+  if (
+    tipoItem == "PRODUCTO" &&
+    (tipoComprobante == "DEBITO" || tipoComprobante == "CREDITO")
+  ) {
+    $("#notvendet_cantidad").removeAttr("readonly");
+    $("#notvendet_precio").attr("readonly", "");
+  } else if (tipoItem == "SERVICIO" && tipoComprobante == "DEBITO") {
     $("#notvendet_cantidad").val("0");
+    $("#notvendet_cantidad").attr("readonly", "");
     $(".foco3").attr("class", "form-line foco3 focused");
-    $("#notvendet_precio").removeAttr("disabled");
+    $("#notvendet_precio").removeAttr("readonly");
+  } else if (tipoComprobante == "REMISION") {
+    $("#notvendet_cantidad").attr("readonly", "");
+    $("#notvendet_precio").attr("readonly", "");
+  } else if (tipoItem == "SERVICIO" && tipoComprobante == "CREDITO") {
+    $("#notvendet_cantidad").val("0");
+    $("#notvendet_cantidad").attr("readonly", "");
+    $(".foco3").attr("class", "form-line foco3 focused");
+    $("#notvendet_precio").attr("readonly", "");
   }
 };
 
+//Siempre que se cargue la pagina se ejecutaran estas funciones
 listar();

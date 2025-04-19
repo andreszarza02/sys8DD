@@ -1067,7 +1067,7 @@ begin
 		--Actualizamos el estado de venta cabecera en caso de que sea cancelado
 		if ventaEstado = 'CANCELADO' then
 			update venta_cab 
-			set ven_estado='TERMINADA',
+			set ven_estado='ACTIVO',
 			usu_codigo=usucodigo  
 			where ven_codigo=(select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=cobcodigo);
 		end if;
@@ -1177,7 +1177,7 @@ begin
 		--Actualizamos registro de venta cabecera en caso de que el mismo sea cancelado
 		if ventaEstado = 'CANCELADO' then
 			update venta_cab 
-			set ven_estado='TERMINADA',
+			set ven_estado='ACTIVO',
 			usu_codigo=usucodigo  
 			where ven_codigo=vencodigo;
 		end if;

@@ -577,6 +577,9 @@ if (isset($_SESSION['apertura'])) {
                                  <a href="/sys8DD/referenciales/seguridad/asignacion_permiso_usuario/index.php">Asignacion
                                     Permiso Usuario</a>
                               </li>
+                              <li>
+                                 <a href="/sys8DD/referenciales/seguridad/configuraciones/index.php">Configuraciones</a>
+                              </li>
                            </ul>
                         </li>
                      <?php } ?>

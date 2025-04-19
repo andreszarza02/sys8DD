@@ -100,9 +100,9 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line tip">
-                                 <input type="hidden" id="tipco_codigo" value="0">
+                                 <input type="hidden" id="tipco_codigo" value="3">
                                  <input type="text" class="form-control no-disabled" id="tipco_descripcion" disabled
-                                    onkeyup="getTipoComprobante()">
+                                    onkeyup="getTipoComprobante()" value="REMISION">
                                  <label class="form-label">Tipo Comprobante</label>
                                  <div id="listaTC" style="display: none;">
                                     <ul class="list-group" id="ulTC" Style="height: 100px; overflow: auto"></ul>
@@ -142,7 +142,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line vent">
-                                 <input type="number" class="form-control" id="ven_codigo" disabled>
+                                 <input type="number" class="form-control" id="ven_codigo" disabled value="1">
                                  <label class="form-label">N° Venta</label>
                               </div>
                            </div>
@@ -234,7 +234,7 @@ foreach ($permisos as $permiso) {
             </div>
 
             <!-- Formulario Nota Venta Detalle -->
-            <div id="detalle" style="display: none;">
+            <div id="detalle" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
                      <div class="header" style="background: #4DC18B;">
@@ -259,11 +259,12 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-3">
+                           <div class="col-sm-4">
                               <div class="form-group form-float">
                                  <div class="form-line it">
                                     <input type="hidden" id="it_codigo" value="0">
                                     <input type="hidden" id="tipit_codigo" value="0">
+                                    <input type="hidden" id="tipit_descripcion">
                                     <input type="hidden" id="tipim_codigo" value="0">
                                     <input type="text" class="form-control no-disabled2" id="it_descripcion" disabled
                                        onkeyup="getItem()">
@@ -282,11 +283,10 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-1">
+                           <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line foco3">
-                                    <input type="number" class="form-control no-disabled2" id="notvendet_cantidad"
-                                       disabled>
+                                    <input type="text" class="form-control" id="notvendet_cantidad" readonly>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>
@@ -302,7 +302,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line it">
-                                    <input type="number" class="form-control" id="notvendet_precio" disabled>
+                                    <input type="number" class="form-control" id="notvendet_precio" readonly>
                                     <label class="form-label">Precio</label>
                                  </div>
                               </div>
@@ -342,7 +342,7 @@ foreach ($permisos as $permiso) {
                         </div>
 
                         <!-- Grilla Nota Venta Detalle -->
-                        <div class="table-responsive">
+                        <div id="tablaDet" class="table-responsive">
                            <table class="table table-bordered table-striped table-hover">
                               <thead>
                                  <tr>

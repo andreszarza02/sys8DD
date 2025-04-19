@@ -387,7 +387,7 @@ foreach ($permisos as $permiso) {
                            </div>
 
                            <!-- Grilla Cobro Detalle -->
-                           <div id="tablaDet" class="table-responsive" style="display: block;">
+                           <div id="tablaDet" class="table-responsive">
                               <table class="table table-bordered table-striped table-hover">
                                  <thead>
                                     <tr>
