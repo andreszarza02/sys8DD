@@ -549,3 +549,81 @@ begin
 end
 $function$ 
 language plpgsql;
+
+-- Configuraciones sucursal
+create or replace function sp_configuraciones_sucursal(
+	configsuccodigo integer,
+    configcodigo integer,
+    succodigo integer,
+    empcodigo integer,
+    configsucestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar,
+    configvalidacion varchar,
+    configdescripcion varchar,
+    sucdescripcion varchar,
+    emprazonsocial varchar
+) returns void as
+$function$
+-- Declaramos las variables a utilizar 
+declare configSucAudit text; 
+begin 
+	--Validamos si la operacion es de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos que no se repita ningun registro
+        perform * from configuraciones_sucursal
+        where (config_codigo=configcodigo and suc_codigo=succodigo and emp_codigo=empcodigo)
+		and configsuc_codigo != configsuccodigo;
+        if found then
+			-- En caso de que se repita un registro, generamos una excepcion
+            raise exception '1';
+    	elseif operacion = 1 then
+				-- Si la operación es de insercion, procedemos con el mismo
+	        	insert into configuraciones_sucursal(configsuc_codigo, config_codigo, suc_codigo, emp_codigo, configsuc_estado)
+				values(configsuccodigo, configcodigo, succodigo, empcodigo, 'ACTIVO');
+				-- Mensaje de insercion
+				raise notice 'LA CONFIGURACION PARA LA SUCURSAL FUE REGISTRADA CON EXITO';
+        elseif operacion = 2 then
+				-- Si la operación es de modificacion, procedemos con el mismo
+        		update configuraciones_sucursal
+				set 
+					config_codigo=configcodigo, 
+					suc_codigo=succodigo, 
+					emp_codigo=empcodigo,
+					configsuc_estado='ACTIVO'
+				where configsuc_codigo=configsuccodigo;
+				-- Mensaje de modificacion
+				raise notice 'LA CONFIGURACION PARA LA SUCURSAL FUE MODIFICADA CON EXITO';
+        end if;
+    end if;
+    if operacion = 3 then 
+		-- Si la operación es de eliminacion, procedemos con el borrado logico
+    	update configuraciones_sucursal 
+		set configsuc_estado='INACTIVO'
+		WHERE configsuc_codigo=configsuccodigo;
+		raise notice 'LA CONFIGURACION PARA LA SUCURSAL FUE BORRADA CON EXITO';
+    end if;
+	--consultamos el audit anterior 
+	select coalesce(configsuc_audit, '') into configSucAudit from configuraciones_sucursal where configsuc_codigo = configsuccodigo;
+	--a los datos anteriores le agregamos los nuevos
+	update configuraciones_sucursal 
+	set configsuc_audit = configSucAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'config_codigo', configcodigo,
+		'config_validacion', upper(configvalidacion),
+		'config_descripcion', upper(configdescripcion),
+		'suc_codigo', succodigo,
+		'suc_descripcion', upper(sucdescripcion),
+		'emp_codigo', empcodigo,
+		'emp_razonsocial', upper(emprazonsocial),
+		'configsuc_estado', upper(configsucestado)
+	)||','
+	where configsuc_codigo = configsuccodigo;
+end
+$function$ 
+language plpgsql;

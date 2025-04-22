@@ -1465,7 +1465,38 @@ CREATE TABLE red_pago (
                 CONSTRAINT red_pago_pk PRIMARY KEY (redpa_codigo)
 );
 
+CREATE TABLE configuraciones (
+                config_codigo INTEGER NOT NULL,
+                config_validacion VARCHAR NOT NULL,
+                config_descripcion VARCHAR NOT NULL,
+                config_estado VARCHAR NOT NULL,
+                config_audit TEXT NOT NULL,
+                CONSTRAINT configuraciones_pk PRIMARY KEY (config_codigo)
+);
+
+CREATE TABLE configuraciones_sucursal (
+				configsuc_codigo INTEGER NOT NULL,
+                config_codigo INTEGER NOT NULL,
+                suc_codigo INTEGER NOT NULL,
+                emp_codigo INTEGER NOT NULL,
+                configsuc_estado VARCHAR NOT NULL,
+                configsuc_audit TEXT NOT NULL,
+                CONSTRAINT configuraciones_sucursal_pk PRIMARY KEY (configsuc_codigo, config_codigo, suc_codigo, emp_codigo)
+);
+
 --Alteracion de tablas
+ALTER TABLE configuraciones_sucursal ADD CONSTRAINT sucursal_configuraciones_sucursal_fk
+FOREIGN KEY (suc_codigo, emp_codigo)
+REFERENCES sucursal (suc_codigo, emp_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+ALTER TABLE configuraciones_sucursal ADD CONSTRAINT configuraciones_configuraciones_sucursal_fk
+FOREIGN KEY (config_codigo)
+REFERENCES configuraciones (config_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
 ALTER TABLE cobro_tarjeta ADD constraint red_pago_cobro_tarjeta_fk
 FOREIGN KEY (redpa_codigo)
 REFERENCES red_pago (redpa_codigo)
@@ -3075,6 +3106,147 @@ begin
 		'asigperm_estado', upper(asigpermestado)
 	)||','
 	where asigperm_codigo = asigpermcodigo;
+end
+$function$ 
+language plpgsql;
+
+select coalesce(max(config_codigo),0)+1 as config_codigo from configuraciones; 
+create or replace function sp_configuraciones(
+    configcodigo integer,
+    configvalidacion varchar,
+    configdescripcion varchar,
+    configestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar
+) returns void as
+$function$
+-- Declaramos las variables a utilizar
+declare configAudit text;
+begin 
+	-- Validamos si la operacion es de insercion o modificacion
+    if operacion in(1,2) then
+		--En caso de que sea una insercion
+        if operacion = 1 then
+				-- Procedemos con la insercion
+	        	insert into configuraciones(config_codigo, config_validacion, config_descripcion, config_estado)
+				values(configcodigo, upper(configvalidacion), upper(configdescripcion),'ACTIVO');
+				raise notice 'LA CONFIGURACION FUE REGISTRADA CON EXITO';
+        elseif operacion = 2 then
+				-- En caso de que ser una modificacion
+				-- Procedemos con la modificacion
+        		update configuraciones
+				set 
+					config_validacion=upper(configvalidacion), 
+					config_descripcion=upper(configdescripcion),  
+					config_estado='ACTIVO'
+				where config_codigo=configcodigo;
+				raise notice 'LA CONFIGURACION FUE MODIFICADA CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de eliminacion
+    if operacion = 3 then 
+		--En caso de ser asi procedemos con la eliminacion logica
+    	update configuraciones
+		set config_estado='INACTIVO'
+		where config_codigo=configcodigo;
+		raise notice 'LA CONFIGURACION FUE BORRADA CON EXITO';
+    end if;
+	--consultamos el audit anterior
+	select coalesce(config_audit, '') into configAudit from configuraciones where config_codigo = configcodigo;
+	--a los datos anteriores le agragamos los nuevos
+	update configuraciones 
+	set config_audit = configAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'config_validacion', upper(configvalidacion),
+		'config_descripcion', upper(configdescripcion),
+		'config_estado', upper(configestado)
+	)||','
+	where config_codigo = configcodigo;
+end
+$function$ 
+language plpgsql;
+
+select coalesce(max(configsuc_codigo),0)+1 as configsuc_codigo from configuraciones_sucursal;
+select sp_configuraciones_sucursal(1, 1, 1, 1, 'ACTIVO', 2, 1, 'ssan', 'ALTA', '5', 'DIAS HABILES PARA SOLICITAR UNA NOTA DE VENTA',
+'CASA MATRIZ', '8 de diciembre');
+create or replace function sp_configuraciones_sucursal(
+	configsuccodigo integer,
+    configcodigo integer,
+    succodigo integer,
+    empcodigo integer,
+    configsucestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar,
+    configvalidacion varchar,
+    configdescripcion varchar,
+    sucdescripcion varchar,
+    emprazonsocial varchar
+) returns void as
+$function$
+-- Declaramos las variables a utilizar 
+declare configSucAudit text; 
+begin 
+	--Validamos si la operacion es de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos que no se repita ningun registro
+        perform * from configuraciones_sucursal
+        where (config_codigo=configcodigo and suc_codigo=succodigo and emp_codigo=empcodigo)
+		and configsuc_codigo != configsuccodigo;
+        if found then
+			-- En caso de que se repita un registro, generamos una excepcion
+            raise exception '1';
+    	elseif operacion = 1 then
+				-- Si la operación es de insercion, procedemos con el mismo
+	        	insert into configuraciones_sucursal(configsuc_codigo, config_codigo, suc_codigo, emp_codigo, configsuc_estado)
+				values(configsuccodigo, configcodigo, succodigo, empcodigo, 'ACTIVO');
+				-- Mensaje de insercion
+				raise notice 'LA CONFIGURACION PARA LA SUCURSAL FUE REGISTRADA CON EXITO';
+        elseif operacion = 2 then
+				-- Si la operación es de modificacion, procedemos con el mismo
+        		update configuraciones_sucursal
+				set 
+					config_codigo=configcodigo, 
+					suc_codigo=succodigo, 
+					emp_codigo=empcodigo,
+					configsuc_estado='ACTIVO'
+				where configsuc_codigo=configsuccodigo;
+				-- Mensaje de modificacion
+				raise notice 'LA CONFIGURACION PARA LA SUCURSAL FUE MODIFICADA CON EXITO';
+        end if;
+    end if;
+    if operacion = 3 then 
+		-- Si la operación es de eliminacion, procedemos con el borrado logico
+    	update configuraciones_sucursal 
+		set configsuc_estado='INACTIVO'
+		WHERE configsuc_codigo=configsuccodigo;
+		raise notice 'LA CONFIGURACION PARA LA SUCURSAL FUE BORRADA CON EXITO';
+    end if;
+	--consultamos el audit anterior 
+	select coalesce(configsuc_audit, '') into configSucAudit from configuraciones_sucursal where configsuc_codigo = configsuccodigo;
+	--a los datos anteriores le agregamos los nuevos
+	update configuraciones_sucursal 
+	set configsuc_audit = configSucAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'config_codigo', configcodigo,
+		'config_validacion', upper(configvalidacion),
+		'config_descripcion', upper(configdescripcion),
+		'suc_codigo', succodigo,
+		'suc_descripcion', upper(sucdescripcion),
+		'emp_codigo', empcodigo,
+		'emp_razonsocial', upper(emprazonsocial),
+		'configsuc_estado', upper(configsucestado)
+	)||','
+	where configsuc_codigo = configsuccodigo;
 end
 $function$ 
 language plpgsql;
@@ -8863,7 +9035,7 @@ language plpgsql;
 
 select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=1;
 select sp_cobro_cab(0, '21/02/2024', 'ACTIVO', 1, 1, 1, 1, 3, 1);
-select coalesce(max(cob_codigo),0)+1 from cobro_cab
+select coalesce(max(cob_codigo),0)+1 from cobro_cab;
 create or replace function sp_cobro_cab(
     cobcodigo integer,
     cobfecha timestamp,
@@ -8930,7 +9102,7 @@ begin
 			update venta_cab 
 			set ven_estado='ACTIVO',
 			usu_codigo=usucodigo  
-			where ven_codigo=vencodigo;
+			where ven_codigo=(select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=cobcodigo);
 		end if;
 		--Enviamos un mensaje de confirmacion de anulacion
 		raise notice 'EL COBRO FUE ANULADO CON EXITO';
@@ -8953,12 +9125,24 @@ create or replace function sp_cobro_det(
     cochenumero varchar,
     entcodigo integer,
     usucodigo integer,
+    cobtatransaccion varchar,
+    redpacodigo integer,
     operacion integer 
 ) returns void as
 $function$
 declare ventaEstado varchar;
 begin 
    --Validamos la operacion en este caso la insercion
+   --Validamos si es una insercion y si la forma de cobro es tarjeta
+   if operacion = 1 and forcocodigo = 2 then
+	   --Validamos que no se repita el numero de transaccion y la red de pago 
+      	perform * from cobro_tarjeta	
+     	where cobta_transaccion=cobtatransaccion and redpa_codigo=redpacodigo;
+     	if found then
+		     --En caso de ser asi generamos una excepcion
+     		 raise exception 'tarjeta';
+		end if;
+   end if;
    --Validamos si es una insercion y si la forma de cobro es cheque 
    if operacion = 1 and forcocodigo = 3 then
       	--Validamos que no se repita el numero de cheque 
@@ -8969,39 +9153,42 @@ begin
      		 raise exception 'cheque';
 		end if;
     end if;
-    if operacion = 1 then
-		--Validamos que no se repita la forma de cobro en efectivo en un mismo cobro 
+	--Validamos si la operacion es de insercion y si la forma de cobro es efectivo
+	if operacion = 1 and forcocodigo = 1 then
+		--Validamos que no se repita 2 veces la forma de cobro efectivo en el detalle
       	perform * from cobro_det	
-     	where forco_codigo=1 and cob_codigo=cobcodigo and ven_codigo=vencodigo;
+     	where forco_codigo=forcocodigo and cob_codigo=cobcodigo and ven_codigo=vencodigo;
      	if found then
 		     --En caso de ser asi generamos una excepcion
      		 raise exception 'efectivo';
-		elseif operacion = 1 then
-			 --Insertamos nuevo registro en cobro detalle
-			 insert into cobro_det(
-			 cobdet_codigo, 
-			 cob_codigo, 
-			 ven_codigo, 	
-			 cobdet_monto, 
-			 cobdet_numerocuota, 	
-			 forco_codigo
-			 )
-			 values(
-			 (select coalesce(max(cobdet_codigo),0)+1 from cobro_det), 
-			 cobcodigo, 
-			 vencodigo, 
-			 cobdetmonto, 
-			 cobdetnumerocuota, 
-		  	 forcocodigo
-			);
-			--Actualizamos saldo y tipo de comprobante en cuenta cobrar
-			update cuenta_cobrar 
-			set cuenco_saldo=cuenco_saldo-cobdetmonto, 
-			tipco_codigo=5
-			where ven_codigo=vencodigo;
-			--Enviamos un mensaje de confirmacion de insercion
-			raise notice 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
 		end if;
+    end if;
+	--Validamos si la operacion es de insercion
+    if operacion = 1 then
+		--Insertamos nuevo registro en cobro detalle
+		insert into cobro_det(
+		cobdet_codigo, 
+		cob_codigo, 
+		ven_codigo, 	
+		cobdet_monto, 
+		cobdet_numerocuota, 	
+		forco_codigo
+		)
+		values(
+		(select coalesce(max(cobdet_codigo),0)+1 from cobro_det), 
+		cobcodigo, 
+		vencodigo, 
+		cobdetmonto, 
+		cobdetnumerocuota, 
+		forcocodigo
+		);
+		--Actualizamos saldo y tipo de comprobante en cuenta cobrar
+		update cuenta_cobrar 
+		set cuenco_saldo=cuenco_saldo-cobdetmonto, 
+		tipco_codigo=5
+		where ven_codigo=vencodigo;
+		--Enviamos un mensaje de confirmacion de insercion
+		raise notice 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
     end if;
 	--Validamos si la operacion es de eliminacion
     if operacion = 2 then 
@@ -9051,23 +9238,33 @@ create or replace function sp_cobro_cheque(
     operacion integer
 ) returns void as
 $function$
-declare ultcod integer;
 begin 
+	 --Validamos si la operacion es de insercion
      if operacion = 1 then
-      	--Validamos, generamos el ultimo codigo y cargamos cobro_cheque
-      	perform * from cobro_cheque
-     	where coche_numero=cochenumero and ent_codigo=entcodigo;
-     	if found then
-     		 raise exception 'cheque';
-     	elseif operacion = 1 then
-     	 	 --Insertamos cobro cheque
-     		 ultcod = (select coalesce(max(coche_codigo),0)+1 from cobro_cheque);
-		     insert into cobro_cheque(coche_codigo, coche_numero, coche_monto, coche_tipocheque, coche_fechavencimiento,
-		     ent_codigo, cob_codigo, ven_codigo, cobdet_codigo)
-			 values(ultcod, cochenumero, cochemonto, cochetipocheque, cochefechavencimiento, entcodigo, cobcodigo,
-			 vencodigo, cobdetcodigo);
+     	--Insertamos registro en cobro cheque
+		insert into cobro_cheque(
+		coche_codigo, 	
+		coche_numero, 
+		coche_monto, 
+		coche_tipocheque, 
+		coche_fechavencimiento,
+		ent_codigo, 
+		cob_codigo, 
+		ven_codigo, 
+		cobdet_codigo
+		)
+		values(
+		(select coalesce(max(coche_codigo),0)+1 from cobro_cheque), 
+		cochenumero, 
+		cochemonto, 
+		cochetipocheque, 
+		cochefechavencimiento, 
+		entcodigo, 
+		cobcodigo,
+		vencodigo, 
+		cobdetcodigo
+		);
 		end if;
-    end if;
 end
 $function$ 
 language plpgsql;
@@ -9086,20 +9283,43 @@ create or replace function sp_cobro_tarjeta(
     cobcodigo integer,
     vencodigo integer,
     cobdetcodigo integer,
+    cobtatransaccion varchar,
+    redpacodigo integer,
     operacion integer 
 ) returns void as
 $function$
-declare ultcod integer;
 begin 
 	 --Validamos si la operacion es de insercion
      if operacion = 1 then
      	--Procedemos con la insercion en cobro tarjeta
-     	ultcod = (select coalesce(max(cobta_codigo),0)+1 from cobro_tarjeta);
-		insert into cobro_tarjeta(cobta_codigo, cobta_numero, cobta_monto, cobta_tipotarjeta, entad_codigo,
-		ent_codigo, marta_codigo, cob_codigo, ven_codigo, cobdet_codigo)
-		values(ultcod, cobtanumero, cobtamonto, cobtatipotarjeta, entadcodigo, entcodigo, martacodigo,
-		cobcodigo, vencodigo, cobdetcodigo);
-		end if;
+		insert into cobro_tarjeta(
+		cobta_codigo, 
+		cobta_numero, 
+		cobta_monto, 
+		cobta_tipotarjeta, 
+		entad_codigo,
+		ent_codigo, 
+		marta_codigo, 
+		cob_codigo, 
+		ven_codigo, 
+		cobdet_codigo,
+		cobta_transaccion,
+		redpa_codigo
+		)
+		values(
+		(select coalesce(max(cobta_codigo),0)+1 from cobro_tarjeta), 
+		cobtanumero, 
+		cobtamonto, 
+		cobtatipotarjeta, 
+		entadcodigo, 
+		entcodigo, 
+		martacodigo,
+		cobcodigo, 
+		vencodigo, 
+		cobdetcodigo,
+		cobtatransaccion,
+		redpacodigo
+		);
     end if;
 end
 $function$ 
@@ -9278,6 +9498,225 @@ $function$
 language plpgsql;
 
 --DML
+select
+	c.config_codigo,
+	c.config_validacion,
+	c.config_descripcion 
+from configuraciones c 
+where c.config_descripcion ilike '%habi%'
+and c.config_estado='ACTIVO'
+order by c.config_codigo;
+
+select 
+	cs.configsuc_codigo,
+	cs.config_codigo,
+	cs.suc_codigo,
+	cs.emp_codigo,
+	cs.configsuc_estado,
+	e.emp_razonsocial,
+	s.suc_descripcion,
+	c.config_descripcion,
+	c.config_validacion 
+from configuraciones_sucursal cs 
+join configuraciones c on c.config_codigo=cs.config_codigo 
+join sucursal s on s.suc_codigo=cs.suc_codigo 
+and s.emp_codigo=cs.emp_codigo 
+	join empresa e on e.emp_codigo=s.emp_codigo 
+order by cs.configsuc_codigo;
+
+select 
+	config_codigo,
+	config_validacion,
+	config_descripcion,
+	config_estado
+from configuraciones 
+order by config_codigo;
+
+select 
+ vd.dep_codigo,
+ vd.it_codigo,
+ vd.tipit_codigo,
+ ti.tipit_descripcion,
+ i.tipim_codigo,
+ (case 
+		ti.tipit_descripcion 
+	 when 'PRODUCTO'
+	       then 
+	         i.it_descripcion||' '||m.mod_codigomodelo
+	       else 
+	         i.it_descripcion 
+ end) it_descripcion,
+(case 
+		ti.tipit_descripcion 
+	 when 'PRODUCTO'
+	       then 
+	         i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion 
+	       else 
+	         i.it_descripcion 
+end) it_descripcion2,
+t.tall_descripcion,
+vd.vendet_cantidad notvendet_cantidad,
+um.unime_descripcion,
+vd.vendet_precio as notvendet_precio
+from venta_det vd 
+	join venta_cab vc on vc.ven_codigo=vd.ven_codigo 
+	join stock s on s.it_codigo=vd.it_codigo 
+	and s.tipit_codigo=vd.tipit_codigo 
+	and s.dep_codigo=vd.dep_codigo
+	and s.suc_codigo=vd.suc_codigo 
+	and s.emp_codigo=vd.emp_codigo 
+	join items i on i.it_codigo=s.it_codigo 
+	and i.tipit_codigo=s.tipit_codigo 
+		join tipo_item ti on ti.tipit_codigo=i.tipit_codigo 
+		join talle t on t.tall_codigo=i.tall_codigo 
+		join modelo m on m.mod_codigo=i.mod_codigo 
+		join unidad_medida um on um.unime_codigo=i.unime_codigo 
+	join deposito d on d.dep_codigo=s.dep_codigo 
+	and d.suc_codigo=s.suc_codigo 
+	and d.emp_codigo=s.emp_codigo 
+		join sucursal s2 on s2.suc_codigo=d.suc_codigo 
+		and s2.emp_codigo=d.emp_codigo 
+			join empresa e on e.emp_codigo=s2.emp_codigo 
+where i.it_estado='ACTIVO'
+	and ti.tipit_descripcion in('PRODUCTO', 'SERVICIO')
+	and (i.it_descripcion ilike '%%' or m.mod_codigomodelo ilike '%%')
+	and vc.ven_codigo=1
+	and vc.ven_estado <> 'ANULADO'
+	and vc.suc_codigo=1 and vc.emp_codigo=1
+order by vd.ven_codigo, vd.it_codigo;
+
+select 
+	i.it_codigo,
+	i.tipit_codigo,
+	ti.tipit_descripcion,
+	i.tipim_codigo,
+	(case 
+			ti.tipit_descripcion 
+	 	when 'PRODUCTO'
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo
+	         else 
+	         	i.it_descripcion 
+	 end) it_descripcion,
+	 (case 
+			ti.tipit_descripcion 
+	 	when 'PRODUCTO'
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion 
+	         else 
+	         	i.it_descripcion 
+	 end) it_descripcion2,
+	 t.tall_descripcion,
+	 (case 
+	 	when ti.tipit_descripcion='PRODUCTO' and s.st_cantidad<=0
+	        then 
+	         	'NO HAY STOCK'
+	         else 
+	         	CAST(s.st_cantidad AS VARCHAR)
+	 end) notvendet_cantidad,
+	 um.unime_descripcion,
+	 i.it_precio as notvendet_precio
+from stock s 
+join items i on i.it_codigo=s.it_codigo 
+and i.tipit_codigo=s.tipit_codigo 
+	join tipo_item ti on ti.tipit_codigo=i.tipit_codigo 
+	join talle t on t.tall_codigo=i.tall_codigo 
+	join modelo m on m.mod_codigo=i.mod_codigo 
+	join unidad_medida um on um.unime_codigo=i.unime_codigo 
+join deposito d on d.dep_codigo=s.dep_codigo 
+and d.suc_codigo=s.suc_codigo 
+and d.emp_codigo=s.emp_codigo 
+	join sucursal s2 on s2.suc_codigo=d.suc_codigo 
+	and s2.emp_codigo=d.emp_codigo 
+		join empresa e on e.emp_codigo=s2.emp_codigo 
+where i.it_estado='ACTIVO'
+and ti.tipit_descripcion in('PRODUCTO', 'SERVICIO')
+and (i.it_descripcion ilike '%fle%' or m.mod_codigomodelo ilike '%fle%')
+and s.dep_codigo=1 and s.suc_codigo=1 and s.emp_codigo=1
+order by i.it_codigo;
+
+select distinct 
+	p.per_nombre||' '||p.per_apellido cliente,
+	p.per_email correo
+from cobro_det cd 
+join venta_cab vc on vc.ven_codigo=cd.ven_codigo 
+join cliente c on c.cli_codigo=vc.cli_codigo 
+join personas p on p.per_codigo=c.per_codigo 
+where cd.cob_codigo=1;
+
+
+select 
+	p.per_nombre||' '||p.per_apellido cliente,
+	p.per_email correo
+from cliente c 
+join personas p on p.per_codigo=c.per_codigo 
+where p.per_numerodocumento='5346486';
+
+select 
+	e.emp_razonsocial,
+	s.suc_descripcion,
+	c.ciu_descripcion,
+	u.usu_login,
+	p.per_nombre||' '||p.per_apellido persona,
+	e.emp_ruc 
+from cobro_cab cc
+join usuario u on u.usu_codigo=cc.usu_codigo 
+join funcionario f on f.func_codigo=u.func_codigo 
+join personas p on p.per_codigo=f.per_codigo 
+join sucursal s on s.suc_codigo=cc.suc_codigo 
+and s.emp_codigo=cc.emp_codigo 
+join empresa e on e.emp_codigo=s.emp_codigo 
+join ciudad c on c.ciu_codigo=s.ciu_codigo 
+where cc.cob_codigo=1;
+select 
+	vcd.cob_codigo codigo,
+	sum(vcd.cobdet_monto) monto,
+	(select to_char(max(cc.cob_fecha), 'dd-mm-yyyy') from cobro_cab cc where cc.cob_codigo=1) fecha,
+	vcd.cliente,
+	'DE LA CUOTA '||vcd.cobdet_numerocuota||'/'||vcd.cuota||' POR LA COMPRA N° '||vcd.factura concepto,
+	(select 
+		p.per_email
+	from cliente c 
+	join personas p on p.per_codigo=c.per_codigo 
+	where p.per_numerodocumento=vcd.ci) correo
+from v_cobro_det vcd 
+where vcd.cob_codigo=1
+	group by 1,3,4,5,6;
+
+select date(max(cc.cob_fecha)) from cobro_cab cc where cc.cob_codigo=1
+select * from v_cobro_det vcd limit 1;
+(select to_char(max(cc.cob_fecha), 'dd-mm-yyyy') from cobro_cab cc where cc.cob_codigo=1); 
+select    
+               coalesce(sum(cd.cobdet_monto), 0) as montoventa 
+          from cobro_det cd 
+          join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
+          where cc.cob_estado='ACTIVO' and
+          cd.ven_codigo = 1;
+select
+ rp.redpa_codigo,
+ rp.redpa_descripcion 
+from red_pago rp 
+where rp.redpa_descripcion ilike '%%'
+and redpa_estado = 'ACTIVO'
+order by redpa_codigo;
+select distinct 
+	fc.forco_descripcion 
+from cobro_det cd 
+join forma_cobro fc on fc.forco_codigo=cd.forco_codigo 
+where cd.cob_codigo=1 and fc.forco_descripcion='EFECTIVO';
+
+select 
+from cobro_det cd 
+join forma_cobro fc on fc.forco_codigo=cd.forco_codigo 
+where cd.ven_codigo=1 
+and cd.cob_codigo=1;
+
+select 
+	fc.forco_codigo,
+	fc.forco_descripcion 
+from forma_cobro fc 
+where forco_estado = 'ACTIVO'
+order by forco_codigo;
 
 select 
          i.it_codigo,
@@ -14365,10 +14804,23 @@ select cc.usu_codigo from cobro_det cd
 join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
 where cd.ven_codigo=1 order by cd.cob_codigo desc limit 1;
 
+(select coalesce((select cc.cobr_cod from cobros_cab cc 
+									join cobros_det cd on cd.cobr_cod = cc.cobr_cod 
+								where cd.ven_cod = 1
+								order by cd.cobr_cod desc 
+								limit 1),0))
+								
+select 
+	cda.usu_codigo 
+from cobro_det_auditoria cda 
+where cda.ven_codigo=1
+order by cda.cob_codigo desc limit 1;
+
 CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_cuenta_cobrar()
 RETURNS TRIGGER AS $$
 declare usuCodigo integer;
 		usuLogin varchar;
+		cobCodigo integer;
 BEGIN
 	--Definimos el usuario que inserto o modifico el registro
 	if NEW.tipco_codigo = 4 then
@@ -14382,14 +14834,40 @@ BEGIN
 		usuLogin = (select u.usu_login from nota_venta_cab nvc join usuario u on u.usu_codigo=nvc.usu_codigo where nvc.ven_codigo=NEW.ven_codigo
 		and nvc.tipco_codigo=NEW.tipco_codigo and nvc.notven_estado='ACTIVO');
 	elseif NEW.tipco_codigo = 5 then
-		-- Si el comprobante es un recibo, traemos el usuario de cobros
-		usuCodigo = (select cc.usu_codigo from cobro_det cd 
+		--Si el comprobante es un recibo traemos el usuario de las tablas de cobro
+		--Traemos el codigo de cobro y lo guardamos dentro de una variable para su validacion, en caso de no existir devolvera 0
+		cobCodigo := (select 
+						coalesce(
+							(select 
+									cc.usu_codigo 
+							from cobro_det cd 
+					 		join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
+					 		where cd.ven_codigo=NEW.ven_codigo 
+							order by cd.cob_codigo desc limit 1), 0)
+					);
+		--Validamos la el codigo de cobro
+		if cobCodigo = 0 then
+			--Si es igual a 0 consultamos el usucodigo y usulogin de cobro detalle auditoria
+			usuCodigo = (select 
+							cda.usu_codigo 
+						from cobro_det_auditoria cda 
+						where cda.ven_codigo=NEW.ven_codigo
+						order by cda.cob_codigo desc limit 1);
+			usuLogin = (select 
+							cda.usu_login 
+						from cobro_det_auditoria cda 
+						where cda.ven_codigo=NEW.ven_codigo
+						order by cda.cob_codigo desc limit 1);
+		else
+			--Si es distinto de 0 consultamos el usucodigo y usulogin de cobro cabecera
+			usuCodigo = (select cc.usu_codigo from cobro_det cd 
 					 join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
 					 where cd.ven_codigo=NEW.ven_codigo order by cd.cob_codigo desc limit 1);
-		usuLogin = (select u.usu_login from cobro_det cd 
+			usuLogin = (select u.usu_login from cobro_det cd 
 					 join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
 					 join usuario u on u.usu_codigo=cc.usu_codigo
 					 where cd.ven_codigo=NEW.ven_codigo order by cd.cob_codigo desc limit 1);
+		end if;
 	end if;
     -- Validamos si la operacion es de insercion
     IF TG_OP = 'INSERT' THEN
@@ -14463,28 +14941,7 @@ select cc.cuenco_saldo from cuenta_cobrar cc where cc.ven_codigo=1;
 
 CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_venta_cab()
 RETURNS TRIGGER AS $$
---Definimos las variables
-declare usuCodigo integer;
-		montoSaldo numeric;
-		tipcoCodigo integer;
 BEGIN
-	--Consultamos el saldo y tipo comprobante de cuenta cobrar
-	montoSaldo = (select cc.cuenco_saldo from cuenta_cobrar cc where cc.ven_codigo=NEW.ven_codigo);
-	tipcoCodigo = (select cc.tipco_codigo from cuenta_cobrar cc where cc.ven_codigo=NEW.ven_codigo);
-	--Definimos el usuario que inserto o modifico el registro
-	if (montoSaldo = 0) and (tipcoCodigo = 5) then
-		-- Si el comprobante es un recibo traemos el usuario de cobro
-		usuCodigo = (select cc.usu_codigo from cobro_det cd 
-					 join cobro_cab cc on cc.cob_codigo=cd.cob_codigo 
-					 where cd.ven_codigo=NEW.ven_codigo order by cd.cob_codigo desc limit 1);
-	elseif (montoSaldo = 0) and (tipcoCodigo = 1) then
-		-- Si el comprobante es una nota de credito traemos el usuario de nota venta
-		usuCodigo = (select nvc.usu_codigo from nota_venta_cab nvc where nvc.ven_codigo=NEW.ven_codigo 
-		and nvc.tipco_codigo=tipcoCodigo and nvc.notven_estado='ACTIVO');
-	else
-		-- Si no es recibo, ni nota de credito, traemos el usuario de venta
-		usuCodigo = (select vc.usu_codigo from venta_cab vc where vc.ven_codigo=NEW.ven_codigo);
-	end if;
     -- Validamos si la operacion es de insercion
     IF TG_OP = 'INSERT' THEN
         INSERT INTO venta_cab_auditoria(
@@ -14550,7 +15007,7 @@ BEGIN
         VALUES (
             (SELECT COALESCE(MAX(venaud_codigo), 0) + 1 FROM venta_cab_auditoria),   
 			current_timestamp,
-			'MODIFICACION',
+			(case NEW.ven_estado when 'ANULADO' then 'BAJA' else 'MODIFICACION' end),
             NEW.ven_codigo,
 			NEW.ven_fecha,
 			NEW.ven_numfactura,
@@ -14559,7 +15016,7 @@ BEGIN
 			NEW.ven_montocuota,
 			NEW.ven_interfecha,
 			NEW.ven_estado,
-			usuCodigo,
+			NEW.usu_codigo,
 			NEW.cli_codigo,
 			NEW.suc_codigo,
 			NEW.emp_codigo,
@@ -14664,6 +15121,453 @@ CREATE TRIGGER t_insercion_eliminacion_venta_det
 AFTER INSERT OR DELETE ON venta_det
 FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_venta_det();
 
+CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_cobro_cab()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Validamos si la operacion es de insercion
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO cobro_cab_auditoria(
+            cobaud_codigo,
+			cobaud_fecha,
+			cobaud_procedimiento,
+			cob_codigo,
+			cob_fecha,
+			cob_estado,
+			apercie_codigo,
+			suc_codigo,
+			emp_codigo,
+			caj_codigo,
+			usu_codigo,
+			tipco_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cobaud_codigo), 0) + 1 FROM cobro_cab_auditoria),   
+			current_timestamp,
+			'ALTA',
+            NEW.cob_codigo,
+			NEW.cob_fecha,
+			NEW.cob_estado,
+			NEW.apercie_codigo,
+			NEW.suc_codigo,
+			NEW.emp_codigo,
+			NEW.caj_codigo,
+			NEW.usu_codigo,
+			NEW.tipco_codigo
+        );
+    -- Validamos si la operacion es de actualizacion
+	ELSEIF TG_OP = 'UPDATE' THEN
+    	-- Registramos el nuevo valor actualizado
+    	INSERT INTO cobro_cab_auditoria(
+            cobaud_codigo,
+			cobaud_fecha,
+			cobaud_procedimiento,
+			cob_codigo,
+			cob_fecha,
+			cob_estado,
+			apercie_codigo,
+			suc_codigo,
+			emp_codigo,
+			caj_codigo,
+			usu_codigo,
+			tipco_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cobaud_codigo), 0) + 1 FROM cobro_cab_auditoria),   
+			current_timestamp,
+			'BAJA',
+            NEW.cob_codigo,
+			NEW.cob_fecha,
+			NEW.cob_estado,
+			NEW.apercie_codigo,
+			NEW.suc_codigo,
+			NEW.emp_codigo,
+			NEW.caj_codigo,
+			NEW.usu_codigo,
+			NEW.tipco_codigo
+        );
+	END IF;
+		RETURN NEW; --Este return no se utiliza
+END
+$$
+ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_insercion_actualizacion_cobro_cab
+CREATE TRIGGER t_insercion_actualizacion_cobro_cab
+AFTER INSERT OR UPDATE ON cobro_cab
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_cobro_cab();
+
+CREATE OR REPLACE FUNCTION spt_insercion_eliminacion_cobro_det()
+RETURNS TRIGGER AS $$
+--Creamos las variables
+DECLARE usuCodigo integer;
+		usuLogin varchar;
+BEGIN
+    -- Validamos si la operacion es de insercion
+    IF TG_OP = 'INSERT' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select cc.usu_codigo from cobro_cab cc where cc.cob_codigo=NEW.cob_codigo);
+		usuLogin = (select u.usu_login from cobro_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.cob_codigo=NEW.cob_codigo);
+        INSERT INTO cobro_det_auditoria(
+            cobdetaud_codigo,
+			usu_codigo,
+			usu_login,
+			cobdetaud_fecha,
+			cobdetaud_procedimiento,
+			cobdet_codigo,
+			cob_codigo,
+			ven_codigo,
+			cobdet_monto,
+			cobdet_numerocuota,
+			forco_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cobdetaud_codigo), 0) + 1 FROM cobro_det_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'ALTA',       
+            NEW.cobdet_codigo,
+			NEW.cob_codigo,
+			NEW.ven_codigo,
+			NEW.cobdet_monto,
+			NEW.cobdet_numerocuota,
+			NEW.forco_codigo
+        );
+    --Validamos si la operacion es una eliminacion
+    ELSIF TG_OP = 'DELETE' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select cc.usu_codigo from cobro_cab cc where cc.cob_codigo=OLD.cob_codigo);
+		usuLogin = (select u.usu_login from cobro_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.cob_codigo=OLD.cob_codigo);
+        INSERT INTO cobro_det_auditoria(
+            cobdetaud_codigo,
+			usu_codigo,
+			usu_login,
+			cobdetaud_fecha,
+			cobdetaud_procedimiento,
+			cobdet_codigo,
+			cob_codigo,
+			ven_codigo,
+			cobdet_monto,
+			cobdet_numerocuota,
+			forco_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cobdetaud_codigo), 0) + 1 FROM cobro_det_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'BAJA',       
+            OLD.cobdet_codigo,
+			OLD.cob_codigo,
+			OLD.ven_codigo,
+			OLD.cobdet_monto,
+			OLD.cobdet_numerocuota,
+			OLD.forco_codigo
+        );
+    END IF;
+		RETURN NEW;
+END;
+$$
+ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_insercion_eliminacion_cobro_det()
+CREATE TRIGGER t_insercion_eliminacion_cobro_det
+AFTER INSERT OR DELETE ON cobro_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_cobro_det();
+
+CREATE OR REPLACE FUNCTION spt_insercion_eliminacion_cobro_tarjeta()
+RETURNS TRIGGER AS $$
+--Creamos las variables
+DECLARE usuCodigo integer;
+		usuLogin varchar;
+BEGIN
+    -- Validamos si la operacion es de insercion
+    IF TG_OP = 'INSERT' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select cc.usu_codigo from cobro_cab cc where cc.cob_codigo=NEW.cob_codigo);
+		usuLogin = (select u.usu_login from cobro_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.cob_codigo=NEW.cob_codigo);
+        INSERT INTO cobro_tarjeta_auditoria(
+            cobtaaud_codigo,
+			usu_codigo,
+			usu_login,
+			cobtaaud_fecha,
+			cobtaaud_procedimiento,
+			cobta_codigo,
+			cobta_numero,
+			cobta_monto,
+			cobta_tipotarjeta,
+			entad_codigo,
+			ent_codigo,
+			marta_codigo,
+			cobdet_codigo,
+			cob_codigo,
+			ven_codigo,
+			cobta_transaccion,
+			redpa_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cobtaaud_codigo), 0) + 1 FROM cobro_tarjeta_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'ALTA',       
+            NEW.cobta_codigo,
+			NEW.cobta_numero,
+			NEW.cobta_monto,
+			NEW.cobta_tipotarjeta,
+			NEW.entad_codigo,
+			NEW.ent_codigo,
+			NEW.marta_codigo,
+			NEW.cobdet_codigo,
+			NEW.cob_codigo,
+			NEW.ven_codigo,
+			NEW.cobta_transaccion,
+			NEW.redpa_codigo
+        );
+    --Validamos si la operacion es una eliminacion
+    ELSIF TG_OP = 'DELETE' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select cc.usu_codigo from cobro_cab cc where cc.cob_codigo=OLD.cob_codigo);
+		usuLogin = (select u.usu_login from cobro_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.cob_codigo=OLD.cob_codigo);
+        INSERT INTO cobro_tarjeta_auditoria(
+            cobtaaud_codigo,
+			usu_codigo,
+			usu_login,
+			cobtaaud_fecha,
+			cobtaaud_procedimiento,
+			cobta_codigo,
+			cobta_numero,
+			cobta_monto,
+			cobta_tipotarjeta,
+			entad_codigo,
+			ent_codigo,
+			marta_codigo,
+			cobdet_codigo,
+			cob_codigo,
+			ven_codigo,
+			cobta_transaccion,
+			redpa_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cobtaaud_codigo), 0) + 1 FROM cobro_tarjeta_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'ALTA',       
+            OLD.cobta_codigo,
+			OLD.cobta_numero,
+			OLD.cobta_monto,
+			OLD.cobta_tipotarjeta,
+			OLD.entad_codigo,
+			OLD.ent_codigo,
+			OLD.marta_codigo,
+			OLD.cobdet_codigo,
+			OLD.cob_codigo,
+			OLD.ven_codigo,
+			OLD.cobta_transaccion,
+			OLD.redpa_codigo
+        );
+    END IF;
+		RETURN NEW;
+END;
+$$
+ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_insercion_eliminacion_cobro_tarjeta()
+CREATE TRIGGER t_insercion_eliminacion_cobro_tarjeta
+AFTER INSERT OR DELETE ON cobro_tarjeta
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_cobro_tarjeta();
+
+CREATE OR REPLACE FUNCTION spt_insercion_eliminacion_cobro_cheque()
+RETURNS TRIGGER AS $$
+--Creamos las variables
+DECLARE usuCodigo integer;
+		usuLogin varchar;
+BEGIN
+    -- Validamos si la operacion es de insercion
+    IF TG_OP = 'INSERT' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select cc.usu_codigo from cobro_cab cc where cc.cob_codigo=NEW.cob_codigo);
+		usuLogin = (select u.usu_login from cobro_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.cob_codigo=NEW.cob_codigo);
+        INSERT INTO cobro_cheque_auditoria(
+            cocheaud_codigo,
+			usu_codigo,
+			usu_login,
+			cocheaud_fecha,
+			cocheaud_procedimiento,
+			coche_codigo,
+			coche_numero,
+			coche_monto,
+			coche_tipocheque,
+			coche_fechavencimiento,
+			ent_codigo,
+			cobdet_codigo,
+			cob_codigo,
+			ven_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cocheaud_codigo), 0) + 1 FROM cobro_cheque_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'ALTA',       
+            NEW.coche_codigo,
+			NEW.coche_numero,
+			NEW.coche_monto,
+			NEW.coche_tipocheque,
+			NEW.coche_fechavencimiento,
+			NEW.ent_codigo,
+			NEW.cobdet_codigo,
+			NEW.cob_codigo,
+			NEW.ven_codigo
+        );
+    --Validamos si la operacion es una eliminacion
+    ELSIF TG_OP = 'DELETE' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select cc.usu_codigo from cobro_cab cc where cc.cob_codigo=OLD.cob_codigo);
+		usuLogin = (select u.usu_login from cobro_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.cob_codigo=OLD.cob_codigo);
+        INSERT INTO cobro_cheque_auditoria(
+            cocheaud_codigo,
+			usu_codigo,
+			usu_login,
+			cocheaud_fecha,
+			cocheaud_procedimiento,
+			coche_codigo,
+			coche_numero,
+			coche_monto,
+			coche_tipocheque,
+			coche_fechavencimiento,
+			ent_codigo,
+			cobdet_codigo,
+			cob_codigo,
+			ven_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cocheaud_codigo), 0) + 1 FROM cobro_cheque_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'BAJA',       
+            OLD.coche_codigo,
+			OLD.coche_numero,
+			OLD.coche_monto,
+			OLD.coche_tipocheque,
+			OLD.coche_fechavencimiento,
+			OLD.ent_codigo,
+			OLD.cobdet_codigo,
+			OLD.cob_codigo,
+			OLD.ven_codigo
+        );
+    END IF;
+		RETURN NEW;
+END;
+$$
+ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_insercion_eliminacion_cobro_cheque()
+CREATE TRIGGER t_insercion_eliminacion_cobro_cheque
+AFTER INSERT OR DELETE ON cobro_cheque
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_cobro_cheque();
+
+--Reejecucion de triggers
+--Compras
+CREATE TRIGGER t_insercion_eliminacion_pedido_compra_det
+AFTER INSERT OR DELETE ON pedido_compra_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_pedido_compra_det();
+
+CREATE TRIGGER t_insercion_eliminacion_presupuesto_proveedor_det
+AFTER INSERT OR DELETE ON presupuesto_proveedor_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_presupuesto_proveedor_det();
+
+CREATE TRIGGER t_insercion_eliminacion_compra_det
+AFTER INSERT OR DELETE ON compra_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_compra_det();
+
+CREATE TRIGGER t_insercion_eliminacion_ajuste_inventario_det
+AFTER INSERT OR DELETE ON ajuste_inventario_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_ajuste_inventario_det();
+
+CREATE TRIGGER t_insercion_eliminacion_nota_compra_det
+AFTER INSERT OR DELETE ON nota_compra_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_nota_compra_det();
+
+CREATE TRIGGER t_insercion_actualizacion_eliminacion_stock
+AFTER INSERT OR UPDATE OR DELETE ON stock
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_eliminacion_stock();
+
+--Venta
+CREATE TRIGGER t_insercion_eliminacion_pedido_venta_det
+AFTER INSERT OR DELETE ON pedido_venta_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_pedido_venta_det();
+
+CREATE TRIGGER t_insercion_actualizacion_apertura_cierre
+AFTER INSERT OR UPDATE ON apertura_cierre
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_apertura_cierre();
+
+CREATE TRIGGER t_insercion_recaudacion_depositar
+AFTER INSERT ON recaudacion_depositar
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_recaudacion_depositar();
+
+CREATE TRIGGER t_insercion_arqueo_control
+AFTER INSERT ON arqueo_control
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_arqueo_control_auditoria();
+
+CREATE TRIGGER t_insercion_actualizacion_venta_cab
+AFTER INSERT OR UPDATE ON venta_cab
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_venta_cab();
+
+CREATE TRIGGER t_insercion_eliminacion_venta_det
+AFTER INSERT OR DELETE ON venta_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_venta_det();
+
+CREATE TRIGGER t_insercion_pedido_venta
+AFTER INSERT ON pedido_venta
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_pedido_venta();
+
+CREATE TRIGGER t_insercion_actualizacion_libro_venta
+AFTER INSERT OR UPDATE ON libro_venta
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_libro_venta();
+
+--Produccion
+CREATE TRIGGER t_insercion_eliminacion_presupuesto_det
+AFTER INSERT OR DELETE ON presupuesto_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_presupuesto_det();
+
+CREATE TRIGGER t_insercion_eliminacion_orden_produccion_det
+AFTER INSERT OR DELETE ON orden_produccion_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_orden_produccion_det();
+
+CREATE TRIGGER t_insercion_eliminacion_componente_produccion_det
+AFTER INSERT OR DELETE ON componente_produccion_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_componente_produccion_det();
+
+CREATE TRIGGER t_insercion_eliminacion_orden_produccion_det2
+AFTER INSERT OR DELETE ON orden_produccion_det2
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_orden_produccion_det2();
+
+CREATE TRIGGER t_insercion_modificacion_eliminacion_produccion_det
+AFTER INSERT OR DELETE ON produccion_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_modificacion_eliminacion_produccion_det_auditoria();
+
+CREATE TRIGGER t_insercion_eliminacion_etapa_produccion
+AFTER INSERT OR DELETE ON etapa_produccion
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_etapa_produccion();
+
+CREATE TRIGGER t_insercion_eliminacion_produccion_terminada_det
+AFTER INSERT OR DELETE ON produccion_terminada_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_produccion_terminada_det();
+
+CREATE TRIGGER t_insercion_eliminacion_mermas_det
+AFTER INSERT OR DELETE ON mermas_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_mermas_det();
+
+CREATE TRIGGER t_insercion_eliminacion_control_calidad_det
+AFTER INSERT OR DELETE ON control_calidad_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_control_calidad_det();
+
+CREATE TRIGGER t_insercion_costo_produccion_det
+AFTER INSERT OR DELETE ON costo_produccion_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_costo_produccion_det();
 --vistas
 select * from v_costo_produccion_det vcpd where vcpd.copro_codigo=1;
 create or replace view v_costo_produccion_det as 
@@ -15115,6 +16019,10 @@ select
     					'CLIENTE'
     	when table_name='color_prenda' then
     					'COLOR PRENDA'
+    	when table_name='configuraciones' then
+    					'CONFIGURACIONES'
+    	when table_name='configuraciones_sucursal' then
+    					'CONFIGURACIONES SUCURSAL'
     	when table_name='deposito' then
     					'DEPOSITO'
     	when table_name='empresa' then
@@ -15253,6 +16161,10 @@ select
     					'/sys8DD/referenciales/venta/clientes/index.php'
     	when table_name='color_prenda' then
     					'/sys8DD/referenciales/produccion/color_prenda/index.php'
+    	when table_name='configuraciones' then
+    					'/sys8DD/referenciales/seguridad/configuraciones/index.php'
+    	when table_name='configuraciones_sucursal' then
+    					'/sys8DD/referenciales/seguridad/configuraciones_sucursal/index.php'
     	when table_name='deposito' then
     					'/sys8DD/referenciales/compra/deposito/index.php'
     	when table_name='empresa' then
@@ -15436,20 +16348,22 @@ join personas p on p.per_codigo=c.per_codigo
 order by nvc.notven_codigo;
 
 
-select * from v_cobro_det where cob_codigo=1;
+select * from v_cobro_det vcd where vcd.cob_codigo=1;
+
 create or replace view v_cobro_det as
 select
 	cd.cob_codigo, 
 	vc.ven_numfactura as factura,
 	p.per_nombre||' '||p.per_apellido as cliente,
+	p.per_numerodocumento as ci,
 	fc.forco_descripcion,
 	cd.cobdet_numerocuota,
 	cd.cobdet_monto,
 	vc.ven_cuota as cuota,
-	cc.cuenco_montosaldo as saldo,
+	cc.cuenco_saldo as saldo,
 	cd.cobdet_codigo,
 	cc.ven_codigo,
-	vc.vent_montocuota,
+	vc.ven_montocuota,
 	vc.ven_interfecha,
 	cd.forco_codigo,
 	ct.cobta_numero,
@@ -15458,6 +16372,9 @@ select
 	ct.entad_codigo,
 	ct.ent_codigo,
 	ct.marta_codigo,
+	ct.cobta_transaccion,
+	rp.redpa_codigo,
+	rp.redpa_descripcion,
 	cc2.coche_numero,
 	cc2.coche_monto,
 	cc2.coche_tipocheque,
@@ -15466,7 +16383,7 @@ select
 	ee.ent_razonsocial,
 	mt.marta_descripcion,
 	ee2.ent_razonsocial as ent_razonsocial2,
-	cc.cuenco_montototal 
+	cc.cuenco_monto
 from cobro_det cd
 	join cobro_cab cc3 on cc3.cob_codigo=cd.cob_codigo
 	join cuenta_cobrar cc on cc.ven_codigo=cd.ven_codigo
@@ -15482,6 +16399,7 @@ from cobro_det cd
 		and ea.marta_codigo=ct.marta_codigo
 		left join entidad_emisora ee on ee.ent_codigo=ea.ent_codigo
 		left join marca_tarjeta mt on mt.marta_codigo=ea.marta_codigo
+		left join red_pago rp on rp.redpa_codigo=ct.redpa_codigo 
 		left join cobro_cheque cc2 on cc2.cob_codigo=cd.cob_codigo
 		and cc2.ven_codigo=cd.ven_codigo
 		and cc2.cobdet_codigo=cd.cobdet_codigo
@@ -15489,6 +16407,7 @@ from cobro_det cd
 order by cd.cobdet_codigo;
 
 select * from v_cobro_cab;
+select * from v_cobro_cab vcc where vcc.cob_estado <> 'ANULADO';
 create or replace view v_cobro_cab as
 select 
 	cc.cob_codigo,
@@ -16413,7 +17332,7 @@ alter table cobro_tarjeta add column cobta_transaccion varchar;
 alter table cobro_tarjeta add column redpa_codigo integer;
 alter table cobro_tarjeta_auditoria add column cobta_transaccion varchar;
 alter table cobro_tarjeta_auditoria add column redpa_codigo integer;
-
+select now(); 
 update items set unime_codigo = 1;
 
 ALTER TABLE ciudad ALTER COLUMN ciu_audit SET NOT NULL;
@@ -16430,6 +17349,12 @@ ALTER TABLE cobro_cheque ALTER COLUMN coche_tipocheque TYPE tipo_cheque2 USING c
 
 alter table perfiles_permisos add column perfpe_codigo integer;
 alter table perfiles_permisos add constraint perfiles_permisos_pk primary key(perfpe_codigo); 
+
+ALTER TABLE venta_det 
+ADD PRIMARY KEY (ven_codigo, it_codigo, tipit_codigo, dep_codigo, suc_codigo, emp_codigo);
+
+ALTER TABLE venta_cab_auditoria 
+ADD PRIMARY KEY (venaud_codigo);
 
 create type sexo as enum('M', 'F');
 create type condicion_pago as enum('CONTADO', 'CREDITO');

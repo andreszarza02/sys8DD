@@ -580,6 +580,10 @@ if (isset($_SESSION['apertura'])) {
                               <li>
                                  <a href="/sys8DD/referenciales/seguridad/configuraciones/index.php">Configuraciones</a>
                               </li>
+                              <li>
+                                 <a href="/sys8DD/referenciales/seguridad/configuraciones_sucursal/index.php">Configuraciones
+                                    Sucursal</a>
+                              </li>
                            </ul>
                         </li>
                      <?php } ?>

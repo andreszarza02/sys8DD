@@ -100,9 +100,9 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line tip">
-                                 <input type="hidden" id="tipco_codigo" value="3">
+                                 <input type="hidden" id="tipco_codigo" value="0">
                                  <input type="text" class="form-control no-disabled" id="tipco_descripcion" disabled
-                                    onkeyup="getTipoComprobante()" value="REMISION">
+                                    onkeyup="getTipoComprobante()">
                                  <label class="form-label">Tipo Comprobante</label>
                                  <div id="listaTC" style="display: none;">
                                     <ul class="list-group" id="ulTC" Style="height: 100px; overflow: auto"></ul>
@@ -142,7 +142,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line vent">
-                                 <input type="number" class="form-control" id="ven_codigo" disabled value="1">
+                                 <input type="number" class="form-control" id="ven_codigo" disabled>
                                  <label class="form-label">N° Venta</label>
                               </div>
                            </div>
