@@ -122,7 +122,7 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line vent">
                                  <input type="text" class="form-control no-disabled" id="per_numerodocumento" disabled
-                                    onkeyup="metodo()">
+                                    onkeyup="getVenta()">
                                  <label class="form-label">Documento Cliente</label>
                                  <div id="listaVenta" style="display: none;">
                                     <ul class="list-group" id="ulVenta" Style="height: 100px; overflow: auto"></ul>
@@ -134,7 +134,7 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line vent">
                                  <input type="hidden" class="form-control" id="cli_codigo">
-                                 <input type="text" class="form-control" id="cliente" disabled>
+                                 <input type="text" class="form-control" id="cliente" readonly>
                                  <label class="form-label">Cliente</label>
                               </div>
                            </div>
@@ -142,7 +142,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line vent">
-                                 <input type="number" class="form-control" id="ven_codigo" disabled>
+                                 <input type="number" class="form-control" id="ven_codigo" readonly>
                                  <label class="form-label">N° Venta</label>
                               </div>
                            </div>
@@ -150,7 +150,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line vent">
-                                 <input type="text" class="form-control" id="ven_numfactura" disabled>
+                                 <input type="text" class="form-control" id="ven_numfactura" readonly>
                                  <label class="form-label">N° Factura</label>
                               </div>
                            </div>

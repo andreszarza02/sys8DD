@@ -794,23 +794,13 @@ const getTipoComprobante = () => {
 
 //Envia a los input de venta lo seleccionado en el autocompletado
 const seleccionVenta = (datos) => {
-  if (datos.ven_codigo == 0) {
-    $("#cedula").val("");
-    $("#tipco_descripcion").val("");
-    $("#notven_concepto").val("");
-    $(".vent").attr("class", "form-line vent");
-    $(".tip").attr("class", "form-line tip");
-    $(".con").attr("class", "form-line con");
-    $("#listaVenta").attr("style", "display: none;");
-  } else {
-    //Enviamos los datos a su respectivo input
-    Object.keys(datos).forEach((key) => {
-      $("#" + key).val(datos[key]);
-    });
-    $("#ulVenta").html();
-    $("#listaVenta").attr("style", "display: none;");
-    $(".vent").attr("class", "form-line vent focused");
-  }
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulVenta").html();
+  $("#listaVenta").attr("style", "display: none;");
+  $(".vent").attr("class", "form-line vent focused");
 };
 
 //Busca, filtra y muestra las ventas
@@ -820,20 +810,22 @@ const getVenta = () => {
     method: "POST",
     url: "/sys8DD/others/complements_php/listasMovimientos/listaVentaNotaVenta.php",
     data: {
-      tipco_codigo: $("#tipco_codigo").val(),
-      notven_fecha: $("#notven_fecha").val(),
-      cedula: $("#cedula").val(),
+      per_numerodocumento: $("#per_numerodocumento").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
       let fila = "";
       $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionVenta(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.venta +
-          "</li>";
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionVenta(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.venta +
+            "</li>";
+        }
       });
 
       //cargamos la lista
@@ -841,7 +833,7 @@ const getVenta = () => {
       //hacemos visible la lista
       $("#listaVenta").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {
