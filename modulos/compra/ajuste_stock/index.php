@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -47,7 +48,7 @@ foreach ($permisos as $permiso) {
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Ajuste de Inventario</title>
+   <title>Ajuste de Stock</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -68,12 +69,12 @@ foreach ($permisos as $permiso) {
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Formulario Ajuste Inventario -->
+            <!-- Formulario Ajuste Stock -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
                   <div class="header" style="background: #4DC18B;">
                      <h2 style="color: white; font-weight: bold;">
-                        FORMULARIO DE AJUSTE INVENTARIO
+                        FORMULARIO DE AJUSTE STOCK
                      </h2>
                   </div>
                   <div class="body">
@@ -186,13 +187,13 @@ foreach ($permisos as $permiso) {
                </div>
             </div>
 
-            <!-- Formulario Ajuste Inventario Detalle -->
+            <!-- Formulario Ajuste Stock Detalle -->
             <div id="detalle" style="display: none;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
                      <div class="header" style="background: #4DC18B;">
                         <h2 style="color: white; font-weight: bold;">
-                           DETALLE AJUSTE INVENTARIO
+                           DETALLE AJUSTE STOCK
                         </h2>
                      </div>
                      <div class="body">
@@ -289,7 +290,7 @@ foreach ($permisos as $permiso) {
                            </div>
                         </div>
 
-                        <!-- Grilla Ajuste Inventario Detalle -->
+                        <!-- Grilla Ajuste Stock Detalle -->
                         <div class="table-responsive">
                            <table class="table table-bordered table-striped table-hover">
                               <thead>
@@ -314,13 +315,13 @@ foreach ($permisos as $permiso) {
                </div>
             </div>
 
-            <!-- Grilla Ajuste Inventario-->
+            <!-- Grilla Ajuste Stock-->
             <div class="col-lg-12 col-md-12 col-sm-12" id="cabecera" style="display: block">
                <div class="card">
                   <div class="header" style="background: #4DC18B;">
                      <h2 style="color: white; font-weight: bold;">
-                        AJUSTES DE INVENTARIOS REGISTRADOS <small style="color: white; font-weight: bold;">Lista de
-                           Ajsutes de Inventarios Registrados</small>
+                        AJUSTES DE STOCK REGISTRADOS <small style="color: white; font-weight: bold;">Lista de
+                           Ajustes de Stock Registrados</small>
                      </h2>
                   </div>
                   <div class="body">

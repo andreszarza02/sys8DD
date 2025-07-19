@@ -7,7 +7,7 @@ session_start();
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Informe Referencial Compras</title>
+   <title>Informes Referenciales Compras</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -44,41 +44,40 @@ session_start();
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Formulario Informe Referecial Compras -->
+            <!-- Formulario Informes Refereciales Compras -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
                   <div class="header">
                      <h2>
-                        INFORME REFERENCIAL COMPRAS
+                        INFORMES REFERENCIALES COMPRAS
                      </h2>
                   </div>
                   <div class="body">
                      <div class="row clearfix">
-                        <div class="col-sm-3">
-                           <div class="form-group form-float">
-                              <div class="form-line focused">
-                                 <input type="text" class="form-control" id="desde">
-                                 <label class="form-label">DESDE</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-3">
-                           <div class="form-group form-float">
-                              <div class="form-line focused">
-                                 <input type="text" class="form-control" id="hasta">
-                                 <label class="form-label">HASTA</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line t focused">
                                  <input type="text" class="form-control" id="tablas" onclick="getTablas()">
                                  <label class="form-label">Referenciales Compras</label>
                                  <div id="listaTablas" style="display: none;">
-                                    <ul class="list-group" id="ulTablas"
-                                       Style="height: 200px; width:340px; overflow: auto"></ul>
+                                    <ul class="list-group" id="ulTablas" Style="height: 200px; overflow: auto"></ul>
                                  </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-4">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="text" class="form-control" id="desde">
+                                 <label class="form-label">Desde</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-4">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="text" class="form-control" id="hasta">
+                                 <label class="form-label">Hasta</label>
                               </div>
                            </div>
                         </div>
@@ -88,7 +87,7 @@ session_start();
                      <div class=" icon-and-text-button-demo">
                         <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                            <i class="material-icons">content_paste</i>
-                           <span>CONSULTAR</span>
+                           <span>GENERAR</span>
                         </button>
                         <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
                            <i class="material-icons">lock</i>

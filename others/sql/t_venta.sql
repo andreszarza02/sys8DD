@@ -689,9 +689,9 @@ BEGIN
 	elseif NEW.tipco_codigo in (1, 2) then
 		-- Si el comprobante es una nota traemos el usuario de nota venta
 		usuCodigo = (select nvc.usu_codigo from nota_venta_cab nvc where nvc.ven_codigo=NEW.ven_codigo 
-		and nvc.tipco_codigo=NEW.tipco_codigo and nvc.notven_estado='ACTIVO');
-		usuLogin = (select u.usu_login from nota_venta_cab nvc join usuario u on u.usu_codigo=nvc.usu_codigo where nvc.ven_codigo=NEW.ven_codigo
-		and nvc.tipco_codigo=NEW.tipco_codigo and nvc.notven_estado='ACTIVO');
+		and nvc.tipco_codigo=NEW.tipco_codigo order by nvc.notven_codigo desc limit 1);
+		usuLogin = (select nvc.usu_codigo from nota_venta_cab nvc where nvc.ven_codigo=NEW.ven_codigo 
+		and nvc.tipco_codigo=NEW.tipco_codigo order by nvc.notven_codigo desc limit 1);
 	elseif NEW.tipco_codigo = 5 then
 		--Si el comprobante es un recibo traemos el usuario de las tablas de cobro
 		--Traemos el codigo de cobro y lo guardamos dentro de una variable para su validacion, en caso de no existir devolvera 0
@@ -1147,3 +1147,173 @@ $$
 CREATE TRIGGER t_insercion_eliminacion_cobro_cheque
 AFTER INSERT OR DELETE ON cobro_cheque
 FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_cobro_cheque();
+
+-- NOTA VENTA CABECERA
+CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_nota_venta_cab()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Validamos si la operacion es de insercion
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO nota_venta_cab_auditoria(
+            notvenaud_codigo,
+			notvenaud_fecha,
+			notvenaud_procedimiento,
+			notven_codigo,
+			notven_fecha,
+			notven_numeronota,
+			notven_concepto,
+			notven_estado,
+			tipco_codigo,
+			ven_codigo,
+			suc_codigo,
+			emp_codigo,
+			usu_codigo,
+			cli_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(notvenaud_codigo), 0) + 1 FROM nota_venta_cab_auditoria),   
+			current_timestamp,
+			'ALTA',
+            NEW.notven_codigo,
+			NEW.notven_fecha,
+			NEW.notven_numeronota,
+			NEW.notven_concepto,
+			NEW.notven_estado,
+			NEW.tipco_codigo,
+			NEW.ven_codigo,
+			NEW.suc_codigo,
+			NEW.emp_codigo,
+			NEW.usu_codigo,
+			NEW.cli_codigo
+        );
+    -- Validamos si la operacion es de actualizacion
+	ELSEIF TG_OP = 'UPDATE' THEN
+    	-- Registramos el nuevo valor actualizado
+    	INSERT INTO nota_venta_cab_auditoria(
+            notvenaud_codigo,
+			notvenaud_fecha,
+			notvenaud_procedimiento,
+			notven_codigo,
+			notven_fecha,
+			notven_numeronota,
+			notven_concepto,
+			notven_estado,
+			tipco_codigo,
+			ven_codigo,
+			suc_codigo,
+			emp_codigo,
+			usu_codigo,
+			cli_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(notvenaud_codigo), 0) + 1 FROM nota_venta_cab_auditoria),   
+			current_timestamp,
+			'BAJA',
+            OLD.notven_codigo,
+			OLD.notven_fecha,
+			OLD.notven_numeronota,
+			OLD.notven_concepto,
+			OLD.notven_estado,
+			OLD.tipco_codigo,
+			OLD.ven_codigo,
+			OLD.suc_codigo,
+			OLD.emp_codigo,
+			OLD.usu_codigo,
+			OLD.cli_codigo
+        );
+	END IF;
+		RETURN NEW; --Este return no se utiliza
+END
+$$
+ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_insercion_actualizacion_nota_venta_cab
+CREATE TRIGGER t_insercion_actualizacion_nota_venta_cab
+AFTER INSERT OR UPDATE ON nota_venta_cab
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_nota_venta_cab();
+
+-- NOTA VENTA DETALLE
+CREATE OR REPLACE FUNCTION spt_insercion_eliminacion_nota_venta_det()
+RETURNS TRIGGER AS $$
+--Creamos las variables
+DECLARE usuCodigo integer;
+		usuLogin varchar;
+BEGIN
+    -- Validamos si la operacion es de insercion
+    IF TG_OP = 'INSERT' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select nvc.usu_codigo from nota_venta_cab nvc where nvc.notven_codigo=NEW.notven_codigo);
+		usuLogin = (select u.usu_login from nota_venta_cab nvc join usuario u on u.usu_codigo=nvc.usu_codigo where nvc.notven_codigo=NEW.notven_codigo);
+        INSERT INTO nota_venta_det_auditoria(
+            notvendetaud_codigo,
+			usu_codigo,
+			usu_login,
+			notvendetaud_fecha,
+			notvendetaud_procedimiento,
+			notven_codigo,
+			it_codigo,
+			tipit_codigo,
+			notvendet_cantidad,
+			notvendet_precio,
+			dep_codigo,
+			suc_codigo,
+			emp_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(notvendetaud_codigo), 0) + 1 FROM nota_venta_det_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'ALTA',       
+            NEW.notven_codigo,
+			NEW.it_codigo,
+			NEW.tipit_codigo,
+			NEW.notvendet_cantidad,
+			NEW.notvendet_precio,
+			NEW.dep_codigo,
+			NEW.suc_codigo,
+			NEW.emp_codigo
+        );
+    --Validamos si la operacion es una eliminacion
+    ELSIF TG_OP = 'DELETE' THEN
+		--Sacamos el codigo y nombre de usuario
+		usuCodigo = (select nvc.usu_codigo from nota_venta_cab nvc where nvc.notven_codigo=OLD.notven_codigo);
+		usuLogin = (select u.usu_login from nota_venta_cab nvc join usuario u on u.usu_codigo=nvc.usu_codigo where nvc.notven_codigo=OLD.notven_codigo);
+        INSERT INTO cobro_det_auditoria(
+            cobdetaud_codigo,
+			usu_codigo,
+			usu_login,
+			cobdetaud_fecha,
+			cobdetaud_procedimiento,
+			cobdet_codigo,
+			cob_codigo,
+			ven_codigo,
+			cobdet_monto,
+			cobdet_numerocuota,
+			forco_codigo
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(notvendetaud_codigo), 0) + 1 FROM nota_venta_det_auditoria), 
+            usuCodigo, 
+            usuLogin,  
+            current_timestamp,
+            'BAJA',       
+            OLD.notven_codigo,
+			OLD.it_codigo,
+			OLD.tipit_codigo,
+			OLD.notvendet_cantidad,
+			OLD.notvendet_precio,
+			OLD.dep_codigo,
+			OLD.suc_codigo,
+			OLD.emp_codigo
+        );
+    END IF;
+		RETURN NEW;
+END;
+$$
+ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_insercion_eliminacion_nota_venta_det()
+CREATE TRIGGER t_insercion_eliminacion_nota_venta_det
+AFTER INSERT OR DELETE ON nota_venta_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_nota_venta_det();

@@ -29,7 +29,7 @@ $permisos = pg_fetch_all($resultado);
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Factura Venta</title>
+   <title>Timbrados</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -50,12 +50,12 @@ $permisos = pg_fetch_all($resultado);
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Formulario Factura Venta-->
+            <!-- Formulario Timbrados-->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
                   <div class="header">
                      <h2>
-                        FORMULARIO DE FACTURA VENTA<small>Mantener referencial factura venta</small>
+                        FORMULARIO DE TIMBRADOS<small>Mantener referencial de timbrados</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -139,13 +139,13 @@ $permisos = pg_fetch_all($resultado);
                </div>
             </div>
 
-            <!-- Grilla Factura Venta -->
+            <!-- Grilla Timbrados -->
             <div id="facturas" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
                      <div class="header">
                         <h2>
-                           FACTURAS DE VENTA <small>Lista de facturas de ventas registradas</small>
+                           TIMBRADOS <small>Lista de timbrados registradas</small>
                         </h2>
                      </div>
                      <div class="body">

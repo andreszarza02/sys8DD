@@ -1,6 +1,9 @@
 <?php
+
 //Iniciamos sesion
 session_start();
+
+//Guardamos datos de la sesion
 $usuario = $_SESSION['usuario']['usu_login'];
 $perfil = $_SESSION['usuario']['perf_descripcion'];
 $modulo = $_SESSION['usuario']['modu_descripcion'];
@@ -12,11 +15,18 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$desde = $_GET['desde'];
-$hasta = $_GET['hasta'];
+//Definimos la sentencia SQL a ejecutar
+$sql = "select 
+            c.ciu_codigo,
+            c.ciu_descripcion,
+            c.ciu_estado 
+         from ciudad c 
+         order by c.ciu_codigo;";
 
-$sql = "select * from ciudad where ciu_codigo between $desde and $hasta order by ciu_codigo;";
+//Ejecutamos la consulta
 $resultado = pg_query($conexion, $sql);
+
+//Creamos un array de arrays asociativos para almacenar los resultados
 $datos = pg_fetch_all($resultado);
 
 ?>
@@ -31,10 +41,10 @@ $datos = pg_fetch_all($resultado);
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Reporte Ciudad</title>
    <style>
-      .tabla {
-         border-collapse: collapse;
-         width: 100%;
-         font-size: 10px;
+      body {
+         font-family: Arial, sans-serif;
+         margin: 0;
+         padding: 0;
       }
 
       th,
@@ -53,7 +63,6 @@ $datos = pg_fetch_all($resultado);
          text-align: center;
          text-transform: uppercase;
          letter-spacing: -1px;
-         font-family: 'Times New Roman', Times, serif;
       }
 
       h4 {
@@ -69,6 +78,40 @@ $datos = pg_fetch_all($resultado);
 
       .usuario {
          margin-bottom: 10px;
+      }
+
+      .tabla {
+         width: 80%;
+         margin: 40px auto;
+         border-collapse: collapse;
+         font-family: Arial, sans-serif;
+         box-shadow: 0 2px 8px #009688;
+      }
+
+      .tabla caption {
+         caption-side: top;
+         font-size: 1.3em;
+         margin-bottom: 10px;
+         font-weight: bold;
+         color: #333;
+      }
+
+      .tabla th,
+      .tabla td {
+         border: 1px solid #ddd;
+         padding: 12px 16px;
+         text-align: left;
+      }
+
+      .tabla th {
+         background-color: #009688;
+         color: #fff;
+         text-transform: uppercase;
+         font-size: 14px;
+      }
+
+      .tabla tr:nth-child(even) {
+         background-color: #f9f9f9;
       }
    </style>
 </head>
@@ -104,21 +147,21 @@ $datos = pg_fetch_all($resultado);
    <table class="tabla">
       <thead>
          <tr>
-            <th>CODIGO</th>
-            <th>DESCRIPCION</th>
+            <th>CÓDIGO</th>
+            <th>DESCRIPCIÓN</th>
             <th>ESTADO</th>
          </tr>
       </thead>
       <tbody>
          <?php foreach ($datos as $fila) { ?>
-            <tr class="fila">
-               <td class="celda">
+            <tr>
+               <td>
                   <?php echo $fila['ciu_codigo'] ?>
                </td>
-               <td class="celda">
+               <td>
                   <?php echo $fila['ciu_descripcion'] ?>
                </td>
-               <td class="celda">
+               <td>
                   <?php echo $fila['ciu_estado'] ?>
                </td>
 
@@ -142,7 +185,7 @@ $dompdf = new Dompdf();
 
 $dompdf->loadHtml($html);
 
-$dompdf->setPaper('A4', 'landscape'); //portrait -> vertical landscape -> horizontal
+$dompdf->setPaper('A4', 'portrait'); //portrait -> vertical landscape -> horizontal
 
 $dompdf->render();
 

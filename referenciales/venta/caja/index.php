@@ -120,7 +120,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="botonesExtra2" style="display: none;">
                            <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                               <i class="material-icons">save</i>
-                              <span>GRABAR</span>
+                              <span>CONFIRMAR</span>
                            </button>
                            <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>

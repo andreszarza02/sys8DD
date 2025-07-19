@@ -1300,29 +1300,165 @@ create or replace function sp_nota_venta_cab(
     empcodigo integer,
     usucodigo integer,
     clicodigo integer,
-    operacion integer --1:insert 2:update
+    operacion integer 
 ) returns void as
 $function$
-declare ultcod integer;
+-- Declaramos las variables a utilizar
+declare ultCodLibroVenta integer;
+		estadoVenta varchar;
+		c_nota_venta_det cursor is
+		select 
+		it_codigo,
+		tipit_codigo,
+		dep_codigo,
+		suc_codigo,
+		emp_codigo,
+		notvendet_cantidad 
+		from nota_venta_det
+		where notven_codigo=notvencodigo;
+		totalSuma numeric;
 begin 
+	 -- Validamos si la operacion es de insercion
      if operacion = 1 then
+		ultCodLibroVenta = (select coalesce(max(libven_codigo),0)+1 from libro_venta);
+		--Validamos que no se repita el numero de nota
      	perform * from nota_venta_cab
      	where notven_numeronota=notvennumeronota and notvenestado='ACTIVO';
      	if found then
+			 -- En caso de que si, generamos una excepcion
      		 raise exception 'nota';
+		-- En caso de no generar excepciones procedemos con la insercion
      	elseif operacion = 1 then
-     	 ultcod = (select coalesce(max(notven_codigo),0)+1 from nota_venta_cab);
-	     insert into nota_venta_cab(notven_codigo, notven_fecha, notven_numeronota, notven_concepto, 
-	     notven_estado, tipco_codigo, ven_codigo, suc_codigo, emp_codigo, usu_codigo, cli_codigo)
-		 values(ultcod, notvenfecha, notvennumeronota, upper(notvenconcepto), 
-		 'ACTIVO', tipcocodigo, vencodigo, succodigo, empcodigo, usucodigo, clicodigo);
+	     insert into nota_venta_cab(
+		 notven_codigo, 
+		 notven_fecha, 
+		 notven_numeronota, 
+		 notven_concepto, 
+	     notven_estado, 
+		 tipco_codigo, 
+		 ven_codigo, 
+		 suc_codigo, 
+		 emp_codigo, 
+		 usu_codigo, 
+		 cli_codigo
+		 )
+		 values(
+		 notvencodigo, 
+		 notvenfecha, 
+		 notvennumeronota, 
+		 upper(notvenconcepto), 
+		 'ACTIVO', 
+		 tipcocodigo, 
+		 vencodigo, 
+		 succodigo, 
+		 empcodigo, 
+		 usucodigo, 
+		 clicodigo
+		 );
+		 -- Cargamos Libro venta dependiendo del tipo de comprobante
+		 if tipcocodigo in(1,2) then
+			 insert into libro_venta(
+			 libven_codigo, 
+			 ven_codigo, 	
+			 libven_exenta, 
+		     libven_iva5, 
+			 libven_iva10, 
+			 libven_fecha,
+			 libven_numcomprobante, 
+			 libven_estado, 
+			 tipco_codigo
+			 )
+			 values(
+			 ultCodLibroVenta, 
+			 ven_codigo, 
+			 0, 
+			 0, 
+			 0, 
+			 notvenfecha, 
+			 notvennumeronota, 
+			 'ACTIVO', 
+			 tipcocodigo
+			);
+		 end if;
+		 -- Generamos un mensaje al terminar la insercion
 		 raise notice 'LA NOTA DE VENTA FUE REGISTRADA CON EXITO';
 		end if;
     end if;
+	-- Validamos si la operacion es de anulacion
     if operacion = 2 then 
+		-- Actualizamos el estado de nota venta
     	update nota_venta_cab 
-		set notven_estado='ANULADO'
+		set notven_estado='ANULADO', usu_codigo=usucodigo
 		where notven_codigo=notvencodigo;
+		-- Si la nota es de credito 
+		if tipcocodigo = 1 then
+			-- Actualizamos estado de libro venta
+			update libro_venta
+			set libven_estado='ANULADO'
+			where ven_codigo=vencodigo
+			and libven_numcomprobante=nocomnumeronota
+			and tipco_codigo=tipcocodigo;
+			-- Volvemos stock a como estaba
+			for nota in c_nota_venta_det loop
+				update stock set st_cantidad=st_cantidad-nota.notvendet_cantidad 
+				where it_codigo=nota.it_codigo 
+				and tipit_codigo=nota.tipit_codigo 
+				and dep_codigo=nota.dep_codigo
+				and suc_codigo=nota.suc_codigo 
+				and emp_codigo=nota.emp_codigo;
+			end loop;
+			-- Guardamos la sumatoria del detalle de nota venta en una variable
+			totalSuma := (select coalesce(sum((case nvd.tipit_codigo when 3 then nvd.notvendet_precio else nvd.notvendet_cantidad*nvd.notvendet_precio end)), 0) total
+			from nota_venta_det nvd where nvd.notven_codigo=notvencodigo);
+			-- Consultamos el estado de venta cabecera
+			estadoVenta := (select vc.ven_estado from venta_cab vc where vc.ven_codigo=vencodigo);
+			-- Validamos que el monto del detalle sea mayor a cero
+			if totalSuma > 0 then
+				-- Actualizamos el monto de cuenta cobrar con lo restado en el detalle
+				update cuenta_cobrar 
+			 	set cuenco_monto=cuenco_monto+totalSuma, 
+			 	 	cuenco_saldo=cuenco_saldo+totalSuma,
+					cuenco_estado='ACTIVO',
+				 	tipco_codigo=tipcocodigo
+			 	where ven_codigo=vencodigo;
+				-- Validamos el estado de venta
+				if estadoVenta = 'ANULADO' then
+					-- En caso de estar anulado procedemos con su actualizacion
+					update venta_cab set ven_estado='ACTIVO', usu_codigo=usucodigo where ven_codigo=vencodigo; 
+				end if;
+		end if;
+		-- Si la nota es de debito
+		elseif tipcocodigo = 2 then
+			-- Actualizamos estado de libro venta
+			update libro_venta
+			set libven_estado='ANULADO'
+			where ven_codigo=vencodigo
+			and libven_numcomprobante=nocomnumeronota
+			and tipco_codigo=tipcocodigo;
+			-- Volvemos stock a como estaba
+			for nota in c_nota_venta_det loop
+				update stock set st_cantidad=st_cantidad+nota.notvendet_cantidad 
+				where it_codigo=nota.it_codigo 
+				and tipit_codigo=nota.tipit_codigo 
+				and dep_codigo=nota.dep_codigo
+				and suc_codigo=nota.suc_codigo 
+				and emp_codigo=nota.emp_codigo;
+			end loop;
+			-- Guardamos la sumatoria del detalle de nota venta en una variable
+			totalSuma := (select coalesce(sum((case nvd.tipit_codigo when 3 then nvd.notvendet_precio else nvd.notvendet_cantidad*nvd.notvendet_precio end)), 0) total
+			from nota_venta_det nvd where nvd.notven_codigo=notvencodigo);
+			-- Validamos que el monto del detalle sea mayor a cero
+			if totalSuma > 0 then
+				-- Actualizamos el monto de cuenta cobrar con lo sumado en el detalle
+				update cuenta_cobrar 
+			 	set cuenco_monto=cuenco_monto-totalSuma, 
+			 	 	cuenco_saldo=cuenco_saldo-totalSuma,
+					cuenco_estado='ACTIVO',
+				 	tipco_codigo=tipcocodigo
+			 	where ven_codigo=vencodigo;
+			end if;
+		end if;
+		-- Generamos un mensaje al terminar la insercion
 		raise notice 'LA NOTA DE VENTA FUE ANULADA CON EXITO';
     end if;
 end
@@ -1336,24 +1472,157 @@ create or replace function sp_nota_venta_det(
     tipitcodigo integer,
     notvendetcantidad integer,
     notvendetprecio numeric,
-    operacion integer --1:insert 2:update
+    depcodigo integer,
+    succodigo integer,
+    empcodigo integer,
+    tipcocodigo integer,
+    vencodigo integer, 
+    libvennumcomprobante varchar,
+    tipimcodigo integer,
+    usucodigo integer,
+    operacion integer
 ) returns void as
 $function$
+-- Declaramos las variables a utilizar
+declare monto numeric;
+		montoIva5 numeric := 0;
+		montoIva10 numeric := 0;
+		montoIvaExenta numeric := 0;
+		montoCuenta numeric := 0;
+	    ventaEstado varchar;
 begin 
+	 -- Validamos si la operacion es de insercion
      if operacion = 1 then
+		-- Validamos que no se repita el item en el detalle
      	perform * from nota_venta_det
-     	where it_codigo=itcodigo and notven_codigo=notvencodigo;
+     	where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
+		and suc_codigo=succodigo and emp_codigo=empcodigo and notven_codigo=notvencodigo;
      	if found then
+			 -- En caso de repetirse un item, generamos una excepcion
      		 raise exception 'item';
      	elseif operacion = 1 then
-		     insert into nota_venta_det(notven_codigo, it_codigo, tipit_codigo, notvendet_cantidad, notvendet_precio)
-			 values(notvencodigo, itcodigo, tipitcodigo, notvendetcantidad, notvendetprecio);
+			 -- Insertamos un registro en nota venta detalle, independientemente del tipo de comprobante
+		     insert into nota_venta_det(
+				 notven_codigo, 
+				 it_codigo, 
+				 tipit_codigo, 
+				 notvendet_cantidad, 
+				 notvendet_precio,
+				 dep_codigo,
+				 suc_codigo,
+				 emp_codigo
+			 )
+			 values(
+				 notvencodigo, 
+				 itcodigo, 
+				 tipitcodigo, 
+				 notvendetcantidad, 
+				 notvendetprecio,
+				 depcodigo,
+				 succodigo,
+				 empcodigo);
+			 -- Actualizamos registro en cuenta cobrar, libro venta y stock, solo en caso de ser una nota de credito o debito
+			 if tipcocodigo in(1,2) then
+			     -- Actualizamos la cantidad de item en stock
+			 	 update stock
+				 set st_cantidad = case when tipcocodigo = 1 then st_cantidad + notvendetcantidad else st_cantidad - notvendetcantidad end 
+				 where it_codigo = itcodigo
+				 and tipit_codigo = tipitcodigo
+				 and dep_codigo = depcodigo
+				 and suc_codigo = succodigo
+				 and emp_codigo = empcodigo;
+				 --Definicion de monto para cuenta cobrar
+				 if tipcocodigo = 1 then
+					-- Si el tipo de comprobante es credito, multiplicamos cantidad por precio y lo convertimos en negativo
+				 	monto := (notvendetcantidad*notvendetprecio)*-1; 
+				 else
+					-- Si no es credito es debito, por ende multiplicamos cantidad por precio y lo dejamos en positivo
+					monto := (notvendetcantidad*notvendetprecio); 
+				 end if;
+				 -- Para repartir el valor en libro venta, validamos el tipo de impuesto
+				 if tipimcodigo = 1 then -- Iva 5%
+					montoIva5 := monto;
+				 elseif tipimcodigo = 2 then -- Iva 10% 
+					montoIva10 := monto;
+				 else -- Iva exenta
+					montoIvaExenta := monto;
+				 end if;
+				 -- Llamamos al sp de cuenta cobrar y libro venta y le pasamos los parametros necesarios para ejecutarse
+				 -- Cuenta Cobrar
+				 perform sp_cuenta_cobrar(vencodigo, monto, monto, tipcocodigo, operacion);
+				 -- Libro Venta
+				 perform sp_libro_venta(vencodigo, montoIvaExenta, montoIva5, montoIva10, libvennumcomprobante, tipcocodigo, operacion);
+				 -- Validamos el tipo de comprobante para actualizar o no los estados
+				 if tipcocodigo = 1 then 
+					--En caso de ser una nota de credito, consultamos el monto de cuenta cobrar
+					select cc.cuenco_monto into montoCuenta from cuenta_cobrar cc where cc.ven_codigo=vencodigo;
+					-- Validamos el monto de cuena cobrar
+					if montoCuenta = 0 then 
+						-- En caso de ser 0, procedemos con la actualizacion de estado a anulado
+						-- Cuenta cobrar
+						update cuenta_cobrar set cuenco_estado='ANULADO' where ven_codigo=vencodigo;
+						-- Venta cabecera
+						update venta_cab set ven_estado='ANULADO', usu_codigo=usucodigo  where ven_codigo=vencodigo;
+					end if;
+				 end if;
+			 end if;
+			 -- Enviamos un mensaje de confirmacion de insercion
 			 raise notice 'LA NOTA DE VENTA DETALLE FUE REGISTRADA CON EXITO';
 		end if;
     end if;
+	-- Validamos si la operacion es de eliminacion
     if operacion = 2 then 
+		-- Procedemos con la eliminacion del registro en este caso una eliminacion fisica
     	delete from nota_venta_det 
-    	where notven_codigo=notvencodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo;
+    	where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
+		and suc_codigo=succodigo and emp_codigo=empcodigo and notven_codigo=notvencodigo;
+		-- Actualizamos registro en cuenta cobrar, libro venta y stock, solo en caso de ser una nota de credito o debito
+		if tipcocodigo in(1,2) then
+			-- Actualizamos la cantidad de item en stock
+			update stock
+			set st_cantidad = case when tipcocodigo = 1 then st_cantidad - notvendetcantidad else st_cantidad + notvendetcantidad end 
+			where it_codigo = itcodigo
+			and tipit_codigo = tipitcodigo
+			and dep_codigo = depcodigo
+			and suc_codigo = succodigo
+			and emp_codigo = empcodigo;
+			--Definicion de monto para cuenta cobrar
+			if tipcocodigo = 1 then
+				-- Si el tipo de comprobante es credito, multiplicamos cantidad por precio y lo convertimos en negativo
+				 monto := (notvendetcantidad*notvendetprecio)*-1; 
+			else
+				-- Si no es credito es debito, por ende multiplicamos cantidad por precio y lo dejamos en positivo
+				monto := (notvendetcantidad*notvendetprecio); 
+			end if;
+			-- Para repartir el valor en libro venta, validamos el tipo de impuesto
+			if tipimcodigo = 1 then -- Iva 5%
+				montoIva5 := monto;
+			elseif tipimcodigo = 2 then -- Iva 10% gugu
+				montoIva10 := monto;
+			else -- Iva exenta
+				montoIvaExenta := monto;
+			end if;
+			-- Llamamos al sp de cuenta cobrar y libro venta y le pasamos los parametros necesarios para ejecutarse
+			-- Cuenta Cobrar
+			perform sp_cuenta_cobrar(vencodigo, monto, monto, tipcocodigo, operacion);
+			-- Libro Venta
+			perform sp_libro_venta(vencodigo, montoIvaExenta, montoIva5, montoIva10, libvennumcomprobante, tipcocodigo, operacion);
+			-- Validamos el tipo de comprobante para actualizar o no los estados
+			if tipcocodigo = 1 then 
+				--En caso de ser una nota de credito, consultamos el monto de cuenta cobrar y el estado de venta cabecera
+				select cc.cuenco_monto into montoCuenta from cuenta_cobrar cc where cc.ven_codigo=vencodigo;
+				select ven_estado into ventaEstado from venta_cab where ven_codigo=vencodigo;
+				-- Validamos el monto de cuena cobrar
+				if montoCuenta > 0 and ventaEstado = 'ANULADO' then 
+					-- En caso de ser mayor a 0 y tener el estado de venta en anulado, procedemos con la actualizacion de estado a activo
+					-- Cuenta cobrar
+					update cuenta_cobrar set cuenco_estado='ACTIVO' where ven_codigo=vencodigo;
+					-- Venta cabecera
+					update venta_cab set ven_estado='ACTIVO', usu_codigo=usucodigo  where ven_codigo=vencodigo;
+				end if;
+			end if;
+		end if;
+		-- Enviamos un mensaje de confirmacion de eliminacion
 		raise notice 'LA NOTA DE VENTA DETALLE FUE ELIMINADA CON EXITO';
     end if;
 end

@@ -29,7 +29,7 @@ $permisos = pg_fetch_all($resultado);
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Configuraciones</title>
+   <title>Configuraciones Interfaz</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -50,12 +50,13 @@ $permisos = pg_fetch_all($resultado);
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Formulario Configuraciones -->
+            <!-- Formulario Configuraciones Interfaz -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
                   <div class="header">
                      <h2>
-                        FORMULARIO DE CONFIGURACIONES<small>Mantener referencial configuraciones</small>
+                        FORMULARIO DE CONFIGURACIONES DE INTERFAZ<small>Mantener referencial configuraciones
+                           interfaz</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -141,13 +142,14 @@ $permisos = pg_fetch_all($resultado);
                </div>
             </div>
 
-            <!-- Grilla Configuraciones -->
+            <!-- Grilla Configuraciones Interfaz -->
             <div id="configuraciones" style="display: block">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
                      <div class="header">
                         <h2>
-                           CONFIGURACIONES REGISTRADAS <small>Lista de configuraciones registradas</small>
+                           CONFIGURACIONES DE INTERFAZ REGISTRADAS <small>Lista de configuraciones de interfaz
+                              registradas</small>
                         </h2>
                      </div>
                      <div class="body">

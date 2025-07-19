@@ -94,7 +94,7 @@ $guis = [
    'REPORTE REFERENCIAL PRODUCCION' => 'reporteReferencialProduccion',
    'REPORTE MOVIMIENTO PRODUCCION' => 'reporteMovimientoProduccion',
    'REPORTE REFERENCIAL VENTAS' => 'reporteReferencialVentas',
-   'REPORTE MOVIMIENTO VENTAS' => 'reporteMovimientoVentas',
+   'REPORTE MOVIMIENTO VENTAS ' => 'reporteMovimientoVentas',
    'REPORTE REFERENCIAL SEGURIDAD' => 'reporteReferencialSeguridad',
 ];
 
@@ -492,7 +492,7 @@ if (isset($_SESSION['apertura'])) {
                                  <a href="/sys8DD/referenciales/produccion/unidad_medida/index.php">Unidad Medida</a>
                               </li>
                               <li>
-                                 <a href="/sys8DD/referenciales/produccion/parametro_control_calidad/index.php">Parametro
+                                 <a href="/sys8DD/referenciales/produccion/parametro_control_calidad/index.php">Parametros
                                     Control Calidad</a>
                               </li>
                               <!-- <li>
@@ -520,7 +520,7 @@ if (isset($_SESSION['apertura'])) {
                                  <a href="/sys8DD/referenciales/venta/tipo_comprobante/index.php">Tipo Comprobante</a>
                               </li>
                               <li>
-                                 <a href="/sys8DD/referenciales/venta/factura_venta/index.php">Factura Venta</a>
+                                 <a href="/sys8DD/referenciales/venta/timbrados/index.php">Timbrados</a>
                               </li>
                               <li>
                                  <a href="/sys8DD/referenciales/venta/forma_cobro/index.php">Forma Cobro</a>
@@ -578,11 +578,12 @@ if (isset($_SESSION['apertura'])) {
                                     Permiso Usuario</a>
                               </li>
                               <li>
-                                 <a href="/sys8DD/referenciales/seguridad/configuraciones/index.php">Configuraciones</a>
+                                 <a href="/sys8DD/referenciales/seguridad/configuraciones/index.php">Configuraciones
+                                    Interfaz</a>
                               </li>
                               <li>
                                  <a href="/sys8DD/referenciales/seguridad/configuraciones_sucursal/index.php">Configuraciones
-                                    Sucursal</a>
+                                    Interfaz Sucursal</a>
                               </li>
                            </ul>
                         </li>
@@ -621,7 +622,7 @@ if (isset($_SESSION['apertura'])) {
                      <?php } ?>
                      <?php if ($ajusteInventario === true) { ?>
                         <li>
-                           <a href="/sys8DD/modulos/compra/ajuste_inventario/index.php">Ajuste Inventario</a>
+                           <a href="/sys8DD/modulos/compra/ajuste_stock/index.php">Ajuste Stock</a>
                         </li>
                      <?php } ?>
                      <?php if ($notaCompra === true) { ?>
@@ -740,34 +741,40 @@ if (isset($_SESSION['apertura'])) {
                   <span>Informes</span>
                </a>
                <ul class="ml-menu">
-                  <?php if ($reporteReferencialSeguridad == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/seguridad/informe_referencial.php">Referencial Seguridad</a>
-                     </li>
-                  <?php } ?>
                   <?php if ($reporteReferencialCompras == true) { ?>
                      <li>
-                        <a href="/sys8DD/report/compras/informe_referencial.php">Referencial Compras</a>
+                        <a href="/sys8DD/report/compras/informe_referencial.php">Informes Referenciales Compras</a>
                      </li>
                   <?php } ?>
-                  <?php if ($reporteMovimientoCompras == true) { ?>
+
+                  <?php if ($reporteReferencialProduccion == true) { ?>
                      <li>
-                        <a href="/sys8DD/report/compras/informe_movimiento.php">Modulo Compra</a>
+                        <a href="/sys8DD/report/produccion/informe_referencial.php">Informes Referenciales Produccion</a>
                      </li>
                   <?php } ?>
                   <?php if ($reporteReferencialVentas == true) { ?>
                      <li>
-                        <a href="/sys8DD/report/ventas/informe_referencial.php">Referencial Ventas</a>
+                        <a href="/sys8DD/report/ventas/informe_referencial.php">Informes Referenciales Ventas</a>
                      </li>
                   <?php } ?>
-                  <?php if ($reporteReferencialProduccion == true) { ?>
+                  <?php if ($reporteReferencialSeguridad == true) { ?>
                      <li>
-                        <a href="/sys8DD/report/produccion/informe_referencial.php">Referencial Produccion</a>
+                        <a href="/sys8DD/report/seguridad/informe_referencial.php">Informes Seguridad</a>
+                     </li>
+                  <?php } ?>
+                  <?php if ($reporteMovimientoCompras == true) { ?>
+                     <li>
+                        <a href="/sys8DD/report/compras/informe_movimiento.php">Informes Compras</a>
                      </li>
                   <?php } ?>
                   <?php if ($reporteMovimientoProduccion == true) { ?>
                      <li>
-                        <a href="/sys8DD/report/produccion/informe_movimiento.php">Modulo Produccion</a>
+                        <a href="/sys8DD/report/produccion/informe_movimiento.php">Informes Producción</a>
+                     </li>
+                  <?php } ?>
+                  <?php if ($reporteMovimientoVentas == true) { ?>
+                     <li>
+                        <a href="/sys8DD/report/ventas/informe_movimiento.php">Informes Ventas</a>
                      </li>
                   <?php } ?>
                </ul>
@@ -804,7 +811,7 @@ if (isset($_SESSION['apertura'])) {
             <b>Version: </b> 1.0.5
          </div> -->
          <div class="copyright">
-            &copy; 2021 - 2023 <a href="javascript:void(0);">8 de Diciembre - Confecciones</a>.
+            &copy; 2021 - 2025 <a href="javascript:void(0);">8 de Diciembre - Confecciones</a>.
          </div>
          <div class="version">
             <b>Version: </b> 0.0.3

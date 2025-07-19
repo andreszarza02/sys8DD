@@ -345,6 +345,7 @@ foreach ($permisos as $permiso) {
                                  <th>N° PRESUPUESTO</th>
                                  <th>FECHA REGISTRO</th>
                                  <th>FECHA VENCIMIENTO</th>
+                                 <th>N° PEDIDO</th>
                                  <th>PROVEEDOR</th>
                                  <th>TIPO PROVEEDOR</th>
                                  <th>USUARIO</th>

@@ -142,21 +142,21 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-1">
-                              <div class="form-group form-float">
-                                 <div class="form-line foco">
-                                    <input type="text" class="form-control" id="emp_timbrado" disabled
-                                       value="<?php echo $_SESSION['usuario']['emp_timbrado']; ?>">
-                                    <label class="form-label">N° Timbrado</label>
-                                 </div>
-                              </div>
-                           </div>
                            <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line foco3">
                                     <input type="hidden" id="tipco_codigo" value="4">
                                     <input type="text" class="form-control" id="ven_numfactura" disabled>
                                     <label class="form-label">N° Factura</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-1">
+                              <div class="form-group form-float">
+                                 <div class="form-line foco">
+                                    <input type="text" class="form-control" id="emp_timbrado" disabled
+                                       value="<?php echo $_SESSION['usuario']['emp_timbrado']; ?>">
+                                    <label class="form-label">Timbrado</label>
                                  </div>
                               </div>
                            </div>

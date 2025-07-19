@@ -60,6 +60,9 @@ const listar = () => {
         tabla += objeto.prepro_fechavencimiento;
         tabla += "</td>";
         tabla += "<td>";
+        tabla += objeto.pedco_codigo;
+        tabla += "</td>";
+        tabla += "<td>";
         tabla += objeto.pro_razonsocial;
         tabla += "</td>";
         tabla += "<td>";

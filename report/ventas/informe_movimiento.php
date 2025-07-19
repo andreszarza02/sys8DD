@@ -14,7 +14,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Informe Modulo Compra</title>
+   <title>Informe Modulo Vemtas</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -51,13 +51,13 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Formulario Informe Modulo Compras -->
+            <!-- Formulario Informe Modulo Ventas -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
                   <!-- Titulo Principal -->
                   <div class="header" style="background: #4DC18B;">
                      <h2 style="color: white; font-weight: bold;">
-                        INFORME MODULO DE COMPRAS
+                        INFORME MODULO DE VENTAS
                      </h2>
                   </div>
                   <!-- Informe a Generar -->
@@ -84,40 +84,56 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                   </div>
                   <div class="body">
                      <div class="row clearfix">
-                        <div class="presupuesto_compra">
+                        <div class="caja_recaudaciones">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
-                                 Informe Presupuesto de Proveedor
+                                 Informe Caja y Recaudaciones
                               </p>
                            </div>
-                           <div class="col-sm-6">
+                           <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
                                     <input type="text" class="form-control" placeholder="Este campo es obligatorio">
-                                    <label class="form-label">Numero Pedido</label>
+                                    <label class="form-label">Sucursal</label>
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-6">
+                           <div class="col-sm-3">
+                              <div class="form-group form-float">
+                                 <div class="form-line focused">
+                                    <input type="date" class="form-control">
+                                    <label class="form-label">Desde</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-3">
+                              <div class="form-group form-float">
+                                 <div class="form-line focused">
+                                    <input type="date" class="form-control">
+                                    <label class="form-label">Hasta</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
                                     <input type="text" class="form-control">
-                                    <label class="form-label">Items (Opcional)</label>
+                                    <label class="form-label">Cajero (Opcional)</label>
                                  </div>
                               </div>
                            </div>
                         </div>
-                        <div class="libro_compra">
+                        <div class="libro_ventas">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
-                                 Informe Libro de Compras
+                                 Informe Libro de Ventas
                               </p>
                            </div>
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
                                     <input type="text" class="form-control">
-                                    <label class="form-label">Proveedor (Opcional)</label>
+                                    <label class="form-label">Cliente (Opcional)</label>
                                  </div>
                               </div>
                            </div>
@@ -146,17 +162,17 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                               </div>
                            </div>
                         </div>
-                        <div class="cuentas_pagar">
+                        <div class="cuentas_cobrar">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
-                                 Informe Cuentas a Pagar
+                                 Informe Cuentas a Cobrar
                               </p>
                            </div>
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
                                     <input type="text" class="form-control">
-                                    <label class="form-label">Proveedor (Opcional)</label>
+                                    <label class="form-label">Cliente (Opcional)</label>
                                  </div>
                               </div>
                            </div>

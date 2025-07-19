@@ -50,6 +50,14 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
+} else if (isset($_POST['consulta']) == 1) {
+
+   //Consultamos y enviamos el ultimo codigo
+   $sql = "select coalesce(max(notven_codigo),0)+1 as notven_codigo from nota_venta_cab;";
+   $resultado = pg_query($conexion, $sql);
+   $datos = pg_fetch_assoc($resultado);
+   echo json_encode($datos);
+
 } else {
    //Si el post no recibe la operacion realizamos una consulta
    $sql = "select * from v_nota_venta_cab";

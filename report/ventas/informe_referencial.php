@@ -7,7 +7,7 @@ session_start();
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Informe Referencial Venta</title>
+   <title>Informes Referenciales Ventas</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -44,33 +44,17 @@ session_start();
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Formulario Informe Referecial Ventas -->
+            <!-- Formulario Informes Refereciales Ventas -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
                   <div class="header">
                      <h2>
-                        INFORME REFERENCIAL VENTAS
+                        INFORMES REFERENCIALES VENTAS
                      </h2>
                   </div>
                   <div class="body">
                      <div class="row clearfix">
-                        <div class="col-sm-3">
-                           <div class="form-group form-float">
-                              <div class="form-line focused">
-                                 <input type="text" class="form-control" id="desde">
-                                 <label class="form-label">DESDE</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-3">
-                           <div class="form-group form-float">
-                              <div class="form-line focused">
-                                 <input type="text" class="form-control" id="hasta">
-                                 <label class="form-label">HASTA</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line t focused">
                                  <input type="text" class="form-control" id="tablas" onclick="getTablas()">
@@ -82,13 +66,29 @@ session_start();
                               </div>
                            </div>
                         </div>
+                        <div class="col-sm-4">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="text" class="form-control" id="desde">
+                                 <label class="form-label">Desde</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-4">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="text" class="form-control" id="hasta">
+                                 <label class="form-label">Hasta</label>
+                              </div>
+                           </div>
+                        </div>
                      </div>
 
                      <!-- Botones -->
                      <div class="icon-and-text-button-demo">
                         <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                            <i class="material-icons">content_paste</i>
-                           <span>CONSULTAR</span>
+                           <span>GENERAR</span>
                         </button>
                         <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
                            <i class="material-icons">lock</i>

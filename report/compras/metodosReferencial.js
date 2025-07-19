@@ -1,76 +1,76 @@
-const inputs = () => {
-  let tabla = $("#tablas").val();
-  if (tabla == "USUARIOS" || tabla == "ACCESO") {
-    $("#desde").attr("type", "date");
-    $("#hasta").attr("type", "date");
-  } else {
-    $("#desde").attr("type", "text");
-    $("#hasta").attr("type", "text");
-  }
-};
-
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };
 
+//Se encarga de limpiar campos
 const limpiarCampos = () => {
   window.location.reload();
 };
 
+//Se encarga de generar el reporte de la referencial ciudad
 const ciudad = (desde, hasta) => {
-  window.location =
-    "reporte/reporte_ciudad.php?desde=" + desde + "&hasta=" + hasta;
+  window.location = "reporte/reporte_ciudad.php";
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial empresa
 const empresa = (desde, hasta) => {
   window.location =
     "reporte/reporte_empresa.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial sucursal
 const sucursal = (desde, hasta) => {
   window.location =
     "reporte/reporte_sucursal.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial tipo impuesto
 const tipoImpuesto = (desde, hasta) => {
   window.location =
     "reporte/reporte_tipo_impuesto.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial tipo proveedor
 const tipoProveedor = (desde, hasta) => {
   window.location =
     "reporte/reporte_tipo_proveedor.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial tipo item
 const tipoItem = (desde, hasta) => {
   window.location =
     "reporte/reporte_tipo_item.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial proveedor
 const proveedor = (desde, hasta) => {
   window.location =
     "reporte/reporte_proveedor.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial deposito
 const deposito = (desde, hasta) => {
   window.location =
     "reporte/reporte_deposito.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de generar el reporte de la referencial items
 const items = (desde, hasta) => {
   window.location =
     "reporte/reporte_items.php?desde=" + desde + "&hasta=" + hasta;
   $("#tablas").val("");
 };
 
+//Se encarga de verificar que reporte se debe de generar
 const imprimir = () => {
   let tabla = document.getElementById("tablas").value;
   let desde = $("#desde").val();
@@ -100,14 +100,11 @@ const imprimir = () => {
   $("#hasta").val("");
 };
 
+//Controla que los inputs no se pasen con valores vacios
 const controlVacio = () => {
   let condicion;
 
-  if ($("#desde").val() == "") {
-    condicion = true;
-  } else if ($("#hasta").val() == "") {
-    condicion = true;
-  } else if ($("#tablas").val() == "") {
+  if ($("#tablas").val() == "") {
     condicion = true;
   }
 
@@ -122,6 +119,7 @@ const controlVacio = () => {
   }
 };
 
+//Envia al input de tablas lo seleccionado en el autocompletado
 const seleccionTablas = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -132,6 +130,7 @@ const seleccionTablas = (datos) => {
   $(".t").attr("class", "form-line t focused");
 };
 
+//Busca y muestra las referenciales de compras
 const getTablas = () => {
   $.ajax({
     //Solicitamos los datos a listaReferencialesSeguridad
@@ -148,13 +147,12 @@ const getTablas = () => {
           objeto.tablas +
           "</li>";
       });
-
       //cargamos la lista
       $("#ulTablas").html(fila);
       //hacemos visible la lista
       $("#listaTablas").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {

@@ -28,7 +28,7 @@ $permisos = pg_fetch_all($resultado);
 <head>
    <meta charset="UTF-8">
    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   <title>Parametro Control Calidad</title>
+   <title>Parametros Control Calidad</title>
 
    <!-- inluimos los estilos y las fuentes -->
    <?php include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/link_css.php" ?>
@@ -54,7 +54,7 @@ $permisos = pg_fetch_all($resultado);
                <div class="card">
                   <div class="header">
                      <h2>
-                        FORMULARIO DE PARAMETRO CONTROL CALIDAD<small>Mantener referencial parametro control
+                        FORMULARIO DE PARAMETROS CONTROL CALIDAD<small>Mantener referencial parametros control
                            calidad</small>
                      </h2>
                   </div>
@@ -121,7 +121,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="botonesExtra2" style="display: none;">
                            <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                               <i class="material-icons">save</i>
-                              <span>GRABAR</span>
+                              <span>CONFIRMAR</span>
                            </button>
                            <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>

@@ -228,8 +228,8 @@ const listarDetalle = () => {
       tabla += "</tr>";
     }
     //Calculamos el iva y los totales
-    iva5 = parseInt(totalG5 / 21);
-    iva10 = parseInt(totalG10 / 11);
+    iva5 = parseFloat(totalG5 / 21);
+    iva10 = parseFloat(totalG10 / 11);
     totalIva = iva5 + iva10;
     totalGral = totalExe + totalG5 + totalG10;
 

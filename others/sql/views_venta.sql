@@ -177,35 +177,38 @@ order by cd.cobdet_codigo;
 create or replace view v_nota_venta_cab as
 select 
 	nvc.*,
-	vc.ven_numfactura as factura,
-	vc.ven_tipofactura,
-	vc.vent_montocuota,
 	tc.tipco_descripcion,
 	p.per_nombre||' '||p.per_apellido as cliente,
+	vc.ven_numfactura,
 	u.usu_login,
-	e.emp_razonsocial,
 	s.suc_descripcion,
-	p.per_numerodocumento as cedula
+	e.emp_razonsocial,
+	p.per_numerodocumento
 from nota_venta_cab nvc
-join tipo_comprobante tc on tc.tipco_codigo=nvc.tipco_codigo
-join venta_cab vc on vc.ven_codigo=nvc.ven_codigo
-join sucursal s on s.suc_codigo=nvc.suc_codigo
-and s.emp_codigo=nvc.emp_codigo
-join empresa e on e.emp_codigo=s.emp_codigo
-join usuario u on u.usu_codigo=nvc.usu_codigo
-join cliente c on c.cli_codigo=nvc.cli_codigo
-join personas p on p.per_codigo=c.per_codigo
+	join venta_cab vc on vc.ven_codigo=nvc.ven_codigo
+	join tipo_comprobante tc on tc.tipco_codigo=nvc.tipco_codigo
+	join sucursal s on s.suc_codigo=nvc.suc_codigo
+	and s.emp_codigo=nvc.emp_codigo
+		join empresa e on e.emp_codigo=s.emp_codigo
+	join usuario u on u.usu_codigo=nvc.usu_codigo
+	join cliente c on c.cli_codigo=nvc.cli_codigo
+		join personas p on p.per_codigo=c.per_codigo
 order by nvc.notven_codigo;
 
 create or replace view v_nota_venta_det as
 select 
-	nvd.*,
-	i.it_descripcion||' '||m.mod_codigomodelo as descripcion,
-	i.it_descripcion,
-	ti.tipit_descripcion,
-	i.tipim_codigo,
-	t.tall_descripcion,
-	um.unime_descripcion,
+	nvd.*, 
+	(case 
+			nvd.tipit_codigo
+	     when 2 --Producto
+	        then 
+	         	i.it_descripcion||' '||m.mod_codigomodelo
+	        else 
+	         	i.it_descripcion 
+     end) it_descripcion,
+    t.tall_descripcion,
+    um.unime_descripcion,
+    d.dep_descripcion,
 	(case i.tipim_codigo when 1 then nvd.notvendet_cantidad * nvd.notvendet_precio else 0 end) as grav5,
 	(case i.tipim_codigo when 2 then nvd.notvendet_cantidad * nvd.notvendet_precio else 0 end) as grav10,
 	(case i.tipim_codigo when 3 then nvd.notvendet_cantidad * nvd.notvendet_precio else 0 end) as exenta
@@ -213,14 +216,15 @@ from nota_venta_det nvd
    join nota_venta_cab nvc on nvc.notven_codigo=nvd.notven_codigo
    join items i on i.it_codigo=nvd.it_codigo
    and i.tipit_codigo=nvd.tipit_codigo
-   join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
-   join talle t on t.tall_codigo=i.tall_codigo
-   join modelo m on m.mod_codigo=i.mod_codigo
-   join stock s on s.it_codigo=i.it_codigo
-   and s.tipit_codigo=i.tipit_codigo
-   join unidad_medida um on um.unime_codigo=s.unime_codigo
+   		join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
+   		join talle t on t.tall_codigo=i.tall_codigo
+   		join modelo m on m.mod_codigo=i.mod_codigo
+   		join unidad_medida um on um.unime_codigo=i.unime_codigo
+   join deposito d on d.dep_codigo=nvd.dep_codigo 
+   and d.suc_codigo=nvd.suc_codigo 
+   and d.emp_codigo=nvd.emp_codigo 
    join tipo_impuesto ti2 on ti2.tipim_codigo=i.tipim_codigo
-order by nvd.notven_codigo;
+order by nvd.notven_codigo, nvd.it_codigo;
 
 create or replace view v_cobro_cab as
 select 

@@ -96,7 +96,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line orc">
                                  <input type="hidden" id="pro_codigo" value="0">
@@ -120,7 +120,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco3">
                                  <input type="hidden" id="tipco_codigo" value="4">
@@ -135,6 +135,14 @@ foreach ($permisos as $permiso) {
                               <div class="form-line orc">
                                  <input type="text" class="form-control" id="comp_timbrado" disabled>
                                  <label class="form-label">Timbrado</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line orc focused">
+                                 <input type="date" class="form-control" id="pro_timbrado_venc" disabled>
+                                 <label class="form-label">Timbrado Vencimiento</label>
                               </div>
                            </div>
                         </div>

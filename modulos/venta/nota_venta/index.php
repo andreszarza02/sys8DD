@@ -118,7 +118,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line vent">
                                  <input type="text" class="form-control no-disabled" id="per_numerodocumento" disabled
@@ -147,11 +147,20 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line vent">
                                  <input type="text" class="form-control" id="ven_numfactura" readonly>
                                  <label class="form-label">N° Factura</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="text" class="form-control" id="emp_timbrado" disabled
+                                    value="<?php echo $_SESSION['usuario']['emp_timbrado']; ?>">
+                                 <label class="form-label">Timbrado</label>
                               </div>
                            </div>
                         </div>
@@ -389,6 +398,7 @@ foreach ($permisos as $permiso) {
                                  <th>CLIENTE</th>
                                  <th>N° VENTA</th>
                                  <th>N° FACTURA</th>
+                                 <th>TIMBRADO</th>
                                  <th>USUARIO</th>
                                  <th>SUCURSAL</th>
                                  <th>EMPRESA</th>

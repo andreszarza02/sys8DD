@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -226,6 +227,82 @@ foreach ($permisos as $permiso) {
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- Card de Nota Remision -->
+            <div id="nota_remision" style="display: block;">
+               <div class="col-lg-12 col-md-12 col-sm-12">
+                  <div class="card">
+                     <div class="body">
+                        <div class="row clearfix">
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line funex">
+                                    <input type="text" class="form-control" id="funpro_documento"
+                                       onkeyup="getFuncionarioExterno()">
+                                    <label class="form-label">CI Funcionario Externo</label>
+                                    <div id="listaFuncionarioExterno" style="display: none;">
+                                       <ul class="list-group" id="ulFuncionarioExterno"
+                                          Style="height: 80px; overflow: auto"></ul>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line funex">
+                                    <input type="text" class="form-control" id="funpro_nombre">
+                                    <label class="form-label">Nombre Funcionario Externo</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line funex">
+                                    <input type="text" class="form-control" id="funpro_apellido">
+                                    <label class="form-label">Apellido Funcionario Externo</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line ch">
+                                    <input type="text" class="form-control" id="chave_chapa">
+                                    <label class="form-label">Chapa Vehiculo</label>
+                                    <div id="listaChapa" style="display: none;">
+                                       <ul class="list-group" id="ulChapa" Style="height: 80px; overflow: auto"></ul>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line mar">
+                                    <input type="hidden" id="marve_codigo" value="0">
+                                    <input type="text" class="form-control" id="marve_descripcion">
+                                    <label class="form-label">Marca Vehiculo</label>
+                                    <div id="listaMarca" style="display: none;">
+                                       <ul class="list-group" id="ulMarca" Style="height: 80px; overflow: auto"></ul>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line foco3">
+                                    <input type="hidden" id="modve_codigo" value="0">
+                                    <input type="text" class="form-control" id="modve_descripcion" disabled>
+                                    <label class="form-label">Modelo Vehiculo</label>
+                                    <div id="listaModelo" style="display: none;">
+                                       <ul class="list-group" id="ulModelo" Style="height: 80px; overflow: auto"></ul>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
                         </div>
                      </div>
                   </div>

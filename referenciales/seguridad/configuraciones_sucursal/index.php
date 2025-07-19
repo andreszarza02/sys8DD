@@ -50,12 +50,13 @@ $permisos = pg_fetch_all($resultado);
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Formulario Configuraciones Sucursal -->
+            <!-- Formulario Configuraciones Interfaz Sucursal -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
                   <div class="header">
                      <h2>
-                        FORMULARIO DE CONFIGURACIONES DE SUCURSAL<small>Mantener referencial configuraciones
+                        FORMULARIO DE CONFIGURACIONES DE INTERFAZ DE SUCURSAL<small>Mantener referencial configuraciones
+                           interfaz
                            sucursal</small>
                      </h2>
                   </div>
@@ -165,13 +166,14 @@ $permisos = pg_fetch_all($resultado);
                </div>
             </div>
 
-            <!-- Grilla Configuraciones Sucursal -->
+            <!-- Grilla Configuraciones Interfaz Sucursal -->
             <div id="configuracionesSucursal" style="display: block">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
                      <div class="header">
                         <h2>
-                           CONFIGURACIONES DE SUCURSAL REGISTRADAS <small>Lista de configuraciones de sucursal
+                           CONFIGURACIONES DE INTERFAZ DE SUCURSAL REGISTRADAS <small>Lista de configuraciones de
+                              interfaz de sucursal
                               registradas</small>
                         </h2>
                      </div>

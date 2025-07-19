@@ -1,17 +1,3 @@
-//Se encarga de bloquear los codigos o id para que no se carguen por consola
-const bloquearInputs = () => {
-  //Esto se puede mejorar metiendo en un bucle trayendo el atributo id de todos los inputs que sea hidden
-  /*document
-     .getElementById("notven_codigo")
-     .addEventListener("keydown", function (e) {
-       e.preventDefault(); // Bloquea edición por teclado
-     });
-   
-   Object.defineProperty(document.getElementById("notven_codigo"), "value", {
-     writable: false,
-   });*/
-};
-
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -69,34 +55,34 @@ const listar = () => {
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
           ")'>";
         tabla += "<td>";
-        tabla += objeto.notven_codigo;
+        tabla += objeto.notven_numeronota;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.notven_fecha;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.factura;
-        tabla += "</td>";
-        tabla += "<td>";
-        tabla += objeto.notven_numeronota;
+        tabla += objeto.tipco_descripcion;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.notven_concepto;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.tipco_descripcion;
+        tabla += objeto.cliente;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.cliente;
+        tabla += objeto.ven_codigo;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.ven_numfactura;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.usu_login;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.emp_razonsocial;
+        tabla += objeto.suc_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.suc_descripcion;
+        tabla += objeto.emp_razonsocial;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.notven_estado;
@@ -144,17 +130,8 @@ const listarDetalle = () => {
           "<tr onclick='seleccionarFila2(" +
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
           ")'>";
-        if (objeto.tipit_codigo == "3") {
-          tabla += "<td>";
-          tabla += objeto.it_descripcion;
-          tabla += "</td>";
-        } else {
-          tabla += "<td>";
-          tabla += objeto.descripcion;
-          tabla += "</td>";
-        }
         tabla += "<td>";
-        tabla += objeto.tipit_descripcion;
+        tabla += objeto.it_descripcion;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.tall_descripcion;
@@ -166,28 +143,33 @@ const listarDetalle = () => {
         tabla += objeto.unime_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.notvendet_precio;
+        tabla += objeto.dep_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.exenta;
+        tabla += new Intl.NumberFormat("us-US").format(objeto.notvendet_precio);
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.grav5;
+        tabla += new Intl.NumberFormat("us-US").format(objeto.exenta);
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += new Intl.NumberFormat("us-US").format(objeto.grav5);
         tabla += "</td>";
         if (objeto.tipit_codigo == "3") {
           tabla += "<td>";
-          tabla += objeto.notvendet_precio;
+          tabla += new Intl.NumberFormat("us-US").format(
+            objeto.notvendet_precio
+          );
           tabla += "</td>";
         } else {
           tabla += "<td>";
-          tabla += objeto.grav10;
+          tabla += new Intl.NumberFormat("us-US").format(objeto.grav10);
           tabla += "</td>";
         }
         tabla += "</tr>";
       }
       //Calculamos el iva y los totales
-      iva5 = parseInt(totalG5 / 21);
-      iva10 = parseInt(totalG10 / 11);
+      iva5 = parseFloat(totalG5 / 21);
+      iva10 = parseFloat(totalG10 / 11);
       totalIva = iva5 + iva10;
       totalGral = totalExe + totalG5 + totalG10;
 
@@ -197,13 +179,13 @@ const listarDetalle = () => {
       lineafoot += "SUBTOTALES";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += totalExe;
+      lineafoot += new Intl.NumberFormat("us-US").format(totalExe.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += totalG5;
+      lineafoot += new Intl.NumberFormat("us-US").format(totalG5.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += totalG10;
+      lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
@@ -212,10 +194,10 @@ const listarDetalle = () => {
       lineafoot += "LIQUIDACION DE IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += iva5;
+      lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += iva10;
+      lineafoot += new Intl.NumberFormat("us-US").format(iva10.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
@@ -224,7 +206,7 @@ const listarDetalle = () => {
       lineafoot += "TOTAL IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += totalIva;
+      lineafoot += new Intl.NumberFormat("us-US").format(totalIva.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
@@ -233,10 +215,11 @@ const listarDetalle = () => {
       lineafoot += "TOTAL GENERAL";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += totalGral;
+      lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "</tr>";
-      //establecemos el body, foot y el formato de la tabla
+
+      //establecemos el body y el foot
       $("#tabla_detalle").html(tabla);
       $("#pie_detalle").html(lineafoot);
     })
@@ -288,74 +271,74 @@ const getTimestamp = () => {
 };
 
 //Establece los montos al cargar las notas de credito y debito
-const setMontos = () => {
-  $.ajax({
-    //Enviamos los datos al controladorDetalle2
-    method: "POST",
-    url: "controladorDetalle2.php",
-    data: {
-      notven_concepto: $("#notven_concepto").val(),
-      notvendet_cantidad: $("#notvendet_cantidad").val(),
-      notvendet_precio: $("#notvendet_precio").val(),
-      ven_codigo: $("#ven_codigo").val(),
-      tipco_codigo: $("#tipco_codigo").val(),
-      it_codigo: $("#it_codigo").val(),
-      tipit_codigo: $("#tipit_codigo").val(),
-      tipim_codigo: $("#tipim_codigo").val(),
-      ven_tipofactura: $("#ven_tipofactura").val(),
-      vent_montocuota: $("#vent_montocuota").val(),
-      operacion_detalle: $("#operacion_detalle").val(),
-    },
-  });
-};
+// const setMontos = () => {
+//   $.ajax({
+//     //Enviamos los datos al controladorDetalle2
+//     method: "POST",
+//     url: "controladorDetalle2.php",
+//     data: {
+//       notven_concepto: $("#notven_concepto").val(),
+//       notvendet_cantidad: $("#notvendet_cantidad").val(),
+//       notvendet_precio: $("#notvendet_precio").val(),
+//       ven_codigo: $("#ven_codigo").val(),
+//       tipco_codigo: $("#tipco_codigo").val(),
+//       it_codigo: $("#it_codigo").val(),
+//       tipit_codigo: $("#tipit_codigo").val(),
+//       tipim_codigo: $("#tipim_codigo").val(),
+//       ven_tipofactura: $("#ven_tipofactura").val(),
+//       vent_montocuota: $("#vent_montocuota").val(),
+//       operacion_detalle: $("#operacion_detalle").val(),
+//     },
+//   });
+// };
 
 //Aplica la anulación en base a los tipos de notas
-const setAnulacion = () => {
-  $.ajax({
-    //Enviamos los datos al controladorDetalle2
-    method: "POST",
-    url: "controladorDetalle2.php",
-    data: {
-      notven_concepto: "ninguna",
-      notvendet_cantidad: "0",
-      notvendet_precio: "0",
-      ven_codigo: $("#ven_codigo").val(),
-      tipco_codigo: $("#tipco_codigo").val(),
-      it_codigo: "0",
-      tipit_codigo: "0",
-      tipim_codigo: "0",
-      ven_tipofactura: $("#ven_tipofactura").val(),
-      vent_montocuota: $("#vent_montocuota").val(),
-      operacion_detalle: "0",
-      operacion_cabecera: $("#operacion_cabecera").val(),
-    },
-  });
-};
+// const setAnulacion = () => {
+//   $.ajax({
+//     //Enviamos los datos al controladorDetalle2
+//     method: "POST",
+//     url: "controladorDetalle2.php",
+//     data: {
+//       notven_concepto: "ninguna",
+//       notvendet_cantidad: "0",
+//       notvendet_precio: "0",
+//       ven_codigo: $("#ven_codigo").val(),
+//       tipco_codigo: $("#tipco_codigo").val(),
+//       it_codigo: "0",
+//       tipit_codigo: "0",
+//       tipim_codigo: "0",
+//       ven_tipofactura: $("#ven_tipofactura").val(),
+//       vent_montocuota: $("#vent_montocuota").val(),
+//       operacion_detalle: "0",
+//       operacion_cabecera: $("#operacion_cabecera").val(),
+//     },
+//   });
+// };
 
 //Valida el monto del detalle en caso de ser una nota de credito
-const validarMontoCredito = () => {
-  $.ajax({
-    //Enviamos los datos al controladorDetalle3
-    method: "POST",
-    url: "controladorDetalle3.php",
-    data: {
-      notvendet_cantidad: $("#notvendet_cantidad").val(),
-      notvendet_precio: $("#notvendet_precio").val(),
-      ven_codigo: $("#ven_codigo").val(),
-      consulta: "1",
-    },
-  }).done(function (respuesta) {
-    if (respuesta.tipo == "error") {
-      swal({
-        title: "RESPUESTA!!",
-        text: respuesta.mensaje,
-        type: respuesta.tipo,
-      });
-    } else {
-      grabarDetalle();
-    }
-  });
-};
+// const validarMontoCredito = () => {
+//   $.ajax({
+//     //Enviamos los datos al controladorDetalle3
+//     method: "POST",
+//     url: "controladorDetalle3.php",
+//     data: {
+//       notvendet_cantidad: $("#notvendet_cantidad").val(),
+//       notvendet_precio: $("#notvendet_precio").val(),
+//       ven_codigo: $("#ven_codigo").val(),
+//       consulta: "1",
+//     },
+//   }).done(function (respuesta) {
+//     if (respuesta.tipo == "error") {
+//       swal({
+//         title: "RESPUESTA!!",
+//         text: respuesta.mensaje,
+//         type: respuesta.tipo,
+//       });
+//     } else {
+//       grabarDetalle();
+//     }
+//   });
+// };
 
 //Permite imprimir la nota
 const imprimir = () => {
@@ -368,7 +351,7 @@ const imprimir = () => {
 const nuevo = () => {
   $("#operacion_cabecera").val(1);
   habilitarCampos(true);
-  //getCodigo();
+  getCodigo();
   $("#notven_numeronota").val("");
   $("#notven_fecha").val(getTimestamp());
   $("#tipco_descripcion").val("");
@@ -406,21 +389,26 @@ const nuevoDetalle = () => {
   $("#tablaDet").attr("style", "display: none");
 };
 
-//Meto
+//Metodo que establece la baja en cabecera
 const anular = () => {
   $("#operacion_cabecera").val(2);
+  $("#notven_estado").val("ANULADO");
+  $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
 };
 
+//Metodo que establece la baja en detalle
 const eliminar = () => {
   $("#operacion_detalle").val(2);
   habilitarBotones2(false);
 };
 
+//Se encarga de limpiar campos
 const limpiarCampos = () => {
   window.location.reload(true);
 };
 
+//Pasa parametros en el controlador para guardarlos en cabecera
 const grabar = () => {
   $.ajax({
     //Enviamos datos al controlador
@@ -478,6 +466,7 @@ const grabar = () => {
     });
 };
 
+//Pasa parametros en el controlador de detalle para registrarlo en detalle
 const grabarDetalle = () => {
   $.ajax({
     //Enviamos datos al controlador detalle
@@ -489,6 +478,14 @@ const grabarDetalle = () => {
       tipit_codigo: $("#tipit_codigo").val(),
       notvendet_cantidad: $("#notvendet_cantidad").val(),
       notvendet_precio: $("#notvendet_precio").val(),
+      dep_codigo: $("#dep_codigo").val(),
+      suc_codigo: $("#suc_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
+      tipco_codigo: $("#tipco_codigo").val(),
+      ven_codigo: $("#ven_codigo").val(),
+      libven_numcomprobante: $("#libven_numcomprobante").val(),
+      tipim_codigo: $("#tipim_codigo").val(),
+      usu_codigo: $("#usu_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
