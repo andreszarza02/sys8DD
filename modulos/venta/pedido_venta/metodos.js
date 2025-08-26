@@ -128,6 +128,9 @@ const listarDetalle = () => {
         tabla += objeto.tall_descripcion;
         tabla += "</td>";
         tabla += "<td>";
+        tabla += objeto.tipit_descripcion;
+        tabla += "</td>";
+        tabla += "<td>";
         tabla += new Intl.NumberFormat("us-US").format(
           objeto.pevendet_cantidad
         );
@@ -165,7 +168,7 @@ const listarDetalle = () => {
 
       //Mostramos los subtotales y totales
       let lineafoot = "<tr>";
-      lineafoot += "<th colspan='5'>";
+      lineafoot += "<th colspan='6'>";
       lineafoot += "SUBTOTALES";
       lineafoot += "</th>";
       lineafoot += "<th>";
@@ -180,7 +183,7 @@ const listarDetalle = () => {
       lineafoot += "</tr>";
 
       lineafoot += "<tr>";
-      lineafoot += "<th colspan='6'>";
+      lineafoot += "<th colspan='7'>";
       lineafoot += "LIQUIDACION DE IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
@@ -192,7 +195,7 @@ const listarDetalle = () => {
       lineafoot += "</tr>";
 
       lineafoot += "<tr class='bg-green'>";
-      lineafoot += "<th colspan='7'>";
+      lineafoot += "<th colspan='8'>";
       lineafoot += "TOTAL IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
@@ -201,7 +204,7 @@ const listarDetalle = () => {
       lineafoot += "</tr>";
 
       lineafoot += "<tr class='bg-blue'>";
-      lineafoot += "<th colspan='7'>";
+      lineafoot += "<th colspan='8'>";
       lineafoot += "TOTAL GENERAL";
       lineafoot += "</th>";
       lineafoot += "<th>";

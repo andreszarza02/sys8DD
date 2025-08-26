@@ -8,7 +8,7 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 //Solicitamos la librerias del vendor
 require "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/vendor/autoload.php";
 
-//Incluios el archivo de funciones
+//Incluimos el archivo de funciones
 include "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/funciones/funciones.php";
 
 //Creamos la instancia de la clase Conexion
@@ -32,9 +32,18 @@ $sql = "select
 $resultado = pg_query($conexion, $sql);
 $correoUsuario = pg_fetch_assoc($resultado);
 
+//Obtenemos la ip publica de la pc, al consultar el mismo a una api externa, por internet
+$ip = file_get_contents('https://api.ipify.org');
+
+//llamamos a la funcion que obtiene los datos de la ip
+$datosIp = obtenerDatosIP($ip);
+
+//Guardamos los datos obtenidos en variables, pasamos de un array a variables
+list($pais, $region, $ciudad) = $datosIp;
+
 //Cargamos la tabla acceso control con el dato de intento de sesion
-$sql2 = "INSERT INTO acceso_control (accon_codigo, accon_usuario, accon_clave,   accon_fecha, accon_hora, accon_observacion, accon_intentos)
-VALUES((select coalesce(max(accon_codigo),0)+1 from acceso_control), '$usuario', '$numeroRandom', current_date, current_time, 'SE ENVIO LA CLAVE DE VERIFICACION', 0);";
+$sql2 = "INSERT INTO acceso_control (accon_codigo, accon_usuario, accon_clave, accon_fecha, accon_hora, accon_observacion, accon_intentos, accon_ip, accon_ip_pais, accon_ip_region, accon_ip_ciudad)
+VALUES((select coalesce(max(accon_codigo),0)+1 from acceso_control), '$usuario', '$numeroRandom', current_date, current_time, 'SE ENVIO LA CLAVE DE VERIFICACION', 0, '$ip', '$pais', '$region', '$ciudad');";
 
 //Ejecutamos la consulta
 $resultado2 = pg_query($conexion, $sql2);

@@ -222,13 +222,13 @@ foreach ($permisos as $permiso) {
                   <?php if ($btnApertura === true) { ?>
                      <button type="button" class="btn btn-primary waves-effect botonesExtra1" onclick="abrir()">
                         <i class="material-icons">add</i>
-                        <span>ABRIR</span>
+                        <span>APERTURA</span>
                      </button>
                   <?php } ?>
                   <?php if ($btnCierre === true) { ?>
                      <button type="button" class="btn btn-primary waves-effect botonesExtra2" onclick="cerrar()">
                         <i class="material-icons">cancel</i>
-                        <span>CERRAR</span>
+                        <span>CIERRE</span>
                      </button>
                   <?php } ?>
                   <button type="button" class="btn btn-primary waves-effect botonesExtra3" onclick="salir()">

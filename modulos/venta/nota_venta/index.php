@@ -242,6 +242,68 @@ foreach ($permisos as $permiso) {
                </div>
             </div>
 
+            <!-- Card de Nota Remision -->
+            <div id="nota_remision" style="display: block;">
+               <div class="col-lg-12 col-md-12 col-sm-12">
+                  <div class="card">
+                     <div class="body">
+                        <div class="row clearfix">
+                           <div class="col-sm-6">
+                              <div class="form-group form-float">
+                                 <div class="form-line func">
+                                    <input type="text" class="form-control" id="per_numerodocumento"
+                                       onkeyup="getFuncionario()">
+                                    <label class="form-label">Documento Funcionario</label>
+                                    <div id="listaFuncionario" style="display: none;">
+                                       <ul class="list-group" id="ulFuncionario" Style="height: 80px; overflow: auto">
+                                       </ul>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-6">
+                              <div class="form-group form-float">
+                                 <div class="form-line func">
+                                    <input type="text" class="form-control" id="funcionario">
+                                    <label class="form-label">Funcionario</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line ch">
+                                    <input type="text" class="form-control" id="chave_chapa">
+                                    <label class="form-label">Chapa Vehiculo</label>
+                                    <div id="listaChapa" style="display: none;">
+                                       <ul class="list-group" id="ulChapa" Style="height: 80px; overflow: auto"></ul>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line ch">
+                                    <input type="hidden" id="marve_codigo" value="0">
+                                    <input type="text" class="form-control" id="marve_descripcion">
+                                    <label class="form-label">Marca Vehiculo</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-4">
+                              <div class="form-group form-float">
+                                 <div class="form-line ch">
+                                    <input type="hidden" id="modve_codigo" value="0">
+                                    <input type="text" class="form-control" id="modve_descripcion" disabled>
+                                    <label class="form-label">Modelo Vehiculo</label>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
             <!-- Formulario Nota Venta Detalle -->
             <div id="detalle" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
@@ -336,6 +398,10 @@ foreach ($permisos as $permiso) {
                               <button type="button" class="btn btn-primary waves-effect" onclick="imprimir()">
                                  <i class="material-icons">insert_drive_file</i>
                                  <span>IMPRIMIR</span>
+                              </button>
+                              <button type="button" class="btn btn-primary waves-effect" onclick="enviarOrden()">
+                                 <i class="material-icons">email</i>
+                                 <span>ENVIAR NOTA</span>
                               </button>
                            </div>
                            <div class="botonesExtra4" style="display: none;">

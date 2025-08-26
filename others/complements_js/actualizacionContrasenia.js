@@ -113,7 +113,7 @@ const validarContrasenia = (contra) => {
   const tieneMinuscula = /[a-z]/;
   const tieneMayuscula = /[A-Z]/;
   const tieneSimbolo = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
-  const longitudMinima = 10;
+  const longitudMinima = 16;
 
   // Verificamos que cumpla todos los requisitos
   if (
@@ -135,7 +135,7 @@ const erroresContrasenia = (contra) => {
   const tieneMinuscula = /[a-z]/;
   const tieneMayuscula = /[A-Z]/;
   const tieneSimbolo = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
-  const longitudMinima = 10;
+  const longitudMinima = 16;
 
   // Array para almacenar los mensajes de error
   let errores = [];

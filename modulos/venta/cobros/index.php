@@ -109,7 +109,7 @@ foreach ($permisos as $permiso) {
                               <div class="form-group form-float">
                                  <div class="form-line foco2">
                                     <input type="text" class="form-control" id="cob_fecha" disabled>
-                                    <label class="form-label">Fecha</label>
+                                    <label class="form-label">Fecha y Hora</label>
                                  </div>
                               </div>
                            </div>
@@ -221,7 +221,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Detalle -->
-               <div id="detalle" style="display: none;">
+               <div id="detalle" style="display: block;">
                   <div id="tamañoDetalle" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -248,7 +248,7 @@ foreach ($permisos as $permiso) {
                                     <div class="form-line vent">
                                        <input type="hidden" id="ven_codigo" value="0">
                                        <input type="text" class="form-control" id="factura" disabled>
-                                       <label class="form-label">Factura</label>
+                                       <label class="form-label">N° Factura</label>
                                     </div>
                                  </div>
                               </div>
@@ -313,7 +313,7 @@ foreach ($permisos as $permiso) {
                                  <div class="form-group form-float">
                                     <div class="form-line cob2">
                                        <input type="number" class="form-control no-disabled2" id="cobdet_monto" disabled>
-                                       <label class="form-label">Monto</label>
+                                       <label class="form-label">Monto Efectivo</label>
                                     </div>
                                  </div>
                               </div>

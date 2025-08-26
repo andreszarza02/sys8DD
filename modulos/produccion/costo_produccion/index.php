@@ -210,16 +210,37 @@ foreach ($permisos as $permiso) {
                            <table class="table table-bordered table-striped table-hover">
                               <thead>
                                  <tr>
-                                    <th>ITEM</th>
+                                    <th>DESCRIPCION</th>
                                     <th>CANTIDAD</th>
-                                    <th>UNIDAD MEDIDA</th>
-                                    <th>PRECIO UNITARIO</th>
+                                    <th>COSTO</th>
                                     <th>SUBTOTAL</th>
                                  </tr>
                               </thead>
-                              <tbody id="tabla_detalle">
+                              <tbody id="tabla_detalle2">
+                                 <tr>
+                                    <td>HILO NEGRO MAQUITEX</td>
+                                    <td>2</td>
+                                    <td>6.000</td>
+                                    <td>12.0000</td>
+                                 </tr>
+                                 <tr>
+                                    <td>MANO DE OBRA</td>
+                                    <td>1</td>
+                                    <td>330.000</td>
+                                    <td>330.000</td>
+                                 </tr>
+                                 <tr>
+                                    <td>ELECTRICIDAD</td>
+                                    <td>1</td>
+                                    <td>6.600</td>
+                                    <td>6.600</td>
+                                 </tr>
+                                 <tr>
+                                    <td colspan="3">TOTAL GENERAL</td>
+                                    <td>3336.600</td>
+                                 </tr>
                               </tbody>
-                              <tfoot id="pie_detalle">
+                              <tfoot id="pie_detalle2">
                               </tfoot>
                            </table>
                         </div>

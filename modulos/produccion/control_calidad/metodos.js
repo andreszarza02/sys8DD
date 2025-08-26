@@ -67,6 +67,9 @@ const listar = () => {
         tabla += objeto.proter_codigo;
         tabla += "</td>";
         tabla += "<td>";
+        tabla += 1;
+        tabla += "</td>";
+        tabla += "<td>";
         tabla += objeto.usu_login;
         tabla += "</td>";
         tabla += "<td>";

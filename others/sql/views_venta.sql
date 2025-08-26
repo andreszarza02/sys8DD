@@ -84,6 +84,7 @@ select
 	um.unime_descripcion,
 	d.dep_descripcion,
 	i.tipim_codigo,
+	ti.tipit_descripcion,
 	(case i.tipim_codigo when 1 then vd.vendet_cantidad * vd.vendet_precio else 0 end) as grav5,
 	(case i.tipim_codigo when 2 then vd.vendet_cantidad * vd.vendet_precio else 0 end) as grav10,
 	(case i.tipim_codigo when 3 then vd.vendet_cantidad * vd.vendet_precio else 0 end) as exenta
@@ -98,6 +99,7 @@ from venta_det vd
 			join modelo m on m.mod_codigo=i.mod_codigo
 			join talle t on t.tall_codigo=i.tall_codigo
 			join unidad_medida um on um.unime_codigo=i.unime_codigo
+			join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
 		join deposito d on d.dep_codigo=s.dep_codigo 
 		and d.suc_codigo=s.suc_codigo
 		and d.emp_codigo=s.emp_codigo

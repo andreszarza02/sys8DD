@@ -121,7 +121,7 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line mod">
                                  <input type="hidden" id="mod_codigo" value="0">
@@ -134,7 +134,7 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line tall">
                                  <input type="hidden" id="tall_codigo" value="0">
@@ -147,7 +147,7 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line unime">
                                  <input type="hidden" id="unime_codigo" value="0">
@@ -161,7 +161,23 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
+                           <div class="form-group form-float">
+                              <div class="form-line foco">
+                                 <input type="text" class="form-control no-disabled" id="it_stock_min" disabled>
+                                 <label class="form-label">Stock Minimo</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-4">
+                           <div class="form-group form-float">
+                              <div class="form-line foco">
+                                 <input type="text" class="form-control no-disabled" id="it_stock_max" disabled>
+                                 <label class="form-label">Stock Maximo</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line est">
                                  <input type="text" class="form-control no-disabled" id="it_estado" disabled>
@@ -237,6 +253,8 @@ $permisos = pg_fetch_all($resultado);
                                     <th>MODELO</th>
                                     <th>TALLE</th>
                                     <th>UNIDAD MEDIDA</th>
+                                    <th>STOCK MINIMO</th>
+                                    <th>STOCK MAXIMO</th>
                                     <th>ESTADO</th>
                                  </tr>
                               </thead>

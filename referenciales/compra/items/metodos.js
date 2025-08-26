@@ -67,6 +67,12 @@ const listar = () => {
         tabla += objeto.unime_descripcion;
         tabla += "</td>";
         tabla += "<td>";
+        tabla += objeto.it_stock_min;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.it_stock_max;
+        tabla += "</td>";
+        tabla += "<td>";
         tabla += objeto.it_estado;
         tabla += "</td>";
         tabla += "</tr>";

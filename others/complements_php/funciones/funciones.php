@@ -54,4 +54,25 @@ function obtenerConfiguraciones($conexion, $sucursal, $empresa, $codigoConfigura
    return $datos;
 }
 
+//Obtiene el pais, region y ciudad a partir de una ip
+function obtenerDatosIP($ip)
+{
+   // API que devuelve datos en JSON
+   $url = "https://ipwhois.app/json/$ip?lang=es";
+
+   //Obtenemos los datos de la API
+   $respuesta = file_get_contents($url);
+
+   //Convertimos la respuesta JSON en un array asociativo
+   $datos = json_decode($respuesta, true);
+
+   //Validamos que se hayan obtenido datos
+   if ($datos && isset($datos['country'])) {
+      //Devuelve un array normal con los datos
+      return [$datos['country'], $datos['region'], $datos['city']]; // Devuelve datos asociados a la IP
+   } else {
+      return "DATOS DE IP NO ENCONTRADOS";
+   }
+}
+
 ?>

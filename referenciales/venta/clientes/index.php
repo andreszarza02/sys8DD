@@ -50,18 +50,6 @@ $permisos = pg_fetch_all($resultado);
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Boton Pedido Venta -->
-            <?php if ($modulo === "VENTAS") { ?>
-               <div class="col-lg-12 col-md-12 col-sm-12">
-                  <div class="icon-button-demo">
-                     <button type="button" class="btn bg-teal btn-circle-lg waves-effect waves-circle waves-float"
-                        onclick="callPedido()">
-                        <i class="material-icons">add_shopping_cart</i>
-                     </button>
-                  </div>
-               </div>
-            <?php } ?>
-
             <!-- Formulario Clientes-->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">

@@ -889,7 +889,7 @@ begin
 		--Activamos de nuevo el presupesto 
 		update presupuesto_proveedor_cab set prepro_estado='ACTIVO', usu_codigo=usucodigo where prepro_codigo=preprocodigo;
 		--Activamos el pedido de compra asociado al presupuesto
-		update pedido_compra_cab set pedco_estado='PRESUPUESTADO', usu_codigo=usucodigo where pedco_codigo=pedcocodigo;
+		update pedido_compra_cab set pedco_estado='ACTIVO', usu_codigo=usucodigo where pedco_codigo=pedcocodigo;
 		raise notice 'LA ORDEN DE COMPRA FUE ANULADA CON EXITO';
     end if;
 	--consultamos el audit anterior

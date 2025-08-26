@@ -70,22 +70,6 @@ foreach ($permisos as $permiso) {
       <div class="container-fluid">
          <div class="row clearfix">
 
-            <!-- Botones para acceder a Persona y Cliente -->
-            <?php if ($modulo === "VENTAS" or $modulo === "SISTEMA") { ?>
-               <div class="col-lg-12 col-md-12 col-sm-12">
-                  <div class="icon-button-demo">
-                     <button type="button" class="btn bg-teal btn-circle-lg waves-effect waves-circle waves-float"
-                        onclick="callPerson()">
-                        <i class="material-icons">person_add</i>
-                     </button>
-                     <button type="button" class="btn bg-teal btn-circle-lg waves-effect waves-circle waves-float"
-                        onclick="callClient()">
-                        <i class="material-icons">group</i>
-                     </button>
-                  </div>
-               </div>
-            <?php } ?>
-
             <!-- Formulario Pedido Venta -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
@@ -310,6 +294,7 @@ foreach ($permisos as $permiso) {
                                  <tr>
                                     <th>ITEM</th>
                                     <th>TALLE</th>
+                                    <th>TIPO ITEM</th>
                                     <th>CANTIDAD</th>
                                     <th>UNIDAD MEDIDA</th>
                                     <th>PRECIO</th>

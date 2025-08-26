@@ -639,7 +639,7 @@ if (isset($_SESSION['apertura'])) {
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">work</i>
-                     <span>Produccion</span>
+                     <span>Producción</span>
                   </a>
                   <ul class="ml-menu">
                      <?php if ($pedidoProduccion === true) { ?>
@@ -712,7 +712,7 @@ if (isset($_SESSION['apertura'])) {
                      <?php } ?>
                      <?php if ($aperturaCierre === true) { ?>
                         <li>
-                           <a href="/sys8DD/modulos/venta/apertura_cierre/index.php">Apertura Cierre</a>
+                           <a href="/sys8DD/modulos/venta/apertura_cierre/index.php">Apertura, Arqueo Control y Cierre</a>
                         </li>
                      <?php } ?>
                      <?php if ($venta === true) { ?>

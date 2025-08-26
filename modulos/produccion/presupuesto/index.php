@@ -324,6 +324,7 @@ foreach ($permisos as $permiso) {
                                  <tr>
                                     <th>ITEM</th>
                                     <th>TALLE</th>
+                                    <th>TIPO ITEM</th>
                                     <th>CANTIDAD</th>
                                     <th>UNIDAD MEDIDA</th>
                                     <th>PRECIO</th>

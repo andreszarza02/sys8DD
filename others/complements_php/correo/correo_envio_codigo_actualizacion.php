@@ -36,6 +36,15 @@ $sql = "select
 $resultado = pg_query($conexion, $sql);
 $correoUsuario = pg_fetch_assoc($resultado);
 
+//Obtenemos la ip publica de la pc, al consultar el mismo a una api externa, por internet
+$ip = file_get_contents('https://api.ipify.org');
+
+//llamamos a la funcion que obtiene los datos de la ip
+$datosIp = obtenerDatosIP($ip);
+
+//Guardamos los datos obtenidos en variables, pasamos de un array a variables
+list($pais, $region, $ciudad) = $datosIp;
+
 if (!isset($correoUsuario['persona'])) {
 
    //Enviamos un mensaje confirmando que el usuario no existe
@@ -46,8 +55,8 @@ if (!isset($correoUsuario['persona'])) {
 } else {
 
    //Cargamos la tabla acceso control con el dato de intento de sesion
-   $sql2 = "INSERT INTO actualizacion_contrasenia (accontra_codigo, accontra_usuario, accontra_clave, accontra_fecha, accontra_hora, accontra_observacion, accontra_intentos)
-   VALUES((select coalesce(max(accontra_codigo),0)+1 from actualizacion_contrasenia), '$usuario', '$numeroRandom', current_date, current_time, 'SE ENVIO LA CLAVE DE VERIFICACION', 0);";
+   $sql2 = "INSERT INTO actualizacion_contrasenia (accontra_codigo, accontra_usuario, accontra_clave, accontra_fecha, accontra_hora, accontra_observacion, accontra_intentos, accontra_ip, accontra_ip_pais, accontra_ip_region, accontra_ip_ciudad)
+   VALUES((select coalesce(max(accontra_codigo),0)+1 from actualizacion_contrasenia), '$usuario', '$numeroRandom', current_date, current_time, 'SE ENVIO LA CLAVE DE VERIFICACION', 0, '$ip', '$pais', '$region', '$ciudad');";
 
    //Ejecutamos la consulta
    $resultado2 = pg_query($conexion, $sql2);

@@ -293,7 +293,7 @@ foreach ($permisos as $permiso) {
                            </div>
                            <div class="col-sm-4">
                               <div class="form-group form-float">
-                                 <div class="form-line foco3">
+                                 <div class="form-line mod">
                                     <input type="hidden" id="modve_codigo" value="0">
                                     <input type="text" class="form-control" id="modve_descripcion" disabled>
                                     <label class="form-label">Modelo Vehiculo</label>

@@ -125,8 +125,16 @@ foreach ($permisos as $permiso) {
                               <div class="form-line foco3">
                                  <input type="hidden" id="tipco_codigo" value="4">
                                  <input type="hidden" id="tipco_descripcion" value="FACTURA">
-                                 <input type="text" class="form-control no-disabled" id="com_numfactura" disabled>
+                                 <input type="text" class="form-control no-disabled" id="comp_numfactura" disabled>
                                  <label class="form-label">N° Factura</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line foco focused">
+                                 <input type="date" class="form-control no-disabled" id="comp_fecha_fact" disabled>
+                                 <label class="form-label">Fecha Factura</label>
                               </div>
                            </div>
                         </div>
@@ -146,7 +154,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line orc">
                                  <input type="text" class="form-control" id="comp_tipofactura" disabled>
@@ -154,7 +162,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line orc">
                                  <input type="text" class="form-control" id="comp_cuota" disabled>
