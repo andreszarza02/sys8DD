@@ -1,24 +1,182 @@
 <?php
+
 //Consultamos si existe la variable de sesión usuario
 if (isset($_SESSION['usuario'])) {
+
    //si existe, establecemos la variable $u como un array asociativo
    $u = $_SESSION['usuario'];
+
 } else {
+
    //sino mediante el header redireccionamos al sign in
    header("Location: http://localhost/sys8DD/index.php");
 }
 
-//requerimos la conexion
+// Requerimos la conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
+// Definimos las variables a utilizar
+$ref_ciudad = false;
+// $empresa = false;
+// $sucursal = false;
+// $tipoImpuesto = false;
+// $tipoProveedor = false;
+// $tipoItem = false;
+// $proveedor = false;
+// $deposito = false;
+// $items = false;
+// $cargo = false;
+// $personas = false;
+// $funcionario = false;
+// $talle = false;
+// $colorPrenda = false;
+// $modelo = false;
+// $maquinaria = false;
+// $tipoEtapaProduccion = false;
+// $unidadMedida = false;
+// $parametroControlCalidad = false;
+// $seccion = false;
+// $equipoTrabajo = false;
+// $tipoDocumento = false;
+// $tipoComprobante = false;
+// $timbrados = false;
+// $formaCobro = false;
+// $marcaTarjeta = false;
+// $redPago = false;
+// $entidadEmisora = false;
+// $entidadAdherida = false;
+// $caja = false;
+// $clientes = false;
+// $modulo = false;
+// $permisos = false;
+// $perfil = false;
+$ref_gui = false;
+// $perfilesPermisos = false;
+// $perfilGui = false;
+// $usuario = false;
+// $asignacionPermisoUsuario = false;
+// $configuracionesInterfaz = false;
+// $configuracionesInterfazSucursal = false;
+$referencialesCompra = false;
+$referencialesVenta = false;
+$referencialesProduccion = false;
+$referencialesSeguridad = false;
+$mov_pedidoCompra = false;
+$mov_presupuestoProveedor = false;
+$mov_ordenCompra = false;
+$mov_compra = false;
+$mov_notaCompra = false;
+$mov_ajusteInventario = false;
+$mov_pedidoProduccion = false;
+$mov_presupuestoProduccion = false;
+$mov_componenteProduccion = false;
+$mov_ordenProduccion = false;
+$mov_produccion = false;
+$mov_etapaProduccion = false;
+$mov_controlCalidad = false;
+$mov_produccionTerminada = false;
+$mov_mermas = false;
+$mov_costoProduccion = false;
+$mov_pedidoVenta = false;
+$mov_aperturaCierre = false;
+$mov_venta = false;
+$mov_cobro = false;
+$mov_notaVenta = false;
+$rep_ReferencialCompras = false;
+$rep_ReferencialProduccion = false;
+$rep_ReferencialVentas = false;
+$rep_ReferencialSeguridad = false;
+$rep_MovimientoCompras = false;
+$rep_MovimientoProduccion = false;
+$rep_MovimientoVentas = false;
+
+$guis = [
+   'CIUDAD' => 'ref_ciudad',
+   // 'EMPRESA' => 'empresa',
+   // 'SUCURSAL' => 'sucursal',
+   // 'TIPO IMPUESTO' => 'tipoImpuesto',
+   // 'TIPO PROVEEDOR' => 'tipoProveedor',
+   // 'TIPO ITEM ' => 'tipoItem',
+   // 'PROVEEDOR' => 'proveedor',
+   // 'DEPOSITO' => 'deposito',
+   // 'ITEMS' => 'items',
+   // 'CARGO' => 'cargo',
+   // 'PERSONAS' => 'personas',
+   // 'FUNCIONARIO' => 'funcionario',
+   // 'TALLE' => 'talle',
+   // 'COLOR PRENDA' => 'colorPrenda',
+   // 'MODELO' => 'modelo',
+   // 'MAQUIANRIA' => 'maquinaria',
+   // 'TIPO ETAPA PRODUCCION' => 'tipoEtapaProduccion',
+   // 'UNIDAD MEDIDA' => 'unidadMedida',
+   // 'PARAMETRO CONTROL CALIDAD' => 'parametroControlCalidad',
+   // 'SECCION' => 'seccion',
+   // 'EQUIPO TRABAJO' => 'equipoTrabajo',
+   // 'TIPO DOCUMENTO' => 'tipoDocumento',
+   // 'TIPO COMPROBANTE' => 'tipoComprobante',
+   // 'TIMBRADOS' => 'timbrados',
+   // 'FORMA COBRO' => 'formaCobro',
+   // 'MARCA TARJETA' => 'marcaTarjeta',
+   // 'RED PAGO' => 'redPago',
+   // 'ENTIDAD EMISORA' => 'entidadEmisora',
+   // 'ENTIDAD ADHERIDA' => 'entidadAdherida',
+   // 'CAJA' => 'caja',
+   // 'CLIENTES' => 'clientes',
+   // 'MODULO' => 'modulo',
+   // 'PERMISOS' => 'permisos',
+   // 'PERFIL' => 'perfil',
+   'GUI' => 'ref_gui',
+   // 'PERFILES PERMISOS' => 'perfilesPermisos',
+   // 'PERFIL GUI' => 'perfilGui',
+   // 'USUARIO' => 'usuario',
+   // 'ASIGNACION PERMISO USUARIO' => 'asignacionPermisoUsuario',
+   // 'CONFIGURACIONES INTERFAZ' => 'configuracionesInterfaz',
+   // 'CONFIGURACIONES INTERFAZ SUCURSAL' => 'configuracionesInterfazSucursal',
+   'REFERENCIALES COMPRA' => 'referencialesCompra',
+   'REFERENCIALES PRODUCCION' => 'referencialesProduccion',
+   'REFERENCIALES VENTA' => 'referencialesVenta',
+   'REFERENCIALES SEGURIDAD' => 'referencialesSeguridad',
+   'PEDIDO COMPRA' => 'mov_pedidoCompra',
+   'PRESUPUESTO PROVEEDOR' => 'mov_presupuestoProveedor',
+   'ORDEN COMPRA' => 'mov_ordenCompra',
+   'COMPRA' => 'mov_compra',
+   'NOTA COMPRA' => 'mov_notaCompra',
+   'AJUSTE INVENTARIO' => 'mov_ajusteInventario',
+   'PEDIDO PRODUCCION' => 'mov_pedidoProduccion',
+   'PRESUPUESTO PRODUCCION' => 'mov_presupuestoProduccion',
+   'ORDEN PRODUCCION' => 'mov_ordenProduccion',
+   'PRODUCCION' => 'mov_produccion',
+   'COMPONENTE PRODUCCION' => 'mov_componenteProduccion',
+   'ETAPA PRODUCCION' => 'mov_etapaProduccion',
+   'CONTROL CALIDAD' => 'mov_controlCalidad',
+   'PRODUCCION TERMINADA' => 'mov_produccionTerminada',
+   'MERMAS' => 'mov_mermas',
+   'COSTO PRODUCCION' => 'mov_costoProduccion',
+   'PEDIDO VENTA' => 'mov_pedidoVenta',
+   'APERTURA CIERRE' => 'mov_aperturaCierre',
+   'VENTA' => 'mov_venta',
+   'COBRO' => 'mov_cobro',
+   'NOTA VENTA' => 'mov_notaVenta',
+   'REPORTE REFERENCIAL COMPRAS' => 'rep_ReferencialCompras',
+   'REPORTE MOVIMIENTO COMPRAS' => 'rep_MovimientoCompras',
+   'REPORTE REFERENCIAL PRODUCCION' => 'rep_ReferencialProduccion',
+   'REPORTE MOVIMIENTO PRODUCCION' => 'rep_MovimientoProduccion',
+   'REPORTE REFERENCIAL VENTAS' => 'rep_ReferencialVentas',
+   'REPORTE MOVIMIENTO VENTAS ' => 'rep_MovimientoVentas',
+   'REPORTE REFERENCIAL SEGURIDAD' => 'rep_ReferencialSeguridad',
+];
+
 //guardamos el perfil y consultamos los guis asignados al perfil
 $perfil = $u['perf_descripcion'];
 $modulo = $u['modu_descripcion'];
+
+// Consultamos los guis asignados al perfil
 $sql = "select 
          g.gui_descripcion as interfaz, 
-         perfgui_estado as estado 
+         perfgui_estado as estado,
+         g.modu_codigo as modulo 
       from perfil_gui pg
          join perfil p on p.perf_codigo=pg.perf_codigo
          join gui g on g.gui_codigo=pg.gui_codigo
@@ -29,84 +187,88 @@ $sql = "select
 $resultado = pg_query($conexion, $sql);
 $datos = pg_fetch_all($resultado);
 
-//definimos los guis a mostrar
-$referencialesCompra = false;
-$referencialesVenta = false;
-$referencialesProduccion = false;
-$referencialesSeguridad = false;
-$pedidoCompra = false;
-$presupuestoProveedor = false;
-$ordenCompra = false;
-$compra = false;
-$notaCompra = false;
-$ajusteInventario = false;
-$pedidoProduccion = false;
-$presupuestoProduccion = false;
-$componenteProduccion = false;
-$ordenProduccion = false;
-$produccion = false;
-$etapaProduccion = false;
-$controlCalidad = false;
-$produccionTerminada = false;
-$mermas = false;
-$costoProduccion = false;
-$pedidoVenta = false;
-$aperturaCierre = false;
-$venta = false;
-$cobro = false;
-$notaVenta = false;
-$reporteReferencialCompras = false;
-$reporteReferencialProduccion = false;
-$reporteReferencialVentas = false;
-$reporteReferencialSeguridad = false;
-$reporteMovimientoCompras = false;
-$reporteMovimientoProduccion = false;
-$reporteMovimientoVentas = false;
+$guis_compras = [];
+$guis_produccion = [];
+$guis_ventas = [];
+$guis_seguridad = [];
+$referenciales = false;
+$reportes = false;
+$referecial_compras = false;
+$referecial_produccion = false;
+$referecial_ventas = false;
+$referencial_seguridad = false;
+$movimiento_compras = false;
+$movimiento_produccion = false;
+$movimiento_ventas = false;
 
-$guis = [
-   'REFERENCIALES COMPRA' => 'referencialesCompra',
-   'REFERENCIALES PRODUCCION' => 'referencialesProduccion',
-   'REFERENCIALES VENTA' => 'referencialesVenta',
-   'REFERENCIALES SEGURIDAD' => 'referencialesSeguridad',
-   'PEDIDO COMPRA' => 'pedidoCompra',
-   'PRESUPUESTO PROVEEDOR' => 'presupuestoProveedor',
-   'ORDEN COMPRA' => 'ordenCompra',
-   'COMPRA' => 'compra',
-   'NOTA COMPRA' => 'notaCompra',
-   'AJUSTE INVENTARIO' => 'ajusteInventario',
-   'PEDIDO PRODUCCION' => 'pedidoProduccion',
-   'PRESUPUESTO PRODUCCION' => 'presupuestoProduccion',
-   'ORDEN PRODUCCION' => 'ordenProduccion',
-   'PRODUCCION' => 'produccion',
-   'COMPONENTE PRODUCCION' => 'componenteProduccion',
-   'ETAPA PRODUCCION' => 'etapaProduccion',
-   'CONTROL CALIDAD' => 'controlCalidad',
-   'PRODUCCION TERMINADA' => 'produccionTerminada',
-   'MERMAS' => 'mermas',
-   'COSTO PRODUCCION' => 'costoProduccion',
-   'PEDIDO VENTA' => 'pedidoVenta',
-   'APERTURA CIERRE' => 'aperturaCierre',
-   'VENTA' => 'venta',
-   'COBRO' => 'cobro',
-   'NOTA VENTA' => 'notaVenta',
-   'REPORTE REFERENCIAL COMPRAS' => 'reporteReferencialCompras',
-   'REPORTE MOVIMIENTO COMPRAS' => 'reporteMovimientoCompras',
-   'REPORTE REFERENCIAL PRODUCCION' => 'reporteReferencialProduccion',
-   'REPORTE MOVIMIENTO PRODUCCION' => 'reporteMovimientoProduccion',
-   'REPORTE REFERENCIAL VENTAS' => 'reporteReferencialVentas',
-   'REPORTE MOVIMIENTO VENTAS ' => 'reporteMovimientoVentas',
-   'REPORTE REFERENCIAL SEGURIDAD' => 'reporteReferencialSeguridad',
-];
-
-//show movements
+// Muestra los guis asignados al perfil
 foreach ($datos as $dato) {
+   // Verificamos si existe la interfaz en el array de guis y si el estado es ACTIVO
    if ((array_key_exists($dato['interfaz'], $guis)) && ($dato['estado'] == 'ACTIVO')) {
+      // Si encontramos la interfaz en el array de guis y el estado es ACTIVO, asignamos el valor de la clave a la variable
       $variableGUI = strval($guis[$dato['interfaz']]);
+      // Convertimos el valor guardado en una variable y le asignamos true
       $$variableGUI = true;
+      // Dependiendo del modulo, guardamos la interfaz en el array correspondiente
+      if ($dato['modulo'] == 1) { // Compras
+         $guis_compras[] = $guis[$dato['interfaz']];
+      } elseif ($dato['modulo'] == 2) { // Ventas
+         $guis_ventas[] = $guis[$dato['interfaz']];
+      } elseif ($dato['modulo'] == 3) { // Produccion
+         $guis_produccion[] = $guis[$dato['interfaz']];
+      } elseif ($dato['modulo'] == 5) { //Seguridad
+         $guis_seguridad[] = $guis[$dato['interfaz']];
+      }
    }
 }
 
-//show movements of the sales
+// Recorremos las interfaces de compras, en base a lo asignado habilitamos las opciones del menu
+foreach ($guis_compras as $gui_compra) {
+   if (strpos($gui_compra, 'ref_') !== false) {
+      $referenciales = true;
+      $referecial_compras = true;
+   } elseif (strpos($gui_compra, 'mov_') !== false) {
+      $movimiento_compras = true;
+   } elseif (strpos($gui_compra, 'rep_') !== false) {
+      $reportes = true;
+   }
+}
+
+// Recorremos las interfaces de produccion, en base a lo asignado habilitamos las opciones del menu
+foreach ($guis_produccion as $gui_produccion) {
+   if (strpos($gui_produccion, 'ref_') !== false) {
+      $referenciales = true;
+      $referecial_produccion = true;
+   } elseif (strpos($gui_produccion, 'mov_') !== false) {
+      $movimiento_produccion = true;
+   } elseif (strpos($gui_produccion, 'rep_') !== false) {
+      $reportes = true;
+   }
+}
+
+// Recorremos las interfaces de ventas, en base a lo asignado habilitamos las opciones del menu
+foreach ($guis_ventas as $gui_venta) {
+   if (strpos($gui_venta, 'ref_') !== false) {
+      $referenciales = true;
+      $referecial_ventas = true;
+   } elseif (strpos($gui_venta, 'mov_') !== false) {
+      $movimiento_ventas = true;
+   } elseif (strpos($gui_venta, 'rep_') !== false) {
+      $reportes = true;
+   }
+}
+
+// Recorremos las interfaces de seguridad, en base a lo asignado habilitamos las opciones del menu
+foreach ($guis_seguridad as $gui_seguridad) {
+   if (strpos($gui_seguridad, 'ref_') !== false) {
+      $referenciales = true;
+      $referencial_seguridad = true;
+   } elseif (strpos($gui_seguridad, 'rep_') !== false) {
+      $reportes = true;
+   }
+}
+
+//Define los valores de la apertura de caja
 $apertura = ['numero' => 0, 'habilitado' => '', 'numero_caja' => 0, 'caja' => ''];
 if (isset($_SESSION['apertura'])) {
    $apertura = [
@@ -414,14 +576,14 @@ if (isset($_SESSION['apertura'])) {
             </li>
             <!-- -------------------------------------------------------------------------------- -->
             <!-- OPCIONES DE REFERENCIALES -->
-            <?php if ($u['modu_descripcion'] == "SISTEMA") { ?>
+            <?php if ($referenciales == true) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">perm_identity</i>
                      <span>Referenciales</span>
                   </a>
                   <ul class="ml-menu">
-                     <?php if ($referencialesCompra === true) { ?>
+                     <?php if ($referecial_compras === true) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Compras</span>
@@ -457,7 +619,7 @@ if (isset($_SESSION['apertura'])) {
                            </ul>
                         </li>
                      <?php } ?>
-                     <?php if ($referencialesProduccion === true) { ?>
+                     <?php if ($referecial_produccion === true) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Produccion</span>
@@ -507,7 +669,7 @@ if (isset($_SESSION['apertura'])) {
                            </ul>
                         </li>
                      <?php } ?>
-                     <?php if ($referencialesVenta === true) { ?>
+                     <?php if ($referecial_ventas === true) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Ventas</span>
@@ -546,7 +708,7 @@ if (isset($_SESSION['apertura'])) {
                            </ul>
                         </li>
                      <?php } ?>
-                     <?php if ($referencialesSeguridad === true) { ?>
+                     <?php if ($referencial_seguridad === true) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Seguridad</span>
@@ -593,14 +755,14 @@ if (isset($_SESSION['apertura'])) {
             <?php } ?>
 
             <!-- OPCIONES DE COMPRAS -->
-            <?php if ($u['modu_descripcion'] == "COMPRAS" || $u['modu_descripcion'] == "SISTEMA" || ($u['perf_codigo'] == "5")) { ?>
+            <?php if ($movimiento_compras === true) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">shopping_basket</i>
                      <span>Compras</span>
                   </a>
                   <ul class="ml-menu">
-                     <?php if ($pedidoCompra === true) { ?>
+                     <?php if ($mov_pedidoCompra === true) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/pedido_compra/index.php">Pedido Compra</a>
                         </li>
@@ -610,7 +772,7 @@ if (isset($_SESSION['apertura'])) {
                            <a href="/sys8DD/modulos/compra/presupuesto_proveedor/index.php">Presupuesto Proveedor</a>
                         </li>
                      <?php } ?>
-                     <?php if ($ordenCompra === true) { ?>
+                     <?php if ($mov_ordenCompra === true) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/orden_compra/index.php">Orden Compra</a>
                         </li>
@@ -625,7 +787,7 @@ if (isset($_SESSION['apertura'])) {
                            <a href="/sys8DD/modulos/compra/ajuste_stock/index.php">Ajuste Stock</a>
                         </li>
                      <?php } ?>
-                     <?php if ($notaCompra === true) { ?>
+                     <?php if ($mov_notaCompra === true) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/nota_compra/index.php">Nota Compra</a>
                         </li>
@@ -635,7 +797,7 @@ if (isset($_SESSION['apertura'])) {
             <?php } ?>
 
             <!-- OPCIONES DE PRODUCCION -->
-            <?php if ($u['modu_descripcion'] == "PRODUCCION" || $u['modu_descripcion'] == "SISTEMA") { ?>
+            <?php if ($movimiento_produccion === true) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">work</i>
@@ -698,7 +860,7 @@ if (isset($_SESSION['apertura'])) {
 
 
             <!-- OPCIONES DE VENTAS -->
-            <?php if ($u['modu_descripcion'] == "VENTAS" || $u['modu_descripcion'] == "SISTEMA") { ?>
+            <?php if ($movimiento_ventas === true) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">add_shopping_cart</i>
@@ -735,50 +897,52 @@ if (isset($_SESSION['apertura'])) {
             <?php } ?>
 
             <!-- Informes -->
-            <li>
-               <a href="javascript:void(0);" class="menu-toggle">
-                  <i class="material-icons">description</i>
-                  <span>Informes</span>
-               </a>
-               <ul class="ml-menu">
-                  <?php if ($reporteReferencialCompras == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/compras/informe_referencial.php">Informes Referenciales Compras</a>
-                     </li>
-                  <?php } ?>
+            <?php if ($reportes === true) { ?>
+               <li>
+                  <a href="javascript:void(0);" class="menu-toggle">
+                     <i class="material-icons">description</i>
+                     <span>Informes</span>
+                  </a>
+                  <ul class="ml-menu">
+                     <?php if ($rep_ReferencialCompras == true) { ?>
+                        <li>
+                           <a href="/sys8DD/report/compras/informe_referencial.php">Informes Referenciales Compras</a>
+                        </li>
+                     <?php } ?>
 
-                  <?php if ($reporteReferencialProduccion == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/produccion/informe_referencial.php">Informes Referenciales Produccion</a>
-                     </li>
-                  <?php } ?>
-                  <?php if ($reporteReferencialVentas == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/ventas/informe_referencial.php">Informes Referenciales Ventas</a>
-                     </li>
-                  <?php } ?>
-                  <?php if ($reporteReferencialSeguridad == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/seguridad/informe_referencial.php">Informes Seguridad</a>
-                     </li>
-                  <?php } ?>
-                  <?php if ($reporteMovimientoCompras == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/compras/informe_movimiento.php">Informes Compras</a>
-                     </li>
-                  <?php } ?>
-                  <?php if ($reporteMovimientoProduccion == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/produccion/informe_movimiento.php">Informes Producción</a>
-                     </li>
-                  <?php } ?>
-                  <?php if ($reporteMovimientoVentas == true) { ?>
-                     <li>
-                        <a href="/sys8DD/report/ventas/informe_movimiento.php">Informes Ventas</a>
-                     </li>
-                  <?php } ?>
-               </ul>
-            </li>
+                     <?php if ($reporteReferencialProduccion == true) { ?>
+                        <li>
+                           <a href="/sys8DD/report/produccion/informe_referencial.php">Informes Referenciales Produccion</a>
+                        </li>
+                     <?php } ?>
+                     <?php if ($reporteReferencialVentas == true) { ?>
+                        <li>
+                           <a href="/sys8DD/report/ventas/informe_referencial.php">Informes Referenciales Ventas</a>
+                        </li>
+                     <?php } ?>
+                     <?php if ($reporteReferencialSeguridad == true) { ?>
+                        <li>
+                           <a href="/sys8DD/report/seguridad/informe_referencial.php">Informes Seguridad</a>
+                        </li>
+                     <?php } ?>
+                     <?php if ($reporteMovimientoCompras == true) { ?>
+                        <li>
+                           <a href="/sys8DD/report/compras/informe_movimiento.php">Informes Compras</a>
+                        </li>
+                     <?php } ?>
+                     <?php if ($reporteMovimientoProduccion == true) { ?>
+                        <li>
+                           <a href="/sys8DD/report/produccion/informe_movimiento.php">Informes Producción</a>
+                        </li>
+                     <?php } ?>
+                     <?php if ($reporteMovimientoVentas == true) { ?>
+                        <li>
+                           <a href="/sys8DD/report/ventas/informe_movimiento.php">Informes Ventas</a>
+                        </li>
+                     <?php } ?>
+                  </ul>
+               </li>
+            <?php } ?>
 
             <!-- <li class="header">LABELS</li>
             <li>
