@@ -75,4 +75,15 @@ function obtenerDatosIP($ip)
    }
 }
 
+// Devuelve true si el usuario tiene permisos en el modulo con el prefijo indicado, se utiliza en el encabezado
+function tienePermiso($modulo, $prefix)
+{
+   global $modulos;
+   foreach ($modulos[$modulo] as $permiso) {
+      if (strpos($permiso, $prefix) === 0)
+         return true;
+   }
+   return false;
+}
+
 ?>

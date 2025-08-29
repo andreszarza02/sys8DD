@@ -17,123 +17,52 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-// Definimos las variables a utilizar
-$ref_ciudad = false;
-// $empresa = false;
-// $sucursal = false;
-// $tipoImpuesto = false;
-// $tipoProveedor = false;
-// $tipoItem = false;
-// $proveedor = false;
-// $deposito = false;
-// $items = false;
-// $cargo = false;
-// $personas = false;
-// $funcionario = false;
-// $talle = false;
-// $colorPrenda = false;
-// $modelo = false;
-// $maquinaria = false;
-// $tipoEtapaProduccion = false;
-// $unidadMedida = false;
-// $parametroControlCalidad = false;
-// $seccion = false;
-// $equipoTrabajo = false;
-// $tipoDocumento = false;
-// $tipoComprobante = false;
-// $timbrados = false;
-// $formaCobro = false;
-// $marcaTarjeta = false;
-// $redPago = false;
-// $entidadEmisora = false;
-// $entidadAdherida = false;
-// $caja = false;
-// $clientes = false;
-// $modulo = false;
-// $permisos = false;
-// $perfil = false;
-$ref_gui = false;
-// $perfilesPermisos = false;
-// $perfilGui = false;
-// $usuario = false;
-// $asignacionPermisoUsuario = false;
-// $configuracionesInterfaz = false;
-// $configuracionesInterfazSucursal = false;
-$referencialesCompra = false;
-$referencialesVenta = false;
-$referencialesProduccion = false;
-$referencialesSeguridad = false;
-$mov_pedidoCompra = false;
-$mov_presupuestoProveedor = false;
-$mov_ordenCompra = false;
-$mov_compra = false;
-$mov_notaCompra = false;
-$mov_ajusteInventario = false;
-$mov_pedidoProduccion = false;
-$mov_presupuestoProduccion = false;
-$mov_componenteProduccion = false;
-$mov_ordenProduccion = false;
-$mov_produccion = false;
-$mov_etapaProduccion = false;
-$mov_controlCalidad = false;
-$mov_produccionTerminada = false;
-$mov_mermas = false;
-$mov_costoProduccion = false;
-$mov_pedidoVenta = false;
-$mov_aperturaCierre = false;
-$mov_venta = false;
-$mov_cobro = false;
-$mov_notaVenta = false;
-$rep_ReferencialCompras = false;
-$rep_ReferencialProduccion = false;
-$rep_ReferencialVentas = false;
-$rep_ReferencialSeguridad = false;
-$rep_MovimientoCompras = false;
-$rep_MovimientoProduccion = false;
-$rep_MovimientoVentas = false;
+//Incluimos el archivo de funciones
+require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/complements_php/funciones/funciones.php";
 
+// Definimos los GUIs y sus variables clave
 $guis = [
    'CIUDAD' => 'ref_ciudad',
-   // 'EMPRESA' => 'empresa',
-   // 'SUCURSAL' => 'sucursal',
-   // 'TIPO IMPUESTO' => 'tipoImpuesto',
-   // 'TIPO PROVEEDOR' => 'tipoProveedor',
-   // 'TIPO ITEM ' => 'tipoItem',
-   // 'PROVEEDOR' => 'proveedor',
-   // 'DEPOSITO' => 'deposito',
-   // 'ITEMS' => 'items',
-   // 'CARGO' => 'cargo',
-   // 'PERSONAS' => 'personas',
-   // 'FUNCIONARIO' => 'funcionario',
-   // 'TALLE' => 'talle',
-   // 'COLOR PRENDA' => 'colorPrenda',
-   // 'MODELO' => 'modelo',
-   // 'MAQUIANRIA' => 'maquinaria',
-   // 'TIPO ETAPA PRODUCCION' => 'tipoEtapaProduccion',
-   // 'UNIDAD MEDIDA' => 'unidadMedida',
-   // 'PARAMETRO CONTROL CALIDAD' => 'parametroControlCalidad',
-   // 'SECCION' => 'seccion',
-   // 'EQUIPO TRABAJO' => 'equipoTrabajo',
-   // 'TIPO DOCUMENTO' => 'tipoDocumento',
-   // 'TIPO COMPROBANTE' => 'tipoComprobante',
-   // 'TIMBRADOS' => 'timbrados',
-   // 'FORMA COBRO' => 'formaCobro',
-   // 'MARCA TARJETA' => 'marcaTarjeta',
-   // 'RED PAGO' => 'redPago',
-   // 'ENTIDAD EMISORA' => 'entidadEmisora',
-   // 'ENTIDAD ADHERIDA' => 'entidadAdherida',
-   // 'CAJA' => 'caja',
-   // 'CLIENTES' => 'clientes',
-   // 'MODULO' => 'modulo',
-   // 'PERMISOS' => 'permisos',
-   // 'PERFIL' => 'perfil',
+   'EMPRESA' => 'ref_empresa',
+   'SUCURSAL' => 'ref_sucursal',
+   'TIPO IMPUESTO' => 'ref_tipoImpuesto',
+   'TIPO PROVEEDOR' => 'ref_tipoProveedor',
+   'TIPO ITEM' => 'ref_tipoItem',
+   'PROVEEDOR' => 'ref_proveedor',
+   'DEPOSITO' => 'ref_deposito',
+   'ITEMS' => 'ref_items',
+   'CARGO' => 'ref_cargo',
+   'PERSONAS' => 'ref_personas',
+   'FUNCIONARIO' => 'ref_funcionario',
+   'TALLE' => 'ref_talle',
+   'COLOR PRENDA' => 'ref_colorPrenda',
+   'MODELO' => 'ref_modelo',
+   'MAQUINARIA' => 'ref_maquinaria',
+   'TIPO ETAPA PRODUCCION' => 'ref_tipoEtapaProduccion',
+   'UNIDAD MEDIDA' => 'ref_unidadMedida',
+   'PARAMETRO CONTROL CALIDAD' => 'ref_parametroControlCalidad',
+   'SECCION' => 'ref_seccion',
+   'EQUIPO TRABAJO' => 'ref_equipoTrabajo',
+   'TIPO DOCUMENTO' => 'ref_tipoDocumento',
+   'TIPO COMPROBANTE' => 'ref_tipoComprobante',
+   'TIMBRADOS' => 'ref_timbrados',
+   'FORMA COBRO' => 'ref_formaCobro',
+   'MARCA TARJETA' => 'ref_marcaTarjeta',
+   'RED PAGO' => 'ref_redPago',
+   'ENTIDAD EMISORA' => 'ref_entidadEmisora',
+   'ENTIDAD ADHERIDA' => 'ref_entidadAdherida',
+   'CAJA' => 'ref_caja',
+   'CLIENTES' => 'ref_clientes',
+   'MODULO' => 'ref_modulo',
+   'PERMISOS' => 'ref_permisos',
+   'PERFIL' => 'ref_perfil',
    'GUI' => 'ref_gui',
-   // 'PERFILES PERMISOS' => 'perfilesPermisos',
-   // 'PERFIL GUI' => 'perfilGui',
-   // 'USUARIO' => 'usuario',
-   // 'ASIGNACION PERMISO USUARIO' => 'asignacionPermisoUsuario',
-   // 'CONFIGURACIONES INTERFAZ' => 'configuracionesInterfaz',
-   // 'CONFIGURACIONES INTERFAZ SUCURSAL' => 'configuracionesInterfazSucursal',
+   'PERFILES PERMISOS' => 'ref_perfilesPermisos',
+   'PERFIL GUI' => 'ref_perfilGui',
+   'USUARIO' => 'ref_usuario',
+   'ASIGNACION PERMISO USUARIO' => 'ref_asignacionPermisoUsuario',
+   'CONFIGURACIONES' => 'ref_configuraciones',
+   'CONFIGURACIONES SUCURSAL' => 'ref_configuracionesSucursal',
    'REFERENCIALES COMPRA' => 'referencialesCompra',
    'REFERENCIALES PRODUCCION' => 'referencialesProduccion',
    'REFERENCIALES VENTA' => 'referencialesVenta',
@@ -143,7 +72,7 @@ $guis = [
    'ORDEN COMPRA' => 'mov_ordenCompra',
    'COMPRA' => 'mov_compra',
    'NOTA COMPRA' => 'mov_notaCompra',
-   'AJUSTE INVENTARIO' => 'mov_ajusteInventario',
+   'AJUSTE STOCK' => 'mov_ajusteStock',
    'PEDIDO PRODUCCION' => 'mov_pedidoProduccion',
    'PRESUPUESTO PRODUCCION' => 'mov_presupuestoProduccion',
    'ORDEN PRODUCCION' => 'mov_ordenProduccion',
@@ -168,102 +97,48 @@ $guis = [
    'REPORTE REFERENCIAL SEGURIDAD' => 'rep_ReferencialSeguridad',
 ];
 
-//guardamos el perfil y consultamos los guis asignados al perfil
+// Definimos variables globales
+$referenciales = false;
+$reportes = false;
+
+// Inicializamos permisos dinámicamente
+$permisos_interfaz = array_fill_keys(array_values($guis), false);
+
+// Consultamos los GUIs del perfil
 $perfil = $u['perf_descripcion'];
-$modulo = $u['modu_descripcion'];
-
-// Consultamos los guis asignados al perfil
-$sql = "select 
-         g.gui_descripcion as interfaz, 
-         perfgui_estado as estado,
-         g.modu_codigo as modulo 
-      from perfil_gui pg
-         join perfil p on p.perf_codigo=pg.perf_codigo
-         join gui g on g.gui_codigo=pg.gui_codigo
-         and g.modu_codigo=pg.modu_codigo
-      where p.perf_descripcion='$perfil'
-      order by pg.perfgui_codigo";
-
+$sql = "
+   SELECT g.gui_descripcion AS interfaz, perfgui_estado AS estado, g.modu_codigo AS modulo 
+   FROM perfil_gui pg
+   JOIN perfil p ON p.perf_codigo=pg.perf_codigo
+   JOIN gui g ON g.gui_codigo=pg.gui_codigo AND g.modu_codigo=pg.modu_codigo
+   WHERE p.perf_descripcion='$perfil'
+   ORDER BY pg.perfgui_codigo
+";
 $resultado = pg_query($conexion, $sql);
 $datos = pg_fetch_all($resultado);
 
-$guis_compras = [];
-$guis_produccion = [];
-$guis_ventas = [];
-$guis_seguridad = [];
-$referenciales = false;
-$reportes = false;
-$referecial_compras = false;
-$referecial_produccion = false;
-$referecial_ventas = false;
-$referencial_seguridad = false;
-$movimiento_compras = false;
-$movimiento_produccion = false;
-$movimiento_ventas = false;
+// Clasificación por módulo
+$modulos = [
+   1 => [], // Compras
+   2 => [], // Ventas
+   3 => [], // Producción
+   5 => [], // Seguridad
+];
 
-// Muestra los guis asignados al perfil
+// Recorremos los datos obtenidos y asignamos permisos
 foreach ($datos as $dato) {
-   // Verificamos si existe la interfaz en el array de guis y si el estado es ACTIVO
-   if ((array_key_exists($dato['interfaz'], $guis)) && ($dato['estado'] == 'ACTIVO')) {
-      // Si encontramos la interfaz en el array de guis y el estado es ACTIVO, asignamos el valor de la clave a la variable
-      $variableGUI = strval($guis[$dato['interfaz']]);
-      // Convertimos el valor guardado en una variable y le asignamos true
-      $$variableGUI = true;
-      // Dependiendo del modulo, guardamos la interfaz en el array correspondiente
-      if ($dato['modulo'] == 1) { // Compras
-         $guis_compras[] = $guis[$dato['interfaz']];
-      } elseif ($dato['modulo'] == 2) { // Ventas
-         $guis_ventas[] = $guis[$dato['interfaz']];
-      } elseif ($dato['modulo'] == 3) { // Produccion
-         $guis_produccion[] = $guis[$dato['interfaz']];
-      } elseif ($dato['modulo'] == 5) { //Seguridad
-         $guis_seguridad[] = $guis[$dato['interfaz']];
-      }
+   if (isset($guis[$dato['interfaz']]) && $dato['estado'] === 'ACTIVO') {
+      $clave = $guis[$dato['interfaz']];
+      $permisos_interfaz[$clave] = true; // habilitamos permiso
+      $modulos[$dato['modulo']][] = $clave;
    }
 }
 
-// Recorremos las interfaces de compras, en base a lo asignado habilitamos las opciones del menu
-foreach ($guis_compras as $gui_compra) {
-   if (strpos($gui_compra, 'ref_') !== false) {
+// Recorremos los permisos para definir si existen referenciales o reportes habilitados
+foreach ($permisos_interfaz as $interfaz => $true_or_false) {
+   if ((strpos($interfaz, "ref_") === 0) && $true_or_false === true) {
       $referenciales = true;
-      $referecial_compras = true;
-   } elseif (strpos($gui_compra, 'mov_') !== false) {
-      $movimiento_compras = true;
-   } elseif (strpos($gui_compra, 'rep_') !== false) {
-      $reportes = true;
-   }
-}
-
-// Recorremos las interfaces de produccion, en base a lo asignado habilitamos las opciones del menu
-foreach ($guis_produccion as $gui_produccion) {
-   if (strpos($gui_produccion, 'ref_') !== false) {
-      $referenciales = true;
-      $referecial_produccion = true;
-   } elseif (strpos($gui_produccion, 'mov_') !== false) {
-      $movimiento_produccion = true;
-   } elseif (strpos($gui_produccion, 'rep_') !== false) {
-      $reportes = true;
-   }
-}
-
-// Recorremos las interfaces de ventas, en base a lo asignado habilitamos las opciones del menu
-foreach ($guis_ventas as $gui_venta) {
-   if (strpos($gui_venta, 'ref_') !== false) {
-      $referenciales = true;
-      $referecial_ventas = true;
-   } elseif (strpos($gui_venta, 'mov_') !== false) {
-      $movimiento_ventas = true;
-   } elseif (strpos($gui_venta, 'rep_') !== false) {
-      $reportes = true;
-   }
-}
-
-// Recorremos las interfaces de seguridad, en base a lo asignado habilitamos las opciones del menu
-foreach ($guis_seguridad as $gui_seguridad) {
-   if (strpos($gui_seguridad, 'ref_') !== false) {
-      $referenciales = true;
-      $referencial_seguridad = true;
-   } elseif (strpos($gui_seguridad, 'rep_') !== false) {
+   } elseif ((strpos($interfaz, "rep_") === 0) && $true_or_false === true) {
       $reportes = true;
    }
 }
@@ -576,177 +451,256 @@ if (isset($_SESSION['apertura'])) {
             </li>
             <!-- -------------------------------------------------------------------------------- -->
             <!-- OPCIONES DE REFERENCIALES -->
-            <?php if ($referenciales == true) { ?>
+            <?php if ($referenciales === true) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">perm_identity</i>
                      <span>Referenciales</span>
                   </a>
                   <ul class="ml-menu">
-                     <?php if ($referecial_compras === true) { ?>
+                     <?php if (tienePermiso(1, 'ref_')) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Compras</span>
                            </a>
                            <ul class="ml-menu">
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/ciudad/index.php">Ciudad</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/empresa/index.php">Empresa</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/sucursal/index.php">Sucursal</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/tipo_impuesto/index.php">Tipo Impuesto</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/tipo_proveedor/index.php">Tipo Proveedor</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/tipo_item/index.php">Tipo Item</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/proveedor/index.php">Proveedor</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/deposito/index.php">Deposito</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/compra/items/index.php">Items</a>
-                              </li>
+                              <?php if ($permisos_interfaz['ref_ciudad']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/ciudad/index.php">Ciudad</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_empresa']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/empresa/index.php">Empresa</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_sucursal']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/sucursal/index.php">Sucursal</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_tipoImpuesto']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/tipo_impuesto/index.php">Tipo Impuesto</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_tipoProveedor']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/tipo_proveedor/index.php">Tipo Proveedor</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_tipoItem']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/tipo_item/index.php">Tipo Item</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_proveedor']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/proveedor/index.php">Proveedor</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_deposito']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/deposito/index.php">Deposito</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_items']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/items/index.php">Items</a>
+                                 </li>
+                              <?php } ?>
                            </ul>
                         </li>
                      <?php } ?>
-                     <?php if ($referecial_produccion === true) { ?>
+                     <?php if (tienePermiso(3, 'ref_')) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Produccion</span>
                            </a>
                            <ul class="ml-menu">
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/cargo/index.php">Cargo</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/personas/index.php">Personas</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/funcionario/index.php">Funcionario</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/talle/index.php">Talle</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/color_prenda/index.php">Color Prenda</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/modelo/index.php">Modelo</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/maquinaria/index.php">Maquinaria</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/tipo_etapa_produccion/index.php">Tipo Etapa
-                                    Produccion</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/unidad_medida/index.php">Unidad Medida</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/parametro_control_calidad/index.php">Parametros
-                                    Control Calidad</a>
-                              </li>
-                              <!-- <li>
-                                                      <a href="/sys8DD/referenciales/produccion/costo_servicio/index.php">Costo Servicio</a>
-                                                   </li> -->
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/seccion/index.php">Seccion</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/produccion/equipo_trabajo/index.php">Equipo Trabajo</a>
-                              </li>
+                              <?php if ($permisos_interfaz['ref_cargo']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/cargo/index.php">Cargo</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_personas']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/personas/index.php">Personas</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_funcionario']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/funcionario/index.php">Funcionario</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_talle']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/talle/index.php">Talle</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_colorPrenda']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/color_prenda/index.php">Color Prenda</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_modelo']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/modelo/index.php">Modelo</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_maquinaria']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/maquinaria/index.php">Maquinaria</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_tipoEtapaProduccion']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/tipo_etapa_produccion/index.php">Tipo Etapa
+                                       Produccion</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_unidadMedida']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/unidad_medida/index.php">Unidad Medida</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_parametroControlCalidad']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/parametro_control_calidad/index.php">Parametros
+                                       Control Calidad</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_seccion']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/seccion/index.php">Seccion</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_equipoTrabajo']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/produccion/equipo_trabajo/index.php">Equipo Trabajo</a>
+                                 </li>
+                              <?php } ?>
                            </ul>
                         </li>
                      <?php } ?>
-                     <?php if ($referecial_ventas === true) { ?>
+                     <?php if (tienePermiso(2, 'ref_')) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Ventas</span>
                            </a>
                            <ul class="ml-menu">
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/tipo_documento/index.php">Tipo Documento</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/tipo_comprobante/index.php">Tipo Comprobante</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/timbrados/index.php">Timbrados</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/forma_cobro/index.php">Forma Cobro</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/marca_tarjeta/index.php">Marca Tarjeta</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/red_pago/index.php">Red Pago</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/entidad_emisora/index.php">Entidad Emisora</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/entidad_adherida/index.php">Entidad Adherida</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/caja/index.php">Caja</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/venta/clientes/index.php">Clientes</a>
-                              </li>
+                              <?php if ($permisos_interfaz['ref_tipoDocumento']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/tipo_documento/index.php">Tipo Documento</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_tipoComprobante']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/tipo_comprobante/index.php">Tipo Comprobante</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_timbrados']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/timbrados/index.php">Timbrados</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_formaCobro']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/forma_cobro/index.php">Forma Cobro</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_marcaTarjeta']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/marca_tarjeta/index.php">Marca Tarjeta</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_redPago']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/red_pago/index.php">Red Pago</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_entidadEmisora']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/entidad_emisora/index.php">Entidad Emisora</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_entidadAdherida']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/entidad_adherida/index.php">Entidad Adherida</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_caja']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/caja/index.php">Caja</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_clientes']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/clientes/index.php">Clientes</a>
+                                 </li>
+                              <?php } ?>
                            </ul>
                         </li>
                      <?php } ?>
-                     <?php if ($referencial_seguridad === true) { ?>
+                     <?php if (tienePermiso(5, 'ref_')) { ?>
                         <li>
                            <a href="javascript:void(0);" class="menu-toggle">
                               <span>Seguridad</span>
                            </a>
                            <ul class="ml-menu">
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/modulo/index.php">Modulo</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/permisos/index.php">Permisos</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/perfil/index.php">Perfil</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/gui/index.php">GUI</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/perfiles_permisos/index.php">Perfiles Permisos</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/perfil_gui/index.php">Perfil GUI</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/usuario/index.php">Usuario</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/asignacion_permiso_usuario/index.php">Asignacion
-                                    Permiso Usuario</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/configuraciones/index.php">Configuraciones
-                                    Interfaz</a>
-                              </li>
-                              <li>
-                                 <a href="/sys8DD/referenciales/seguridad/configuraciones_sucursal/index.php">Configuraciones
-                                    Interfaz Sucursal</a>
-                              </li>
+                              <?php if ($permisos_interfaz['ref_modulo']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/modulo/index.php">Modulo</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_permisos']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/permisos/index.php">Permisos</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_perfil']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/perfil/index.php">Perfil</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_gui']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/gui/index.php">GUI</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_perfilesPermisos']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/perfiles_permisos/index.php">Perfiles Permisos</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_perfilGui']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/perfil_gui/index.php">Perfil GUI</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_usuario']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/usuario/index.php">Usuario</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_asignacionPermisoUsuario']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/asignacion_permiso_usuario/index.php">Asignacion
+                                       Permiso Usuario</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_configuraciones']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/configuraciones/index.php">Configuraciones
+                                       Interfaz</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_configuracionesSucursal']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/seguridad/configuraciones_sucursal/index.php">Configuraciones
+                                       Interfaz Sucursal</a>
+                                 </li>
+                              <?php } ?>
                            </ul>
                         </li>
                      <?php } ?>
@@ -755,39 +709,39 @@ if (isset($_SESSION['apertura'])) {
             <?php } ?>
 
             <!-- OPCIONES DE COMPRAS -->
-            <?php if ($movimiento_compras === true) { ?>
+            <?php if (tienePermiso(1, 'mov_')) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">shopping_basket</i>
                      <span>Compras</span>
                   </a>
                   <ul class="ml-menu">
-                     <?php if ($mov_pedidoCompra === true) { ?>
+                     <?php if ($permisos_interfaz['mov_pedidoCompra']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/pedido_compra/index.php">Pedido Compra</a>
                         </li>
                      <?php } ?>
-                     <?php if ($presupuestoProveedor === true) { ?>
+                     <?php if ($permisos_interfaz['mov_presupuestoProveedor']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/presupuesto_proveedor/index.php">Presupuesto Proveedor</a>
                         </li>
                      <?php } ?>
-                     <?php if ($mov_ordenCompra === true) { ?>
+                     <?php if ($permisos_interfaz['mov_ordenCompra']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/orden_compra/index.php">Orden Compra</a>
                         </li>
                      <?php } ?>
-                     <?php if ($compra === true) { ?>
+                     <?php if ($permisos_interfaz['mov_compra']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/compra/index.php">Compra</a>
                         </li>
                      <?php } ?>
-                     <?php if ($ajusteInventario === true) { ?>
+                     <?php if ($permisos_interfaz['mov_ajusteStock']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/ajuste_stock/index.php">Ajuste Stock</a>
                         </li>
                      <?php } ?>
-                     <?php if ($mov_notaCompra === true) { ?>
+                     <?php if ($permisos_interfaz['mov_notaCompra']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/compra/nota_compra/index.php">Nota Compra</a>
                         </li>
@@ -797,59 +751,54 @@ if (isset($_SESSION['apertura'])) {
             <?php } ?>
 
             <!-- OPCIONES DE PRODUCCION -->
-            <?php if ($movimiento_produccion === true) { ?>
+            <?php if (tienePermiso(3, 'mov_')) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">work</i>
                      <span>Producción</span>
                   </a>
                   <ul class="ml-menu">
-                     <?php if ($pedidoProduccion === true) { ?>
-                        <li>
-                           <a href="/sys8DD/modulos/produccion/pedido_produccion/index.php">Pedido Produccion</a>
-                        </li>
-                     <?php } ?>
-                     <?php if ($presupuestoProduccion === true) { ?>
+                     <?php if ($permisos_interfaz['mov_presupuestoProduccion']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/presupuesto/index.php">Presupuesto</a>
                         </li>
                      <?php } ?>
-                     <?php if ($componenteProduccion === true) { ?>
+                     <?php if ($permisos_interfaz['mov_componenteProduccion']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/componente_produccion/index.php">Componente Produccion</a>
                         </li>
                      <?php } ?>
-                     <?php if ($ordenProduccion === true) { ?>
+                     <?php if ($permisos_interfaz['mov_ordenProduccion']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/orden_produccion/index.php">Orden Produccion</a>
                         </li>
                      <?php } ?>
-                     <?php if ($produccion === true) { ?>
+                     <?php if ($permisos_interfaz['mov_produccion']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/produccion/index.php">Produccion</a>
                         </li>
                      <?php } ?>
-                     <?php if ($etapaProduccion === true) { ?>
+                     <?php if ($permisos_interfaz['mov_etapaProduccion']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/etapa_produccion/index.php">Etapa Produccion</a>
                         </li>
                      <?php } ?>
-                     <?php if ($produccionTerminada === true) { ?>
+                     <?php if ($permisos_interfaz['mov_produccionTerminada']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/produccion_terminada/index.php">Produccion Terminada</a>
                         </li>
                      <?php } ?>
-                     <?php if ($controlCalidad === true) { ?>
+                     <?php if ($permisos_interfaz['mov_controlCalidad']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/control_calidad/index.php">Control Calidad</a>
                         </li>
                      <?php } ?>
-                     <?php if ($mermas === true) { ?>
+                     <?php if ($permisos_interfaz['mov_mermas']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/mermas/index.php">Mermas</a>
                         </li>
                      <?php } ?>
-                     <?php if ($costoProduccion === true) { ?>
+                     <?php if ($permisos_interfaz['mov_costoProduccion']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/produccion/costo_produccion/index.php">Costo Produccion</a>
                         </li>
@@ -860,34 +809,34 @@ if (isset($_SESSION['apertura'])) {
 
 
             <!-- OPCIONES DE VENTAS -->
-            <?php if ($movimiento_ventas === true) { ?>
+            <?php if (tienePermiso(2, 'mov_')) { ?>
                <li>
                   <a href="javascript:void(0);" class="menu-toggle">
                      <i class="material-icons">add_shopping_cart</i>
                      <span>Ventas</span>
                   </a>
                   <ul class="ml-menu">
-                     <?php if ($pedidoVenta === true) { ?>
+                     <?php if ($permisos_interfaz['mov_pedidoVenta']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/venta/pedido_venta/index.php">Pedido Venta</a>
                         </li>
                      <?php } ?>
-                     <?php if ($aperturaCierre === true) { ?>
+                     <?php if ($permisos_interfaz['mov_aperturaCierre']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/venta/apertura_cierre/index.php">Apertura, Arqueo Control y Cierre</a>
                         </li>
                      <?php } ?>
-                     <?php if ($venta === true) { ?>
+                     <?php if ($permisos_interfaz['mov_venta']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/venta/venta/index.php">Venta</a>
                         </li>
                      <?php } ?>
-                     <?php if ($cobro === true) { ?>
+                     <?php if ($permisos_interfaz['mov_cobro']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/venta/cobros/index.php">Cobro</a>
                         </li>
                      <?php } ?>
-                     <?php if ($notaVenta === true) { ?>
+                     <?php if ($permisos_interfaz['mov_notaVenta']) { ?>
                         <li>
                            <a href="/sys8DD/modulos/venta/nota_venta/index.php">Nota Venta</a>
                         </li>
@@ -904,38 +853,38 @@ if (isset($_SESSION['apertura'])) {
                      <span>Informes</span>
                   </a>
                   <ul class="ml-menu">
-                     <?php if ($rep_ReferencialCompras == true) { ?>
+                     <?php if ($permisos_interfaz['rep_ReferencialCompras']) { ?>
                         <li>
                            <a href="/sys8DD/report/compras/informe_referencial.php">Informes Referenciales Compras</a>
                         </li>
                      <?php } ?>
 
-                     <?php if ($reporteReferencialProduccion == true) { ?>
+                     <?php if ($permisos_interfaz['rep_ReferencialProduccion']) { ?>
                         <li>
                            <a href="/sys8DD/report/produccion/informe_referencial.php">Informes Referenciales Produccion</a>
                         </li>
                      <?php } ?>
-                     <?php if ($reporteReferencialVentas == true) { ?>
+                     <?php if ($permisos_interfaz['rep_ReferencialVentas']) { ?>
                         <li>
                            <a href="/sys8DD/report/ventas/informe_referencial.php">Informes Referenciales Ventas</a>
                         </li>
                      <?php } ?>
-                     <?php if ($reporteReferencialSeguridad == true) { ?>
+                     <?php if ($permisos_interfaz['rep_ReferencialSeguridad']) { ?>
                         <li>
                            <a href="/sys8DD/report/seguridad/informe_referencial.php">Informes Seguridad</a>
                         </li>
                      <?php } ?>
-                     <?php if ($reporteMovimientoCompras == true) { ?>
+                     <?php if ($permisos_interfaz['rep_MovimientoCompras']) { ?>
                         <li>
                            <a href="/sys8DD/report/compras/informe_movimiento.php">Informes Compras</a>
                         </li>
                      <?php } ?>
-                     <?php if ($reporteMovimientoProduccion == true) { ?>
+                     <?php if ($permisos_interfaz['rep_MovimientoProduccion']) { ?>
                         <li>
                            <a href="/sys8DD/report/produccion/informe_movimiento.php">Informes Producción</a>
                         </li>
                      <?php } ?>
-                     <?php if ($reporteMovimientoVentas == true) { ?>
+                     <?php if ($permisos_interfaz['rep_MovimientoVentas']) { ?>
                         <li>
                            <a href="/sys8DD/report/ventas/informe_movimiento.php">Informes Ventas</a>
                         </li>
