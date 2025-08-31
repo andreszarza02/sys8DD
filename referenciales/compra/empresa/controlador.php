@@ -11,54 +11,53 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $telefono = $_POST['emp_telefono'];
-   $emp_telefono = str_replace("'", "''", $telefono);
+   // Definimos y cargamos las variables
+   $emp_telefono = pg_escape_string($conexion, $_POST['emp_telefono']);
 
-   $razonsocial = $_POST['emp_razonsocial'];
-   $emp_razonsocial = str_replace("'", "''", $razonsocial);
+   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
 
-   $ruc = $_POST['emp_ruc'];
-   $emp_ruc = str_replace("'", "''", $ruc);
+   $emp_ruc = pg_escape_string($conexion, $_POST['emp_ruc']);
 
-   $timbrado = $_POST['emp_timbrado'];
-   $emp_timbrado = str_replace("'", "''", $timbrado);
+   $emp_timbrado = pg_escape_string($conexion, $_POST['emp_timbrado']);
 
-   $email = $_POST['emp_email'];
-   $emp_email = str_replace("'", "''", $email);
+   $emp_email = pg_escape_string($conexion, $_POST['emp_email']);
 
-   $actividad = $_POST['emp_actividad'];
-   $emp_actividad = str_replace("'", "''", $actividad);
+   $emp_actividad = pg_escape_string($conexion, $_POST['emp_actividad']);
 
-   $estado = $_POST['emp_estado'];
-   $emp_estado = str_replace("'", "''", $estado);
+   $emp_estado = pg_escape_string($conexion, $_POST['emp_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
    $sql = "select sp_empresa(
    {$_POST['emp_codigo']}, 
    '$emp_telefono', 
    '$emp_razonsocial', 
    '$emp_ruc', 
-   '$timbrado', 
+   '$emp_timbrado', 
+   '{$_POST['emp_timbrado_fec_inic']}', 
+   '{$_POST['emp_timbrado_fec_venc']}', 
    '$emp_email', 
    '$emp_actividad', 
    '$emp_estado',
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2')";
+   '$procedimiento')";
 
    //Validamos la consulta
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "fecha") !== false) {
       $response = array(
-         "mensaje" => "YA EXISTE LA EMPRESA",
+         "mensaje" => "LA FECHA DE VENCIMIENTO DEBE SER MAYOR A LA FECHA DE INICIO",
+         "tipo" => "error"
+      );
+   } elseif (strpos($error, "ruc") !== false) {
+      $response = array(
+         "mensaje" => "YA EXISTE UNA EMPRESA CON ESE RUC",
          "tipo" => "error"
       );
    } else {
@@ -88,6 +87,8 @@ if (isset($_POST['operacion'])) {
                e.emp_razonsocial,
                e.emp_ruc,
                e.emp_timbrado,
+               e.emp_timbrado_fec_inic,
+               e.emp_timbrado_fec_venc,
                e.emp_email,
                e.emp_actividad,
                e.emp_estado 

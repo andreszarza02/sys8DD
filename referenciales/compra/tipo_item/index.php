@@ -52,9 +52,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Tipo Item -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE TIPO ITEM<small>Mantener referencial tipo item</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE TIPO ITEM<small style="color: white; font-weight: bold;">Mantener referencial tipo
+                           item</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -74,7 +75,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="tipit_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="tipit_descripcion"
+                                    disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
@@ -82,7 +84,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="tipit_estado" disabled>
+                                 <input type="text" class="form-control" id="tipit_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -120,7 +122,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="botonesExtra2" style="display: none;">
                            <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                               <i class="material-icons">save</i>
-                              <span>GRABAR</span>
+                              <span>CONFIRMAR</span>
                            </button>
                            <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
@@ -136,9 +138,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="tItems" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           TIPOS DE ITEMS REGISTRADOS <small>Lista de tipos de items registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           TIPOS DE ITEMS REGISTRADOS <small style="color: white; font-weight: bold;">Lista de tipos de
+                              items registrados</small>
                         </h2>
                      </div>
                      <div class="body">

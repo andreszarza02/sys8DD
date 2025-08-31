@@ -1,3 +1,125 @@
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-letras realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-letras")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneNumero = /[0-9]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene números o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneNumero.test(input.value) && tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números y símbolos`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          } else if (tieneNumero.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras y numeros
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase sletras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Permite aplicar un formato de tabla a la lista de la referencial
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -13,6 +135,7 @@ function formatoTabla() {
   });
 }
 
+//Consulta y establece el codigo de la referencial
 const getCodigo = () => {
   $.ajax({
     method: "POST",
@@ -25,6 +148,7 @@ const getCodigo = () => {
   });
 };
 
+//Consulta y lista los datos en la grilla de la referencial
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador
@@ -68,6 +192,7 @@ const listar = () => {
     });
 };
 
+//Habilita botones de la referencial
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -78,10 +203,12 @@ const habilitarBotones = (booleano) => {
   }
 };
 
+//Saca el disabled de los inputs
 const habilitarCampos = () => {
   $(".no-disabled").removeAttr("disabled");
 };
 
+//Metodo que establece el alta
 const agregar = () => {
   $("#operacion").val(1);
   $("#procedimiento").val("ALTA");
@@ -91,21 +218,21 @@ const agregar = () => {
   $(".est").attr("class", "form-line est focused");
   $(".foco").attr("class", "form-line foco");
   $(".ciu").attr("class", "form-line ciu");
-  $(".emp").attr("class", "form-line emp");
   $(".suc").attr("class", "form-line suc");
   $("#dep_estado").val("ACTIVO");
   $("#dep_descripcion").val("");
   $("#ciu_codigo").val("");
   $("#ciu_descripcion").val("");
-  $("#emp_codigo").val("");
-  $("#emp_razonsocial").val("");
   $("#suc_codigo").val("");
   $("#suc_descripcion").val("");
   habilitarBotones(false);
   $("#deposito").attr("style", "display: none");
   $("#ulSucursal").html("");
+  validacionInputsVacios1();
+  validacionInputsVacios2();
 };
 
+//Metodo que establece la modificacion
 const modificar = () => {
   $("#operacion").val(2);
   $("#procedimiento").val("MODIFICACION");
@@ -114,8 +241,11 @@ const modificar = () => {
   $(".no-disabled2").removeAttr("disabled");
   habilitarCampos();
   habilitarBotones(false);
+  validacionInputsVacios1();
+  validacionInputsVacios2();
 };
 
+//Metodo que establece la baja, en esta caso de manera logica
 const borrar = () => {
   $("#operacion").val(3);
   $("#procedimiento").val("BAJA");
@@ -124,10 +254,12 @@ const borrar = () => {
   habilitarBotones(false);
 };
 
+//Limpia los campos del formulario
 const limpiarCampos = () => {
   window.location.reload();
 };
 
+//Pasa parametros en el controlador para persistir los mismos
 const abm = () => {
   $.ajax({
     //Enviamos datos al controlador
@@ -185,6 +317,7 @@ const abm = () => {
     });
 };
 
+// Establece los mensajes de confirmacion de las operaciones
 const confirmar = () => {
   //solicitamos el value del input operacion
   var oper = $("#operacion").val();
@@ -201,8 +334,8 @@ const confirmar = () => {
   }
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -223,6 +356,7 @@ const confirmar = () => {
   );
 };
 
+//Controla que todos los inputs de la referencial no se pasen con valores vacios
 const controlVacio = () => {
   let condicion;
 
@@ -243,7 +377,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "CARGUE TODOS LOS CAMPOS EN BLANCO",
       type: "error",
     });
   } else {
@@ -251,6 +385,7 @@ const controlVacio = () => {
   }
 };
 
+//Envia a los inputs de la referencial lo seleccionado por el usuario en la grilla
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -263,9 +398,9 @@ const seleccionarFila = (objetoJSON) => {
   $(".emp").attr("class", "form-line emp focused");
   $(".suc").attr("class", "form-line suc focused");
   $(".est").attr("class", "form-line est focused");
-  getSucursal(objetoJSON.emp_codigo);
 };
 
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
 const seleccionCiudad = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -276,6 +411,7 @@ const seleccionCiudad = (datos) => {
   $(".ciu").attr("class", "form-line ciu focused");
 };
 
+//Obtiene los datos de la ciudad y los muestra en una lista
 const getCiudad = () => {
   $.ajax({
     //Solicitamos los datos a listaModulo
@@ -313,54 +449,7 @@ const getCiudad = () => {
     });
 };
 
-const seleccionEmpresa = (datos) => {
-  //Enviamos los datos a su respectivo input
-  Object.keys(datos).forEach((key) => {
-    $("#" + key).val(datos[key]);
-  });
-  $("#ulEmpresa").html();
-  $("#listaEmpresa").attr("style", "display: none;");
-  $(".emp").attr("class", "form-line emp focused");
-  getSucursal(datos.emp_codigo);
-};
-
-const getEmpresa = () => {
-  $.ajax({
-    //Solicitamos los datos a listaModulo
-    method: "POST",
-    url: "/sys8DD/others/complements_php/listas/listaEmpresa.php",
-    data: {
-      emp_razonsocial: $("#emp_razonsocial").val(),
-    },
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        if (objeto.dato1 == "NSE") {
-          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
-        } else {
-          fila +=
-            "<li class='list-group-item' onclick='seleccionEmpresa(" +
-            JSON.stringify(objeto) +
-            ")'>" +
-            objeto.emp_razonsocial +
-            "</li>";
-        }
-      });
-
-      //cargamos la lista
-      $("#ulEmpresa").html(fila);
-      //hacemos visible la lista
-      $("#listaEmpresa").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000; width:100%;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
-};
-
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
 const seleccionSucursal = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -371,13 +460,15 @@ const seleccionSucursal = (datos) => {
   $(".suc").attr("class", "form-line suc focused");
 };
 
-const getSucursal = (CodigoSucursal) => {
+//Obtiene los datos de la sucursal y los muestra en una lista
+const getSucursal = () => {
   $.ajax({
     //Solicitamos los datos a listaModulo
     method: "POST",
     url: "/sys8DD/others/complements_php/listas/listaSucursal.php",
     data: {
-      emp_codigo: CodigoSucursal,
+      emp_codigo: $("#emp_codigo").val(),
+      suc_descripcion: $("#suc_descripcion").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -408,40 +499,7 @@ const getSucursal = (CodigoSucursal) => {
     });
 };
 
-const getSucursal2 = () => {
-  let codigoSucursal = document.getElementById("emp_codigo").value;
-  $.ajax({
-    //Solicitamos los datos a listaModulo
-    method: "POST",
-    url: "/sys8DD/others/complements_php/listas/listaSucursal.php",
-    data: {
-      emp_codigo: codigoSucursal,
-    },
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionSucursal(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.suc_descripcion +
-          "</li>";
-      });
-
-      //cargamos la lista
-      $("#ulSucursal").html(fila);
-      //hacemos visible la lista
-      $("#listaSucursal").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
-};
-
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };

@@ -17,7 +17,7 @@ begin
         where upper(ciu_descripcion) = upper(ciudescripcion)
         and ciu_codigo != ciucodigo;
         if found then
-            raise exception '1';
+            raise exception 'descripcion';
     	elseif operacion = 1 then
 	        	insert into ciudad(ciu_codigo, ciu_descripcion, ciu_estado)
 				values(ciucodigo, upper(ciudescripcion), 'ACTIVO');
@@ -58,6 +58,9 @@ create or replace function sp_empresa(
     emptelefono varchar,
     emprazonsocial varchar,
     empruc varchar,
+    emptimbrado varchar,
+    emptimbradofecinic date,
+    emptimbradofecvenc date,
     empemail varchar,
     empactividad varchar,
     empestado varchar,
@@ -67,34 +70,48 @@ create or replace function sp_empresa(
     procedimiento varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare empAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
+		-- Validamos que la fecha de vencimiento del timbrado no sea menor a la fecha de inicio
+		if emptimbradofecvenc <= emptimbradofecinic then
+			-- En caso de ser asi, generamos una excepcion
+     	 	raise exception 'fecha';
+     	 end if;
+		-- Validamos que no se repita el ruc de la empresa
         perform * from empresa
         where emp_ruc = empruc and emp_codigo != empcodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'ruc';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
-	        	insert into empresa(emp_codigo, emp_telefono, emp_razonsocial, emp_ruc, emp_email, emp_actividad, emp_estado)
-				values(empcodigo, emptelefono, upper(emprazonsocial), empruc, empemail, upper(empactividad), 'ACTIVO');
+	        	insert into empresa(emp_codigo, emp_telefono, emp_razonsocial, emp_ruc, emp_email, emp_actividad, emp_estado, emp_timbrado, 
+				emp_timbrado_fec_inic, emp_timbrado_fec_venc)
+				values(empcodigo, emptelefono, upper(emprazonsocial), empruc, empemail, upper(empactividad), 'ACTIVO', emptimbrado, 
+				emptimbradofecinic, emptimbradofecvenc);
 				raise notice 'LA EMPRESA FUE REGISTRADA CON EXITO';
         elseif operacion = 2 then
         		update empresa
 				set emp_telefono=emptelefono, emp_razonsocial=upper(emprazonsocial), emp_ruc=empruc,
-				emp_email=empemail, emp_actividad=upper(empactividad), emp_estado='ACTIVO'
+				emp_email=empemail, emp_actividad=upper(empactividad), emp_estado='ACTIVO', emp_timbrado=emptimbrado,
+				emp_timbrado_fec_inic=emptimbradofecinic, emp_timbrado_fec_venc=emptimbradofecvenc 
 				where emp_codigo=empcodigo;
 				raise notice 'LA EMPRESA FUE MODIFICADA CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de elimianacion (borrado logíco)
     if operacion = 3 then 
     	update empresa
 		set emp_estado='INACTIVO'
 		where emp_codigo=empcodigo;
 		raise notice 'LA EMPRESA FUE BORRADA CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(emp_audit, '') into empAudit from empresa where emp_codigo = empcodigo;
-	--a los datos anteriores le agragamos los nuevos
+	-- A los datos anteriores le agragamos los nuevos
 	update empresa 
 	set emp_audit = empAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -104,6 +121,9 @@ begin
 		'emp_telefono', emptelefono,
 		'emp_razonsocial', upper(emprazonsocial),
 		'emp_ruc', empruc,
+		'emp_timbrado', emptimbrado,
+		'emp_timbrado_fec_inic', emptimbradofecinic,
+		'emp_timbrado_fec_venc', emptimbradofecvenc,
 		'emp_email', empemail,
 		'emp_actividad', upper(empactividad),
 		'emp_estado', upper(empestado)
@@ -131,14 +151,19 @@ create or replace function sp_sucursal(
     emprazonsocial varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare sucAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
+		-- Validamos que no se repita la descripcion de la sucursal
         perform * from sucursal
         where (emp_codigo=empcodigo and upper(suc_descripcion)=upper(sucdescripcion))
         and suc_codigo != succodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into sucursal(suc_codigo, emp_codigo, suc_descripcion, suc_direccion, suc_telefono,
 	        	suc_estado, ciu_codigo, suc_email)
@@ -154,15 +179,16 @@ begin
 				raise notice 'LA SUCURSAL FUE MODIFICADA CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de elimianacion (borrado logíco)
     if operacion = 3 then 
     	update sucursal 
 		set suc_estado='INACTIVO'
 		where suc_codigo=succodigo;
 		raise notice 'LA SUCURSAL FUE BORRADA CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(suc_audit, '') into sucAudit from sucursal where suc_codigo = succodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agragamos los nuevos
 	update sucursal 
 	set suc_audit = sucAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -195,14 +221,19 @@ create or replace function sp_tipo_impuesto(
     procedimiento varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare tipimAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
+		  -- Validamos que no se repita la descripcion del tipo de impuesto
         perform * from tipo_impuesto
         where upper(tipim_descripcion) = upper(tipimdescripcion)
         and tipim_codigo != tipimcodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into tipo_impuesto(tipim_codigo, tipim_descripcion, tipim_estado)
 				values(tipimcodigo, upper(tipimdescripcion), 'ACTIVO');
@@ -214,15 +245,16 @@ begin
 				raise notice 'EL TIPO DE IMPUESTO FUE MODIFICADO CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de elimianacion (borrado logíco)
     if operacion = 3 then 
     	update tipo_impuesto
 		set tipim_estado='INACTIVO'
 		where tipim_codigo=tipimcodigo;
 		raise notice 'EL TIPO DE IMPUESTO FUE BORRADO CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(tipim_audit, '') into tipimAudit from tipo_impuesto where tipim_codigo = tipimcodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update tipo_impuesto 
 	set tipim_audit = tipimAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -248,14 +280,19 @@ create or replace function sp_tipo_proveedor(
     procedimiento varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare tiproAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
+		-- Validamos que no se repita la descripcion del tipo de proveedor
         perform * from tipo_proveedor
         where upper(tipro_descripcion) = upper(tiprodescripcion)
         and tipro_codigo != tiprocodigo;
         if found then
-            raise exception '1';
+			   -- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into tipo_proveedor(tipro_codigo, tipro_descripcion, tipro_estado)
 				values(tiprocodigo, upper(tiprodescripcion), 'ACTIVO');
@@ -267,15 +304,16 @@ begin
 				raise notice 'EL TIPO DE PROVEEDOR FUE MODIFICADO CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
     if operacion = 3 then 
     	update tipo_proveedor
 		set tipro_estado='INACTIVO'
 		where tipro_codigo=tiprocodigo;
 		raise notice 'EL TIPO DE PROVEEDOR FUE BORRADO CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(tipro_audit, '') into tiproAudit from tipo_proveedor where tipro_codigo = tiprocodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update tipo_proveedor 
 	set tipro_audit = tiproAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -301,14 +339,19 @@ create or replace function sp_tipo_item(
     procedimiento varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare tipitAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
+		-- Validamos que no se repita la descripcion del tipo de item
         perform * from tipo_item
         where upper(tipit_descripcion) = upper(tipitdescripcion)
         and tipit_codigo != tipitcodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into tipo_item(tipit_codigo, tipit_descripcion, tipit_estado)
 				values(tipitcodigo, upper(tipitdescripcion), 'ACTIVO');
@@ -320,15 +363,16 @@ begin
 				raise notice 'EL TIPO DE ITEM FUE MODIFICADO CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
     if operacion = 3 then 
     	update tipo_item
 		set tipit_estado='INACTIVO'
 		where tipit_codigo=tipitcodigo;
 		raise notice 'EL TIPO DE ITEM FUE BORRADO CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(tipit_audit, '') into tipitAudit from tipo_item where tipit_codigo = tipitcodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update tipo_item 
 	set tipit_audit = tipitAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -349,6 +393,8 @@ create or replace function sp_proveedor(
     tiprocodigo integer,
     prorazonsocial varchar,
     proruc varchar,
+    protimbrado varchar,
+    protimbradovenc date,
     prodireccion varchar,
     protelefono varchar,
     proemail varchar,
@@ -360,35 +406,42 @@ create or replace function sp_proveedor(
     tiprodescripcion varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare proAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
+		-- Validamos que no se repita el ruc de ningun proveedor
         perform * from proveedor
-        where pro_ruc = proruc and pro_codigo != procodigo;
+        where (pro_ruc = proruc or pro_razonsocial = upper(prorazonsocial)) and pro_codigo != procodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'ruc';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into proveedor(pro_codigo, tipro_codigo, pro_razonsocial, pro_ruc, pro_direccion, pro_telefono, 
-	        	pro_email, pro_estado)
-				values(procodigo, tiprocodigo, upper(prorazonsocial), proruc, upper(prodireccion), protelefono, proemail, 'ACTIVO');
+	        	pro_email, pro_estado, pro_timbrado, pro_timbrado_venc)
+				values(procodigo, tiprocodigo, upper(prorazonsocial), proruc, upper(prodireccion), protelefono, proemail, 'ACTIVO', protimbrado, protimbradovenc);
 				raise notice 'EL PROVEEDOR FUE REGISTRADO CON EXITO';
         elseif operacion = 2 then
         		update proveedor
 				set tipro_codigo=tiprocodigo, pro_razonsocial=upper(prorazonsocial), pro_ruc=proruc,
-				pro_direccion=upper(prodireccion), pro_telefono=protelefono, pro_email=proemail, pro_estado='ACTIVO'
+				pro_direccion=upper(prodireccion), pro_telefono=protelefono, pro_email=proemail, pro_estado='ACTIVO',
+				pro_timbrado=protimbrado, pro_timbrado_venc=protimbradovenc
 				where pro_codigo=procodigo;
 				raise notice 'EL PROVEEDOR FUE MODIFICADO CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
     if operacion = 3 then 
     	update proveedor
 		set pro_estado='INACTIVO'
 		where pro_codigo=procodigo;
 		raise notice 'EL PROVEEDOR FUE BORRADO CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(pro_audit, '') into proAudit from proveedor where pro_codigo = procodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update proveedor 
 	set pro_audit = proAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -399,6 +452,8 @@ begin
 		'tipro_codigo', tiprocodigo,
 		'tipro_descripcion', upper(tiprodescripcion),
 		'pro_ruc', proruc,
+		'pro_timbrado', protimbrado,
+		'pro_timbrado_venc', protimbradovenc,
 		'pro_direccion', upper(prodireccion),
 		'pro_telefono', protelefono,
 		'pro_email', proemail,
@@ -426,14 +481,19 @@ create or replace function sp_deposito(
     sucdescripcion varchar--1:insert 2:update 3:delete
 ) returns void as
 $function$
+-- Definimos las variables
 declare depAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
+	    -- Validamos que no se repita la descripcion del deposito con la empresa y sucursal
         perform * from deposito
         where (upper(dep_descripcion)=upper(depdescripcion) and emp_codigo=empcodigo and suc_codigo=succodigo)
         and dep_codigo != depcodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into deposito(dep_codigo, suc_codigo, emp_codigo, dep_descripcion, dep_estado, ciu_codigo)
 				values(depcodigo, succodigo, empcodigo, upper(depdescripcion), 'ACTIVO', ciucodigo);
@@ -447,15 +507,16 @@ begin
 				raise notice 'EL DEPOSITO FUE MODIFICADO CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
     if operacion = 3 then 
     	update deposito 
 		set dep_estado='INACTIVO'
 		where dep_codigo=depcodigo;
 		raise notice 'EL DEPOSITO FUE BORRADO CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(dep_audit, '') into depAudit from deposito where dep_codigo = depcodigo;
-	--a los datos anteriores le agragamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update deposito 
 	set dep_audit = depAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -488,6 +549,8 @@ create or replace function sp_items(
     tallcodigo integer,
     tipimcodigo integer,
     unimecodigo integer,
+    itstockmin numeric,
+    itstockmax numeric,
     operacion integer,
     usucodigo integer,
     usulogin varchar,
@@ -499,14 +562,19 @@ create or replace function sp_items(
     unimedescripcion varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare itAudit text;
 begin 
+	-- Validamos la operacion de insercion o modificacion y el tipo de item producto
 	if operacion in(1,2) and tipitcodigo=2 then
+		-- Validamos que no se repita la descripcion y otros datos del item producto
 		perform * from items
         where upper(it_descripcion)=upper(itdescripcion) and tipit_codigo=tipitcodigo and mod_codigo=modcodigo
         and tall_codigo=tallcodigo and tipim_codigo=tipimcodigo and unime_codigo=unimecodigo and it_codigo != itcodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into items(
 	        	it_codigo, 
@@ -518,9 +586,11 @@ begin
 	        	mod_codigo,
 	        	tall_codigo,
 	        	tipim_codigo,
-				unime_codigo)
+				unime_codigo,
+				it_stock_min,
+				it_stock_max)
 				values(itcodigo, tipitcodigo, upper(itdescripcion), itcosto, itprecio, 'ACTIVO', modcodigo,
-				tallcodigo, tipimcodigo, unimecodigo);
+				tallcodigo, tipimcodigo, unimecodigo, itstockmin, itstockmax);
 				raise notice 'EL ITEM FUE REGISTRADO CON EXITO';
 		elseif operacion = 2 then
 				update items
@@ -529,16 +599,21 @@ begin
 				it_costo=itcosto, it_precio=itprecio,
 				it_estado='ACTIVO', mod_codigo=modcodigo,
 				tall_codigo=tallcodigo, tipim_codigo=tipimcodigo,
-				unime_codigo=unimecodigo
+				unime_codigo=unimecodigo, it_stock_min=itstockmin,
+				it_stock_max=itstockmax
 				where it_codigo=itcodigo;
 				raise notice 'EL ITEM FUE MODIFICADO CON EXITO';
         end if;
 	end if;
+	-- Validamos la operacion de insercion o modificacion y que el tipo de item no sea producto
     if operacion in(1,2) and tipitcodigo<>2 then
+		-- Validamos que no se repita la descripcion del items
         perform * from items
         where upper(it_descripcion)=upper(itdescripcion) and it_codigo != itcodigo;
         if found then
-            raise exception '1';
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
 	        	insert into items(
 	        	it_codigo, 
@@ -550,9 +625,11 @@ begin
 	        	mod_codigo,
 	        	tall_codigo,
 	        	tipim_codigo,
-				unime_codigo)
+				unime_codigo,
+				it_stock_min,
+				it_stock_max)
 				values(itcodigo, tipitcodigo, upper(itdescripcion), itcosto, itprecio, 'ACTIVO', modcodigo,
-				tallcodigo, tipimcodigo, unimecodigo);
+				tallcodigo, tipimcodigo, unimecodigo, itstockmin, itstockmax);
 				raise notice 'EL ITEM FUE REGISTRADO CON EXITO';
 		elseif operacion = 2 then
 				update items
@@ -561,20 +638,22 @@ begin
 				it_costo=itcosto, it_precio=itprecio,
 				it_estado='ACTIVO', mod_codigo=modcodigo,
 				tall_codigo=tallcodigo, tipim_codigo=tipimcodigo,
-				unime_codigo=unimecodigo
+				unime_codigo=unimecodigo, it_stock_min=itstockmin,
+				it_stock_max=itstockmax
 				where it_codigo=itcodigo;
 				raise notice 'EL ITEM FUE MODIFICADO CON EXITO';
         end if;
     end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
     if operacion = 3 then 
     	update items 
 		set it_estado='INACTIVO'
 		where it_codigo=itcodigo;
 		raise notice 'EL ITEM FUE BORRADO CON EXITO';
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(it_audit, '') into itAudit from items where it_codigo = itcodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update items 
 	set it_audit = itAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -594,6 +673,8 @@ begin
 		'tall_descripcion', talldescripcion,
 		'unime_codigo', unimecodigo,
 		'unime_descripcion', upper(unimedescripcion),
+		'it_stock_min', itstockmin,
+		'it_stock_max', itstockmax,
 		'it_estado', upper(itestado)
 	)||','
 	where it_codigo = itcodigo;

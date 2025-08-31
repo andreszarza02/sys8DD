@@ -11,49 +11,50 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $descripcion = $_POST['it_descripcion'];
-   $it_descripcion = str_replace("'", "''", $descripcion);
+   // Definimos y cargamos las variables
+   $it_descripcion = pg_escape_string($conexion, $_POST['it_descripcion']);
 
-   $estado = $_POST['it_estado'];
-   $it_estado = str_replace("'", "''", $estado);
+   $it_estado = pg_escape_string($conexion, $_POST['it_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $tipitDescripcion = $_POST['tipit_descripcion'];
-   $tipit_descripcion = str_replace("'", "''", $tipitDescripcion);
+   $tipit_descripcion = pg_escape_string($conexion, $_POST['tipit_descripcion']);
 
-   $tipimDescripcion = $_POST['tipim_descripcion'];
-   $tipim_descripcion = str_replace("'", "''", $tipimDescripcion);
+   $tipim_descripcion = pg_escape_string($conexion, $_POST['tipim_descripcion']);
 
-   $modCodigomodelo = $_POST['mod_codigomodelo'];
-   $mod_codigomodelo = str_replace("'", "''", $modCodigomodelo);
+   $mod_codigomodelo = pg_escape_string($conexion, $_POST['mod_codigomodelo']);
 
-   $tallDescripcion = $_POST['tall_descripcion'];
-   $tall_descripcion = str_replace("'", "''", $tallDescripcion);
+   $tall_descripcion = pg_escape_string($conexion, $_POST['tall_descripcion']);
 
-   $unimeDescripcion = $_POST['unime_descripcion'];
-   $unime_descripcion = str_replace("'", "''", $unimeDescripcion);
+   $unime_descripcion = pg_escape_string($conexion, $_POST['unime_descripcion']);
 
+   $it_costo = str_replace(",", ".", $_POST['it_costo']);
+
+   $it_precio = str_replace(",", ".", $_POST['it_precio']);
+
+   $it_stock_min = str_replace(",", ".", $_POST['it_stock_min']);
+
+   $it_stock_max = str_replace(",", ".", $_POST['it_stock_max']);
 
    $sql = "select sp_items(
    {$_POST['it_codigo']}, 
    {$_POST['tipit_codigo']},
    '$it_descripcion', 
-   {$_POST['it_costo']}, 
-   {$_POST['it_precio']},
+   $it_costo, 
+   $it_precio,
    '$it_estado', 
    {$_POST['mod_codigo']}, 
    {$_POST['tall_codigo']}, 
    {$_POST['tipim_codigo']}, 
    {$_POST['unime_codigo']}, 
+   $it_stock_min,
+   $it_stock_max,
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2',
+   '$procedimiento',
    '$tipit_descripcion',
    '$tipim_descripcion',
    '$mod_codigomodelo',
@@ -65,7 +66,7 @@ if (isset($_POST['operacion'])) {
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "descripcion") !== false) {
       $response = array(
          "mensaje" => "YA EXISTE EL ITEM",
          "tipo" => "error"
@@ -106,7 +107,9 @@ if (isset($_POST['operacion'])) {
                m.mod_codigomodelo,
                t.tall_descripcion,
                tim.tipim_descripcion,
-               um.unime_descripcion 
+               um.unime_descripcion,
+               i.it_stock_min, 
+               i.it_stock_max
             from items i
                join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
                join modelo m on m.mod_codigo=i.mod_codigo

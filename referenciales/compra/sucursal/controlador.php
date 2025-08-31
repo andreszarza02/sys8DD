@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,32 +13,24 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $descripcion = $_POST['suc_descripcion'];
-   $suc_descripcion = str_replace("'", "''", $descripcion);
+   // Definimos y cargamos las variables
+   $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
 
-   $direccion = $_POST['suc_direccion'];
-   $suc_direccion = str_replace("'", "''", $direccion);
+   $suc_direccion = pg_escape_string($conexion, $_POST['suc_direccion']);
 
-   $telefono = $_POST['suc_telefono'];
-   $suc_telefono = str_replace("'", "''", $telefono);
+   $suc_telefono = pg_escape_string($conexion, $_POST['suc_telefono']);
 
-   $estado = $_POST['suc_estado'];
-   $suc_estado = str_replace("'", "''", $estado);
+   $suc_estado = pg_escape_string($conexion, $_POST['suc_estado']);
 
-   $email = $_POST['suc_email'];
-   $suc_email = str_replace("'", "''", $email);
+   $suc_email = pg_escape_string($conexion, $_POST['suc_email']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $ciuDescripcion = $_POST['ciu_descripcion'];
-   $ciu_descripcion = str_replace("'", "''", $ciuDescripcion);
+   $ciu_descripcion = pg_escape_string($conexion, $_POST['ciu_descripcion']);
 
-   $empRazonSocial = $_POST['emp_razonsocial'];
-   $emp_razonsocial = str_replace("'", "''", $empRazonSocial);
+   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
 
    $sql = "select sp_sucursal(
    {$_POST['suc_codigo']}, 
@@ -50,7 +44,7 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2',
+   '$procedimiento',
    '$ciu_descripcion',
    '$emp_razonsocial')";
 
@@ -58,9 +52,9 @@ if (isset($_POST['operacion'])) {
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "descripcion") !== false) {
       $response = array(
-         "mensaje" => "YA EXISTE LA SUCURSAL",
+         "mensaje" => "YA SE ENCUENTRA REGISTRADA UNA SUCURSAL CON ESA DESCRIPCION",
          "tipo" => "error"
       );
    } else {

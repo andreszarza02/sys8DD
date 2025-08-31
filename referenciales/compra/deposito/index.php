@@ -52,9 +52,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Sucursal -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE DEPOSITO<small>Mantener referencial deposito</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE DEPOSITO<small style="color: white; font-weight: bold;">Mantener referencial
+                           deposito</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -74,7 +75,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="dep_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros" id="dep_descripcion"
+                                    disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
@@ -83,8 +85,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line ciu">
                                  <input type="hidden" id="ciu_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="ciu_descripcion" disabled
-                                    onkeyup="getCiudad()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="ciu_descripcion"
+                                    disabled onkeyup="getCiudad()">
                                  <label class="form-label">Ciudad</label>
                                  <div id="listaCiudad" style="display: none;">
                                     <ul class="list-group" id="ulCiudad" Style="height: 100px; overflow: auto"></ul>
@@ -94,14 +96,12 @@ $permisos = pg_fetch_all($resultado);
                         </div>
                         <div class="col-sm-3">
                            <div class="form-group form-float">
-                              <div class="form-line emp">
-                                 <input type="hidden" id="emp_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="emp_razonsocial" disabled
-                                    onkeyup="getEmpresa()">
+                              <div class="form-line focused">
+                                 <input type="hidden" id="emp_codigo"
+                                    value="<?php echo $_SESSION['usuario']['emp_codigo']; ?>">
+                                 <input type="text" class="form-control" id="emp_razonsocial"
+                                    value="<?php echo $_SESSION['usuario']['emp_razonsocial']; ?>" disabled>
                                  <label class="form-label">Empresa</label>
-                                 <div id="listaEmpresa" style="display: none;">
-                                    <ul class="list-group" id="ulEmpresa" Style="height: 100px; overflow: auto"></ul>
-                                 </div>
                               </div>
                            </div>
                         </div>
@@ -109,8 +109,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line suc">
                                  <input type="hidden" id="suc_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled2" id="suc_descripcion" disabled
-                                    onclick="getSucursal2()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="suc_descripcion"
+                                    disabled onkeyup="getSucursal()">
                                  <label class="form-label">Sucursal</label>
                                  <div id="listaSucursal" style="display: none;">
                                     <ul class="list-group" id="ulSucursal" Style="height: 100px; overflow: auto"></ul>
@@ -121,7 +121,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-1">
                            <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="dep_estado" disabled>
+                                 <input type="text" class="form-control" id="dep_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -159,7 +159,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="botonesExtra2" style="display: none;">
                            <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                               <i class="material-icons">save</i>
-                              <span>GRABAR</span>
+                              <span>CONFIRMAR</span>
                            </button>
                            <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
@@ -175,9 +175,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="deposito" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           DEPOSITOS REGISTRADOS <small>Lista de depositos registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           DEPOSITOS REGISTRADOS <small style="color: white; font-weight: bold;">Lista de depositos
+                              registrados</small>
                         </h2>
                      </div>
                      <div class="body">

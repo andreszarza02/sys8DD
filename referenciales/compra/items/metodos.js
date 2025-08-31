@@ -1,3 +1,254 @@
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-letras realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-letras")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneNumero = /[0-9]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene números o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneNumero.test(input.value) && tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números y símbolos`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          } else if (tieneNumero.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan simbolos excepto %
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene simbolo distinto a %
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolo distinto a %
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} solo acepta el simbolo %`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan simbolos
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras_numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras_numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan letras y simbolos que no sean . y ,
+const validacionInputsVacios4 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\-=\[\]{};':"\\|<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o simbolos distintos a . y ,
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene letras o simbolos distintos a . y ,
+          if (
+            tieneSimbolo.test(input.value) &&
+            (tieneMayuscula.test(input.value) ||
+              tieneMinuscula.test(input.value))
+          ) {
+            mensaje = `El campo ${labelText} contiene letras y simbolos distintos a .(punto) y ,(coma)`;
+          } else if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} contiene letras`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene simbolos distintos a .(punto) y ,(coma)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Permite aplicar un formato de tabla a la lista de la referencial
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -13,6 +264,7 @@ function formatoTabla() {
   });
 }
 
+//Consulta y establece el codigo de la referencial
 const getCodigo = () => {
   $.ajax({
     method: "POST",
@@ -25,6 +277,7 @@ const getCodigo = () => {
   });
 };
 
+//Consulta y lista los datos en la grilla de la referencial
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador
@@ -86,6 +339,7 @@ const listar = () => {
     });
 };
 
+//Habilita botones de la referencial
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -96,10 +350,12 @@ const habilitarBotones = (booleano) => {
   }
 };
 
+//Saca el disabled de los inputs
 const habilitarCampos = () => {
   $(".no-disabled").removeAttr("disabled");
 };
 
+//Metodo que establece el alta
 const agregar = () => {
   $("#operacion").val(1);
   $("#procedimiento").val("ALTA");
@@ -126,8 +382,13 @@ const agregar = () => {
   $("#tall_descripcion").val("");
   habilitarBotones(false);
   $("#items").attr("style", "display: none");
+  validacionInputsVacios1();
+  validacionInputsVacios2();
+  validacionInputsVacios3();
+  validacionInputsVacios4();
 };
 
+//Metodo que establece la modificacion
 const modificar = () => {
   $("#operacion").val(2);
   $("#procedimiento").val("MODIFICACION");
@@ -135,8 +396,13 @@ const modificar = () => {
   $(".est").attr("class", "form-line est focused");
   habilitarCampos();
   habilitarBotones(false);
+  validacionInputsVacios1();
+  validacionInputsVacios2();
+  validacionInputsVacios3();
+  validacionInputsVacios4();
 };
 
+//Metodo que establece la baja, en esta caso de manera logica
 const borrar = () => {
   $("#operacion").val(3);
   $("#procedimiento").val("BAJA");
@@ -145,10 +411,12 @@ const borrar = () => {
   habilitarBotones(false);
 };
 
+//Limpia los campos del formulario
 const limpiarCampos = () => {
   window.location.reload();
 };
 
+//Pasa parametros en el controlador para persistir los mismos
 const abm = () => {
   $.ajax({
     //Enviamos datos al controlador
@@ -174,6 +442,8 @@ const abm = () => {
       mod_codigomodelo: $("#mod_codigomodelo").val(),
       tall_descripcion: $("#tall_descripcion").val(),
       unime_descripcion: $("#unime_descripcion").val(),
+      it_stock_min: $("#it_stock_min").val(),
+      it_stock_max: $("#it_stock_max").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
     .done(function (respuesta) {
@@ -212,6 +482,7 @@ const abm = () => {
     });
 };
 
+// Establece los mensajes de confirmacion de las operaciones
 const confirmar = () => {
   //solicitamos el value del input operacion
   var oper = $("#operacion").val();
@@ -228,8 +499,8 @@ const confirmar = () => {
   }
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -250,6 +521,7 @@ const confirmar = () => {
   );
 };
 
+//Controla que todos los inputs de la referencial no se pasen con valores vacios
 const controlVacio = () => {
   let condicion;
 
@@ -273,12 +545,16 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#unime_descripcion").val() == "") {
     condicion = true;
+  } else if ($("#it_stock_min").val() == "") {
+    condicion = true;
+  } else if ($("#it_stock_max").val() == "") {
+    condicion = true;
   }
 
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "CARGUE TODOS LOS CAMPOS EN BLANCO",
       type: "error",
     });
   } else {
@@ -286,6 +562,7 @@ const controlVacio = () => {
   }
 };
 
+//Envia a los inputs de la referencial lo seleccionado por el usuario en la grilla
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -296,12 +573,14 @@ const seleccionarFila = (objetoJSON) => {
   $(".tipit").attr("class", "form-line tipit focused");
   $(".tipim").attr("class", "form-line tipim focused");
   $(".foco").attr("class", "form-line foco focused");
+  $(".st").attr("class", "form-line st focused");
   $(".mod").attr("class", "form-line mod focused");
   $(".tall").attr("class", "form-line tall focused");
   $(".unime").attr("class", "form-line unime focused");
   $(".est").attr("class", "form-line est focused");
 };
 
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
 const seleccionTipoItem = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -310,8 +589,47 @@ const seleccionTipoItem = (datos) => {
   $("#ulTIt").html();
   $("#listaTIt").attr("style", "display: none;");
   $(".tipit").attr("class", "form-line tipit focused");
+
+  if (datos.tipit_codigo == 3) {
+    $("#mod_codigo").val(0);
+    $("#mod_codigomodelo").val("SIN MODELO");
+    $("#tall_codigo").val(0);
+    $("#tall_descripcion").val("SIN TALLE");
+    $("#unime_codigo").val(4);
+    $("#unime_descripcion").val("SIN UNIDAD");
+    $("#it_stock_min").val(0);
+    $("#it_stock_max").val(0);
+    $(".mod").attr("class", "form-line mod focused");
+    $(".tall").attr("class", "form-line tall focused");
+    $(".unime").attr("class", "form-line unime focused");
+    $(".st").attr("class", "form-line st focused");
+    $("#mod_codigomodelo").attr("disabled", "true");
+    $("#tall_descripcion").attr("disabled", "true");
+    $("#unime_descripcion").attr("disabled", "true");
+    $("#it_stock_min").attr("disabled", "true");
+    $("#it_stock_max").attr("disabled", "true");
+  } else {
+    $("#mod_codigo").val("");
+    $("#mod_codigomodelo").val("");
+    $("#tall_codigo").val("");
+    $("#tall_descripcion").val("");
+    $("#unime_codigo").val("");
+    $("#unime_descripcion").val("");
+    $("#it_stock_min").val("");
+    $("#it_stock_max").val("");
+    $(".mod").attr("class", "form-line mod");
+    $(".tall").attr("class", "form-line tall");
+    $(".unime").attr("class", "form-line unime");
+    $(".st").attr("class", "form-line st");
+    $("#mod_codigomodelo").removeAttr("disabled");
+    $("#tall_descripcion").removeAttr("disabled");
+    $("#unime_descripcion").removeAttr("disabled");
+    $("#it_stock_min").removeAttr("disabled");
+    $("#it_stock_max").removeAttr("disabled");
+  }
 };
 
+//Obtiene los datos del tipo de item y los muestra en una lista
 const getTipoItem = () => {
   $.ajax({
     //Solicitamos los datos a listaModulo
@@ -349,6 +667,7 @@ const getTipoItem = () => {
     });
 };
 
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
 const seleccionTipoImpuesto = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -359,6 +678,7 @@ const seleccionTipoImpuesto = (datos) => {
   $(".tipim").attr("class", "form-line tipim focused");
 };
 
+//Obtiene los datos del tipo de impuesto y los muestra en una lista
 const getTipoImpuesto = () => {
   $.ajax({
     //Solicitamos los datos a listaModulo
@@ -396,6 +716,7 @@ const getTipoImpuesto = () => {
     });
 };
 
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
 const seleccionModelo = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -406,6 +727,7 @@ const seleccionModelo = (datos) => {
   $(".mod").attr("class", "form-line mod focused");
 };
 
+//Obtiene los datos del modelo y los muestra en una lista
 const getModelo = () => {
   $.ajax({
     //Solicitamos los datos a listaModulo
@@ -443,6 +765,7 @@ const getModelo = () => {
     });
 };
 
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
 const seleccionTalle = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -453,6 +776,7 @@ const seleccionTalle = (datos) => {
   $(".tall").attr("class", "form-line tall focused");
 };
 
+//Obtiene los datos del talle y los muestra en una lista
 const getTalle = () => {
   $.ajax({
     //Solicitamos los datos a listaModulo
@@ -490,6 +814,7 @@ const getTalle = () => {
     });
 };
 
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
 const seleccionUnidadMedida = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -500,6 +825,7 @@ const seleccionUnidadMedida = (datos) => {
   $(".unime").attr("class", "form-line unime focused");
 };
 
+//Obtiene los datos de la unidad de medida y los muestra en una lista
 const getUnidadMedida = () => {
   $.ajax({
     //Solicitamos los datos a listaModulo
@@ -537,6 +863,7 @@ const getUnidadMedida = () => {
     });
 };
 
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };

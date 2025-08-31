@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,17 +13,14 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $descripcion = $_POST['tipim_descripcion'];
-   $tipim_descripcion = str_replace("'", "''", $descripcion);
+   // Definimos y cargamos las variables
+   $tipim_descripcion = pg_escape_string($conexion, $_POST['tipim_descripcion']);
 
-   $estado = $_POST['tipim_estado'];
-   $tipim_estado = str_replace("'", "''", $estado);
+   $tipim_estado = pg_escape_string($conexion, $_POST['tipim_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['usu_login']);
 
    $sql = "select sp_tipo_impuesto(
    {$_POST['tipim_codigo']}, 
@@ -30,16 +29,16 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2'
+   '$procedimiento'
    )";
 
    //Validamos la consulta
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "descripcion") !== false) {
       $response = array(
-         "mensaje" => "YA EXISTE EL TIPO DE IMPUESTO",
+         "mensaje" => "YA SE ENCUENTRA REGISTRADO UN TIPO DE IMPUESTO CON ESA DESCRIPCION",
          "tipo" => "error"
       );
    } else {

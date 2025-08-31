@@ -1,3 +1,35 @@
+//Controla que los inputs no se queden vacios al perder el foco
+const validacionInputsVacios = () => {
+  //Creamos un array de inputs con la clase no-disabled y recorremos cada uno
+  document.querySelectorAll("input.no-disabled").forEach((input) => {
+    // Quitamos disabled para que pueda el input pueda recibir foco
+    input.removeAttribute("disabled");
+
+    //Agregamos un evento blur a cada input
+    input.addEventListener("blur", () => {
+      // Al perder el foco comprobamos si el valor esta vacio
+      if (input.value.trim() === "") {
+        // Obtenemos la clase padre del input y sacamos el valor del elemento label
+        const label = input
+          .closest(".form-line")
+          ?.querySelector("label.form-label");
+
+        // Armamos el mensaje a mostrar
+        const labelText = label ? label.textContent.trim() : "VACIO";
+        const mensaje = `El campo ${labelText} se encuentra vacío.`;
+
+        // Mostramos el mensaje de alerta
+        swal({
+          title: "VALIDACION DE CAMPO",
+          text: mensaje.toUpperCase(),
+          type: "info",
+        });
+      }
+    });
+  });
+};
+
+//Permite aplicar un formato de tabla a la lista de la referencial
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -13,6 +45,7 @@ function formatoTabla() {
   });
 }
 
+//Consulta  y establece el codigo de la referencial
 const getCodigo = () => {
   $.ajax({
     method: "POST",
@@ -25,6 +58,7 @@ const getCodigo = () => {
   });
 };
 
+//Consulta y lista los datos en la grilla de la referencial
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador
@@ -55,6 +89,12 @@ const listar = () => {
         tabla += objeto.emp_timbrado;
         tabla += "</td>";
         tabla += "<td>";
+        tabla += objeto.emp_timbrado_fec_inic;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.emp_timbrado_fec_venc;
+        tabla += "</td>";
+        tabla += "<td>";
         tabla += objeto.emp_email;
         tabla += "</td>";
         tabla += "<td>";
@@ -74,6 +114,7 @@ const listar = () => {
     });
 };
 
+//Habilita botones de la referencial
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -84,10 +125,12 @@ const habilitarBotones = (booleano) => {
   }
 };
 
+//Saca el disabled de los inputs
 const habilitarCampos = () => {
   $(".no-disabled").removeAttr("disabled");
 };
 
+//Metodo que establece el alta
 const agregar = () => {
   $("#operacion").val(1);
   $("#procedimiento").val("ALTA");
@@ -104,8 +147,10 @@ const agregar = () => {
   $("#emp_actividad").val("");
   $(".foco").attr("class", "form-line");
   $("#empresas").attr("style", "display: none");
+  validacionInputsVacios();
 };
 
+//Metodo que establece la modificacion
 const modificar = () => {
   $("#operacion").val(2);
   $("#procedimiento").val("MODIFICACION");
@@ -113,8 +158,10 @@ const modificar = () => {
   $(".est").attr("class", "form-line est focused");
   habilitarCampos();
   habilitarBotones(false);
+  validacionInputsVacios();
 };
 
+//Metodo que establece la baja, en esta caso de manera logica
 const borrar = () => {
   $("#operacion").val(3);
   $("#procedimiento").val("BAJA");
@@ -123,10 +170,12 @@ const borrar = () => {
   habilitarBotones(false);
 };
 
+//Limpia los campos del formulario
 const limpiarCampos = () => {
   window.location.reload(true);
 };
 
+//Pasa parametros en el controlador para persistir los mismos
 const abm = () => {
   $.ajax({
     //Enviamos datos al controlador
@@ -138,6 +187,8 @@ const abm = () => {
       emp_razonsocial: $("#emp_razonsocial").val(),
       emp_ruc: $("#emp_ruc").val(),
       emp_timbrado: $("#emp_timbrado").val(),
+      emp_timbrado_fec_inic: $("#emp_timbrado_fec_inic").val(),
+      emp_timbrado_fec_venc: $("#emp_timbrado_fec_venc").val(),
       emp_email: $("#emp_email").val(),
       emp_actividad: $("#emp_actividad").val(),
       emp_estado: $("#emp_estado").val(),
@@ -183,6 +234,7 @@ const abm = () => {
     });
 };
 
+// Establece los mensajes de confirmacion de las operaciones
 const confirmar = () => {
   //solicitamos el value del input operacion
   var oper = $("#operacion").val();
@@ -200,7 +252,7 @@ const confirmar = () => {
   swal(
     {
       title: "Atención!!!",
-      text: preg,
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -221,6 +273,7 @@ const confirmar = () => {
   );
 };
 
+//Controla que todos los inputs de la referencial no se pasen con valores vacios
 const controlVacio = () => {
   let condicion;
 
@@ -234,6 +287,10 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#emp_timbrado").val() == "") {
     condicion = true;
+  } else if ($("#emp_timbrado_fec_inic").val() == "") {
+    condicion = true;
+  } else if ($("#emp_timbrado_fec_venc").val() == "") {
+    condicion = true;
   } else if ($("#emp_email").val() == "") {
     condicion = true;
   } else if ($("#emp_actividad").val() == "") {
@@ -245,7 +302,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "CARGUE TODOS LOS CAMPOS EN BLANCO",
       type: "error",
     });
   } else {
@@ -253,6 +310,7 @@ const controlVacio = () => {
   }
 };
 
+//Envia a los inputs de la referencial lo seleccionado por el usuario en la grilla
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -264,6 +322,7 @@ const seleccionarFila = (objetoJSON) => {
   $(".est").attr("class", "form-line est focused");
 };
 
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };

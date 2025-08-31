@@ -8,14 +8,16 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$empresa = $_POST['emp_codigo'];
+$suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
 
 //Establecemos y mostramos la consulta
 $sql = "select 
             s.suc_codigo, 
             s.suc_descripcion 
          from sucursal s 
-         where s.emp_codigo = $empresa and s.suc_estado = 'ACTIVO';";
+         where s.emp_codigo = {$_POST['emp_codigo']} 
+         and s.suc_descripcion ilike '%$suc_descripcion%'
+         and s.suc_estado = 'ACTIVO';";
 
 $resultado = pg_query($conexion, $sql);
 $datos = pg_fetch_all($resultado);

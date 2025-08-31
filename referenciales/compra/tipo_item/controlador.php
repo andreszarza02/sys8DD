@@ -11,17 +11,14 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $descripcion = $_POST['tipit_descripcion'];
-   $tipit_descripcion = str_replace("'", "''", $descripcion);
+   // Definimos y cargamos las variables
+   $tipit_descripcion = pg_escape_string($conexion, $_POST['tipit_descripcion']);
 
-   $estado = $_POST['tipit_estado'];
-   $tipit_estado = str_replace("'", "''", $estado);
+   $tipit_estado = pg_escape_string($conexion, $_POST['tipit_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
    $sql = "select sp_tipo_item(
    {$_POST['tipit_codigo']}, 
@@ -30,16 +27,16 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2'
+   '$procedimiento'
    )";
 
    //Validamos la consulta
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "descripcion") !== false) {
       $response = array(
-         "mensaje" => "YA EXISTE EL TIPO DE ITEM",
+         "mensaje" => "YA SE ENCUENTRA REGISTRADO EL TIPO DE ITEM",
          "tipo" => "error"
       );
    } else {

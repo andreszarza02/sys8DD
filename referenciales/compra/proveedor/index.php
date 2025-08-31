@@ -52,9 +52,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Proveedor -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE PROVEEDOR<small>Mantener referencial proveedor</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE PROVEEDOR<small style="color: white; font-weight: bold;">Mantener referencial
+                           proveedor</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -75,8 +76,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line tip">
                                  <input type="hidden" id="tipro_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="tipro_descripcion" disabled
-                                    onkeyup="getTipoProveedor()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="tipro_descripcion"
+                                    disabled onkeyup="getTipoProveedor()">
                                  <label class="form-label">Tipo Proveedor</label>
                                  <div id="listaTP" style="display: none;">
                                     <ul class="list-group" id="ulTP" Style="height: 100px; overflow: auto">
@@ -85,10 +86,11 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="pro_razonsocial" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros-algunos-simbolos"
+                                    id="pro_razonsocial" disabled>
                                  <label class="form-label">Razon Social</label>
                               </div>
                            </div>
@@ -96,23 +98,34 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="pro_ruc" disabled>
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="pro_ruc" disabled>
                                  <label class="form-label">RUC</label>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="pro_timbrado" disabled>
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="pro_timbrado"
+                                    disabled>
                                  <label class="form-label">Timbrado</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="date" class="form-control no-disabled" id="pro_timbrado_venc" disabled>
+                                 <label class="form-label">Timbrado Vencimiento</label>
                               </div>
                            </div>
                         </div>
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="pro_direccion" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros-simbolos"
+                                    id="pro_direccion" disabled>
                                  <label class="form-label">Direccion</label>
                               </div>
                            </div>
@@ -120,7 +133,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="pro_telefono" disabled>
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="pro_telefono"
+                                    disabled>
                                  <label class="form-label">Telefono</label>
                               </div>
                            </div>
@@ -128,7 +142,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="pro_email" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros-simbolos"
+                                    id="pro_email" disabled>
                                  <label class="form-label">Correo</label>
                               </div>
                            </div>
@@ -136,7 +151,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="pro_estado" disabled>
+                                 <input type="text" class="form-control" id="pro_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -190,9 +205,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="proveedores" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           PROVEEDORES REGISTRADOS <small>Lista de proveedores registradas</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           PROVEEDORES REGISTRADOS <small style="color: white; font-weight: bold;">Lista de proveedores
+                              registradas</small>
                         </h2>
                      </div>
                      <div class="body">
@@ -205,6 +221,7 @@ $permisos = pg_fetch_all($resultado);
                                     <th>RAZON SOCIAL</th>
                                     <th>RUC</th>
                                     <th>TIMBRADO</th>
+                                    <th>TIMBRADO VENCIMIENTO</th>
                                     <th>DIRECCION</th>
                                     <th>TELEFONO</th>
                                     <th>CORREO</th>

@@ -52,9 +52,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Sucursal -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE SUCURSAL<small>Mantener referencial sucursal</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE SUCURSAL<small style="color: white; font-weight: bold;">Mantener referencial
+                           sucursal</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -71,25 +72,23 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-1">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
-                              <div class="form-line emp">
-                                 <input type="hidden" id="emp_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="emp_razonsocial" disabled
-                                    onkeyup="getEmpresa()">
+                              <div class="form-line focused">
+                                 <input type="hidden" id="emp_codigo"
+                                    value="<?php echo $_SESSION['usuario']['emp_codigo']; ?>">
+                                 <input type="text" class="form-control" id="emp_razonsocial"
+                                    value="<?php echo $_SESSION['usuario']['emp_razonsocial']; ?>" disabled>
                                  <label class="form-label">Empresa</label>
-                                 <div id="listaEmpresa" style="display: none;">
-                                    <ul class="list-group" id="ulEmpresa" Style="height: 100px; overflow: auto"></ul>
-                                 </div>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line ciu">
                                  <input type="hidden" id="ciu_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="ciu_descripcion" disabled
-                                    onkeyup="getCiudad()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="ciu_descripcion"
+                                    disabled onkeyup="getCiudad()">
                                  <label class="form-label">Ciudad</label>
                                  <div id="listaCiudad" style="display: none;">
                                     <ul class="list-group" id="ulCiudad" Style="height: 100px; overflow: auto"></ul>
@@ -97,42 +96,46 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="suc_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="suc_descripcion"
+                                    disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="suc_direccion" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros-simbolos"
+                                    id="suc_direccion" disabled>
                                  <label class="form-label">Direccion</label>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-1">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="suc_telefono" disabled>
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="suc_telefono"
+                                    disabled>
                                  <label class="form-label">Telefono</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-4">
+                           <div class="form-group form-float">
+                              <div class="form-line foco">
+                                 <input type="text" class="form-control no-disabled letras-numeros-simbolos"
+                                    id="suc_email" disabled>
+                                 <label class="form-label">Correo</label>
                               </div>
                            </div>
                         </div>
                         <div class="col-sm-2">
                            <div class="form-group form-float">
-                              <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="suc_email" disabled>
-                                 <label class="form-label">Correo</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-1">
-                           <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="suc_estado" disabled>
+                                 <input type="text" class="form-control" id="suc_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -186,9 +189,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="sucursales" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           SUCURSALES REGISTRADAS <small>Lista de sucursales registradas</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           SUCURSALES REGISTRADAS <small style="color: white; font-weight: bold;">Lista de sucursales
+                              registradas</small>
                         </h2>
                      </div>
                      <div class="body">

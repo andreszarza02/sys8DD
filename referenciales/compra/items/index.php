@@ -52,9 +52,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Items -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE ITEMS<small>Mantener referencial items</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE ITEMS<small style="color: white; font-weight: bold;">Mantener referencial
+                           items</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -75,8 +76,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line tipit">
                                  <input type="hidden" id="tipit_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="tipit_descripcion" disabled
-                                    onkeyup="getTipoItem()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="tipit_descripcion"
+                                    disabled onkeyup="getTipoItem()">
                                  <label class="form-label">Tipo Item</label>
                                  <div id="listaTIt" style="display: none;">
                                     <ul class="list-group" id="ulTIt" Style="height: 100px; overflow: auto"></ul>
@@ -88,8 +89,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line tipim">
                                  <input type="hidden" id="tipim_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="tipim_descripcion" disabled
-                                    onkeyup="getTipoImpuesto()">
+                                 <input type="text" class="form-control no-disabled letras-numeros-algunos-simbolos"
+                                    id="tipim_descripcion" disabled onkeyup="getTipoImpuesto()">
                                  <label class="form-label">Tipo Impuesto</label>
                                  <div id="listaTIm" style="display: none;">
                                     <ul class="list-group" id="ulTIm" Style="height: 100px; overflow: auto"></ul>
@@ -100,7 +101,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="it_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled letras_numeros" id="it_descripcion"
+                                    disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
@@ -108,7 +110,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="it_costo" disabled>
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="it_costo" disabled>
                                  <label class="form-label">Costo</label>
                               </div>
                            </div>
@@ -116,7 +119,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="it_precio" disabled>
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="it_precio" disabled>
                                  <label class="form-label">Precio</label>
                               </div>
                            </div>
@@ -125,8 +129,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line mod">
                                  <input type="hidden" id="mod_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="mod_codigomodelo" disabled
-                                    onkeyup="getModelo()">
+                                 <input type="text" class="form-control no-disabled letras_numeros"
+                                    id="mod_codigomodelo" disabled onkeyup="getModelo()">
                                  <label class="form-label">Modelo</label>
                                  <div id="listaModelo" style="display: none;">
                                     <ul class="list-group" id="ulModelo" Style="height: 100px; overflow: auto"></ul>
@@ -138,8 +142,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line tall">
                                  <input type="hidden" id="tall_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="tall_descripcion" disabled
-                                    onkeyup="getTalle()">
+                                 <input type="text" class="form-control no-disabled letras_numeros"
+                                    id="tall_descripcion" disabled onkeyup="getTalle()">
                                  <label class="form-label">Talle</label>
                                  <div id="listaTalle" style="display: none;">
                                     <ul class="list-group" id="ulTalle" Style="height: 100px; overflow: auto"></ul>
@@ -151,8 +155,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line unime">
                                  <input type="hidden" id="unime_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="unime_descripcion" disabled
-                                    onkeyup="getUnidadMedida()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="unime_descripcion"
+                                    disabled onkeyup="getUnidadMedida()">
                                  <label class="form-label">Unidad Medida</label>
                                  <div id="listaUnidadMedida" style="display: none;">
                                     <ul class="list-group" id="ulUnidadMedida" Style="height: 100px; overflow: auto">
@@ -163,16 +167,18 @@ $permisos = pg_fetch_all($resultado);
                         </div>
                         <div class="col-sm-4">
                            <div class="form-group form-float">
-                              <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="it_stock_min" disabled>
+                              <div class="form-line st">
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="it_stock_min" disabled>
                                  <label class="form-label">Stock Minimo</label>
                               </div>
                            </div>
                         </div>
                         <div class="col-sm-4">
                            <div class="form-group form-float">
-                              <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="it_stock_max" disabled>
+                              <div class="form-line st">
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="it_stock_max" disabled>
                                  <label class="form-label">Stock Maximo</label>
                               </div>
                            </div>
@@ -180,7 +186,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="it_estado" disabled>
+                                 <input type="text" class="form-control" id="it_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -234,9 +240,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="items" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           ITEMS REGISTRADOS <small>Lista de items registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           ITEMS REGISTRADOS <small style="color: white; font-weight: bold;">Lista de items
+                              registrados</small>
                         </h2>
                      </div>
                      <div class="body">

@@ -11,35 +11,26 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $telefono = $_POST['pro_telefono'];
-   $pro_telefono = str_replace("'", "''", $telefono);
+   // Definimos y cargamos las variables
+   $pro_telefono = pg_escape_string($conexion, $_POST['pro_telefono']);
 
-   $razonsocial = $_POST['pro_razonsocial'];
-   $pro_razonsocial = str_replace("'", "''", $razonsocial);
+   $pro_razonsocial = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 
-   $ruc = $_POST['pro_ruc'];
-   $pro_ruc = str_replace("'", "''", $ruc);
+   $pro_ruc = pg_escape_string($conexion, $_POST['pro_ruc']);
 
-   $timbrado = $_POST['pro_timbrado'];
-   $pro_timbrado = str_replace("'", "''", $timbrado);
+   $pro_timbrado = pg_escape_string($conexion, $_POST['pro_timbrado']);
 
-   $email = $_POST['pro_email'];
-   $pro_email = str_replace("'", "''", $email);
+   $pro_email = pg_escape_string($conexion, $_POST['pro_email']);
 
-   $direccion = $_POST['pro_direccion'];
-   $pro_direccion = str_replace("'", "''", $direccion);
+   $pro_direccion = pg_escape_string($conexion, $_POST['pro_direccion']);
 
-   $estado = $_POST['pro_estado'];
-   $pro_estado = str_replace("'", "''", $estado);
+   $pro_estado = pg_escape_string($conexion, $_POST['pro_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $tiproDescripcion = $_POST['tipro_descripcion'];
-   $tipro_descripcion = str_replace("'", "''", $tiproDescripcion);
+   $tipro_descripcion = pg_escape_string($conexion, $_POST['tipro_descripcion']);
 
    $sql = "select sp_proveedor(
    {$_POST['pro_codigo']}, 
@@ -47,6 +38,7 @@ if (isset($_POST['operacion'])) {
    '$pro_razonsocial', 
    '$pro_ruc', 
    '$pro_timbrado', 
+   '{$_POST['pro_timbrado_venc']}', 
    '$pro_direccion', 
    '$pro_telefono', 
    '$pro_email', 
@@ -54,7 +46,7 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2',
+   '$procedimiento',
    '$tipro_descripcion'
    )";
 
@@ -62,9 +54,9 @@ if (isset($_POST['operacion'])) {
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "ruc") !== false) {
       $response = array(
-         "mensaje" => "YA EXISTE EL PROVEEDOR",
+         "mensaje" => "YA SE ENCUENTRA REGISTRADO EL PROVEEDOR",
          "tipo" => "error"
       );
    } else {
@@ -98,7 +90,8 @@ if (isset($_POST['operacion'])) {
                p.pro_telefono,
                p.pro_email,
                p.pro_estado,
-               tp.tipro_descripcion 
+               tp.tipro_descripcion,
+               P.pro_timbrado_venc
           from proveedor p 
                join tipo_proveedor tp 
                on p.tipro_codigo=tp.tipro_codigo 

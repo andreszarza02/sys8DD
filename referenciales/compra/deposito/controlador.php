@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,26 +13,20 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $descripcion = $_POST['dep_descripcion'];
-   $dep_descripcion = str_replace("'", "''", $descripcion);
+   // Definimos y cargamos las variables
+   $dep_descripcion = pg_escape_string($conexion, $_POST['dep_descripcion']);
 
-   $estado = $_POST['dep_estado'];
-   $dep_estado = str_replace("'", "''", $estado);
+   $dep_estado = pg_escape_string($conexion, $_POST['dep_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $ciuDescripcion = $_POST['ciu_descripcion'];
-   $ciu_descripcion = str_replace("'", "''", $ciuDescripcion);
+   $ciu_descripcion = pg_escape_string($conexion, $_POST['ciu_descripcion']);
 
-   $empRazonSocial = $_POST['emp_razonsocial'];
-   $emp_razonsocial = str_replace("'", "''", $empRazonSocial);
+   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
 
-   $sucDescripcion = $_POST['suc_descripcion'];
-   $suc_descripcion = str_replace("'", "''", $sucDescripcion);
+   $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
 
    $sql = "select sp_deposito(
    {$_POST['dep_codigo']}, 
@@ -42,7 +38,7 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2',
+   '$procedimiento',
    '$ciu_descripcion',
    '$emp_razonsocial',
    '$suc_descripcion')";
@@ -51,9 +47,9 @@ if (isset($_POST['operacion'])) {
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "descripcion") !== false) {
       $response = array(
-         "mensaje" => "YA EXISTE EL DEPOSITO PARA LA SUCURSAL",
+         "mensaje" => "YA SE ENCUENTRA ASOCIADO UN DEPOSITO CON ESA DESCRIPCION A LA SUCURSAL",
          "tipo" => "error"
       );
    } else {

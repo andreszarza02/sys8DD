@@ -11,17 +11,14 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $descripcion = $_POST['ciu_descripcion'];
-   $ciu_descripcion = str_replace("'", "''", $descripcion);
+   // Definimos y cargamos las variables
+   $ciu_descripcion = pg_escape_string($conexion, $_POST['ciu_descripcion']);
 
-   $estado = $_POST['ciu_estado'];
-   $ciu_estado = str_replace("'", "''", $estado);
+   $ciu_estado = pg_escape_string($conexion, $_POST['ciu_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace(search: "'", replace: "''", subject: $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
    $sql = "select sp_ciudad(
    {$_POST['ciu_codigo']}, 
@@ -30,16 +27,16 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2'
+   '$procedimiento'
    )";
 
    //Validamos la consulta
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
    //Si ocurre un error lo capturamos y lo enviamos al front-end
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "descripcion") !== false) {
       $response = array(
-         "mensaje" => "YA EXISTE LA CIUDAD",
+         "mensaje" => "YA SE ENCUENTRA REGISTRADA LA CIUDAD",
          "tipo" => "error"
       );
    } else {
