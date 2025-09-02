@@ -31,6 +31,7 @@ $guis = [
    'PROVEEDOR' => 'ref_proveedor',
    'DEPOSITO' => 'ref_deposito',
    'ITEMS' => 'ref_items',
+   'FUNCIONARIO PROVEEDOR' => 'ref_funcionarioProveedor',
    'CARGO' => 'ref_cargo',
    'PERSONAS' => 'ref_personas',
    'FUNCIONARIO' => 'ref_funcionario',
@@ -497,6 +498,12 @@ if (isset($_SESSION['apertura'])) {
                               <?php if ($permisos_interfaz['ref_proveedor']) { ?>
                                  <li>
                                     <a href="/sys8DD/referenciales/compra/proveedor/index.php">Proveedor</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_funcionarioProveedor']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/compra/funcionario_proveedor/index.php"> Funcionario
+                                       Proveedor</a>
                                  </li>
                               <?php } ?>
                               <?php if ($permisos_interfaz['ref_deposito']) { ?>

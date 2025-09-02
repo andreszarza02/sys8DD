@@ -1,5 +1,5 @@
 //Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
-const validacionInputsVacios = () => {
+const validacionInputsVacios1 = () => {
   // Agregamos un listener al evento blur a nivel de documento
   document.body.addEventListener(
     "blur",
@@ -61,6 +61,128 @@ const validacionInputsVacios = () => {
   ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
 };
 
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras, numeros y el simbolo -
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si tiene simbolos distintos a -
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos distintos a -
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} solo acepta letras, números y el simbolo guion(-)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value) ||
+            tieneSimbolo.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 //Permite aplicar un formato de tabla a la lista de la referencial
 function formatoTabla() {
   //Exportable table
@@ -86,7 +208,7 @@ const getCodigo = () => {
       consulta: 1,
     },
   }).done(function (respuesta) {
-    $("#tipit_codigo").val(respuesta.tipit_codigo);
+    $("#funpro_codigo").val(respuesta.funpro_codigo);
   });
 };
 
@@ -106,13 +228,25 @@ const listar = () => {
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
           ")'>";
         tabla += "<td>";
-        tabla += objeto.tipit_codigo;
+        tabla += objeto.funpro_codigo;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.tipit_descripcion;
+        tabla += objeto.funpro_nombre;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.tipit_estado;
+        tabla += objeto.funpro_apellido;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.funpro_documento;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.pro_razonsocial;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.tipro_descripcion;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.funpro_estado;
         tabla += "</td>";
         tabla += "</tr>";
       }
@@ -149,37 +283,48 @@ const agregar = () => {
   $(".activar").attr("class", "form-line activar focused");
   getCodigo();
   $(".est").attr("class", "form-line est focused");
-  $("#tItems").attr("style", "display: none;");
   $(".foco").attr("class", "form-line foco");
-  $("#tipit_estado").val("ACTIVO");
-  $("#tipit_descripcion").val("");
+  $(".pro").attr("class", "form-line pro");
+  $("#funpro_estado").val("ACTIVO");
+  $("#funpro_nombre").val("");
+  $("#funpro_apellido").val("");
+  $("#funpro_documento").val("");
+  $("#pro_codigo").val("");
+  $("#tipro_codigo").val("");
+  $("#tipro_descripcion").val("");
+  $("#pro_razonsocial").val("");
   habilitarBotones(false);
-  validacionInputsVacios();
+  $("#funcionarios_proveedor").attr("style", "display: none");
+  validacionInputsVacios1();
+  validacionInputsVacios2();
+  validacionInputsVacios3();
 };
 
 //Metodo que establece la modificacion
 const modificar = () => {
   $("#operacion").val(2);
   $("#procedimiento").val("MODIFICACION");
-  $("#tipit_estado").val("ACTIVO");
+  $("#funpro_estado").val("ACTIVO");
   $(".est").attr("class", "form-line est focused");
   habilitarCampos();
   habilitarBotones(false);
-  validacionInputsVacios();
+  validacionInputsVacios1();
+  validacionInputsVacios2();
+  validacionInputsVacios3();
 };
 
 //Metodo que establece la baja, en esta caso de manera logica
 const borrar = () => {
   $("#operacion").val(3);
   $("#procedimiento").val("BAJA");
-  $("#tipit_estado").val("INACTIVO");
+  $("#funpro_estado").val("INACTIVO");
   $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
 };
 
 //Limpia los campos del formulario
 const limpiarCampos = () => {
-  window.location.reload();
+  window.location.reload(true);
 };
 
 //Pasa parametros en el controlador para persistir los mismos
@@ -189,13 +334,19 @@ const abm = () => {
     method: "POST",
     url: "controlador.php",
     data: {
-      tipit_codigo: $("#tipit_codigo").val(),
-      tipit_descripcion: $("#tipit_descripcion").val(),
-      tipit_estado: $("#tipit_estado").val(),
+      funpro_codigo: $("#funpro_codigo").val(),
+      funpro_nombre: $("#funpro_nombre").val(),
+      funpro_apellido: $("#funpro_apellido").val(),
+      funpro_documento: $("#funpro_documento").val(),
+      pro_codigo: $("#pro_codigo").val(),
+      tipro_codigo: $("#tipro_codigo").val(),
+      funpro_estado: $("#funpro_estado").val(),
       operacion: $("#operacion").val(),
       usu_codigo: $("#usu_codigo").val(),
       usu_login: $("#usu_login").val(),
       procedimiento: $("#procedimiento").val(),
+      tipro_descripcion: $("#tipro_descripcion").val(),
+      pro_razonsocial: $("#pro_razonsocial").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
     .done(function (respuesta) {
@@ -251,8 +402,8 @@ const confirmar = () => {
   }
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -277,11 +428,17 @@ const confirmar = () => {
 const controlVacio = () => {
   let condicion;
 
-  if ($("#tipit_codigo").val() == 0) {
+  if ($("#funpro_codigo").val() == 0) {
     condicion = true;
-  } else if ($("#tipit_descripcion").val() == "") {
+  } else if ($("#funpro_nombre").val() == "") {
     condicion = true;
-  } else if ($("#tipit_estado").val() == "") {
+  } else if ($("#funpro_apellido").val() == "") {
+    condicion = true;
+  } else if ($("#tipro_descripcion").val() == "") {
+    condicion = true;
+  } else if ($("#pro_razonsocial").val() == "") {
+    condicion = true;
+  } else if ($("#funpro_estado").val() == "") {
     condicion = true;
   }
 
@@ -296,16 +453,66 @@ const controlVacio = () => {
   }
 };
 
-//Envia a los inputs de la referencial lo seleccionado por el usuario en la grilla
+//Controla que todos los inputs de la referencial no se pasen con valores vacios
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
     $("#" + propiedad).val(objetoJSON[propiedad]);
   });
 
-  $(".foco").attr("class", "form-line foco focused");
   $(".activar").attr("class", "form-line activar focused");
+  $(".foco").attr("class", "form-line foco focused");
+  $(".pro").attr("class", "form-line pro focused");
   $(".est").attr("class", "form-line est focused");
+};
+
+//Envia a su respectivo input lo seleccionado por el usuario en la lista
+const seleccionProveedor = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulProveedor").html();
+  $("#listaProveedor").attr("style", "display: none;");
+  $(".pro").attr("class", "form-line pro focused");
+};
+
+//Obtiene los datos del proveedor y los muestra en una lista
+const getProveedor = () => {
+  $.ajax({
+    //Solicitamos los datos a listaProveedor
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaProveedor.php",
+    data: {
+      pro_razonsocial: $("#pro_razonsocial").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionProveedor(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.pro_razonsocial +
+            "</li>";
+        }
+      });
+
+      //cargamos la lista
+      $("#ulProveedor").html(fila);
+      //hacemos visible la lista
+      $("#listaProveedor").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
 };
 
 //Te envia al menu

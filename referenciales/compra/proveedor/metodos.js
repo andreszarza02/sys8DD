@@ -99,7 +99,7 @@ const validacionInputsVacios2 = () => {
 
           // Verificamos si el input contiene simbolos distintos a .
           if (tieneSimbolo.test(input.value)) {
-            mensaje = `El campo ${labelText} solo acepta el simbolo .(punto)`;
+            mensaje = `El campo ${labelText} solo acepta letras, números y el simbolo punto(.)`;
           }
         }
 
@@ -583,7 +583,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "CARGUE TODOS LOS CAMPOS EN BLANCO",
       type: "error",
     });
   } else {

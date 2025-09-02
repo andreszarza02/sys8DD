@@ -8,18 +8,17 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$proveedor = $_POST['pro_ruc'];
+$pro_razonsocial = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 
 //Establecemos y mostramos la consulta
 $sql = "select 
          p.pro_codigo,
          p.tipro_codigo,
          p.pro_razonsocial,
-         p.pro_ruc,
          tp.tipro_descripcion 
       from proveedor p 
          join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo 
-         where p.pro_ruc ilike '%$proveedor%'
+         where (p.pro_ruc ilike '%$pro_razonsocial%' or p.pro_razonsocial ilike '%$pro_razonsocial%')
          and p.pro_estado = 'ACTIVO' 
       order by p.pro_codigo;";
 

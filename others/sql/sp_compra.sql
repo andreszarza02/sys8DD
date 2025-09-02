@@ -464,6 +464,84 @@ end
 $function$ 
 language plpgsql;
 
+-- Funcionario Proveedor
+create or replace function sp_funcionario_proveedor(
+    funprocodigo integer,
+    funpronombre varchar,
+    funproapellido varchar,
+    funprodocumento varchar,
+    funproestado varchar,
+    procodigo integer,
+    tiprocodigo integer,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar,
+    prorazonsocial varchar,
+    tiprodescripcion varchar
+) returns void as
+$function$
+-- Definimos las variables
+declare funproAudit text;
+begin 
+	-- Validamos la operacion de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos si se paso un numero de documento
+		if funprodocumento is null then
+			-- Si no se paso validamos el funcionario por nombre
+			perform * from funcionario_proveedor
+        	where (funpro_nombre = upper(funpronombre) and funpro_apellido = upper(funproapellido)) and pro_codigo = procodigo and funpro_codigo != funprocodigo;
+		else	
+			-- Si se paso validamos el numero de cedula
+			perform * from funcionario_proveedor
+        	where (funpro_documento = funprodocumento) and pro_codigo = procodigo and funpro_codigo != funprocodigo;
+		end if;
+        if found then
+			-- En caso de que ya se encuentre registrado, generamos una excepcion
+            raise exception 'funcionario';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+    	elseif operacion = 1 then
+	        	insert into funcionario_proveedor(funpro_codigo, funpro_nombre, funpro_apellido, funpro_documento, funpro_estado, pro_codigo, tipro_codigo)
+				values(funprocodigo, upper(funpronombre), upper(funproapellido), funprodocumento, 'ACTIVO', procodigo, tiprocodigo);
+				raise notice 'EL FUNCIONARIO PROVEEDOR FUE REGISTRADO CON EXITO';
+        elseif operacion = 2 then
+        		update funcionario_proveedor
+				set funpro_nombre=upper(funpronombre), funpro_apellido=upper(funproapellido), funpro_documento=funprodocumento,
+				funpro_estado='ACTIVO', pro_codigo=procodigo, tipro_codigo=tiprocodigo
+				where funpro_codigo=funprocodigo;
+				raise notice 'EL FUNCIONARIO PROVEEDOR FUE MODIFICADO CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
+    if operacion = 3 then 
+    	update funcionario_proveedor
+		set funpro_estado='INACTIVO'
+		where funpro_codigo=funprocodigo;
+		raise notice 'EL FUNCIONARIO PROVEEDOR FUE BORRADO CON EXITO';
+    end if;
+	-- Consultamos el audit anterior
+	select coalesce(funpro_audit, '') into funproAudit from funcionario_proveedor where funpro_codigo = funprocodigo;
+	-- A los datos anteriores le agregamos los nuevos
+	update funcionario_proveedor 
+	set funpro_audit = funproAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'funpro_nombre', upper(funpronombre),
+		'funpro_apellido', upper(funproapellido),
+		'funpro_documento', funprodocumento,
+		'pro_codigo', procodigo,
+		'pro_razonsocial', upper(prorazonsocial),
+		'tipro_codigo', tiprocodigo,
+		'tipro_descripcion', upper(tiprodescripcion),
+		'funpro_estado', upper(funproestado)
+	)||','
+	where funpro_codigo = funprocodigo;
+end
+$function$ 
+language plpgsql;
+
 --Deposito
 create or replace function sp_deposito(
     depcodigo integer,
