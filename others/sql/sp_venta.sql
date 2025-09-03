@@ -1,4 +1,126 @@
 --Procedimiento Almacenado
+-- Modelo Vehiculo
+create or replace function sp_modelo_vehiculo(
+    modvecodigo integer,
+    modvedescripcion varchar,
+    modveestado varchar,
+    marvecodigo integer,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar,
+    marvedescripcion varchar
+) returns void as
+$function$
+-- Definimos las variables
+declare modveAudit text;
+begin 
+	-- Validamos la operacion de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos que no se repita el modelo vehiculo y la marca del vehiculo
+        perform * from modelo_vehiculo
+        where upper(modve_descripcion)=upper(modvedescripcion) and marve_codigo=marvecodigo
+        and modve_codigo != modvecodigo;
+        if found then
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+    	elseif operacion = 1 then
+	        	insert into modelo_vehiculo(modve_codigo, modve_descripcion, modve_estado, marve_codigo)
+				values(modvecodigo, upper(modvedescripcion), 'ACTIVO', marvecodigo);
+				raise notice 'EL MODELO DE VEHICULO FUE REGISTRADO CON EXITO';
+        elseif operacion = 2 then
+        		update modelo_vehiculo
+				set modve_descripcion=upper(modvedescripcion), modve_estado='ACTIVO', marve_codigo=marvecodigo
+				where modve_codigo=modvecodigo;
+				raise notice 'EL MODELO DE VEHICULO FUE MODIFICADO CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
+    if operacion = 3 then 
+    	update modelo_vehiculo 
+		set modve_estado='INACTIVO'
+		where modve_codigo=modvecodigo;
+		raise notice 'EL MODELO DE VEHICULO FUE BORRADO CON EXITO';
+    end if;
+	-- Consultamos el audit anterior
+	select coalesce(modve_audit, '') into modveAudit from modelo_vehiculo where modve_codigo = modvecodigo;
+	-- A los datos anteriores le agregamos los nuevos
+	update modelo_vehiculo 
+	set modve_audit = modveAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'modve_descripcion', upper(modvedescripcion),
+		'marve_codigo', marvecodigo,
+		'marve_descripcion', upper(marvedescripcion),
+		'modve_estado', upper(modveestado)
+	)||','
+	where modve_codigo = modvecodigo;
+end
+$function$ 
+language plpgsql;
+language plpgsql;
+
+-- Marca Vehiculo
+create or replace function sp_marca_vehiculo(
+    marvecodigo integer,
+    marvedescripcion varchar,
+    marveestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar
+) returns void as
+$function$
+-- Definimos las variables
+declare marveAudit text;
+begin 
+	-- Validamos la operacion de insercion o modificacion
+    if operacion in(1,2) then
+        perform * from marca_vehiculo
+        where upper(marve_descripcion)=upper(marvedescripcion)
+        and marve_codigo != marvecodigo;
+        if found then
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+    	elseif operacion = 1 then
+	        	insert into marca_vehiculo(marve_codigo, marve_descripcion, marve_estado)
+				values(marvecodigo, upper(marvedescripcion), 'ACTIVO');
+				raise notice 'LA MARCA DE VEHICULO FUE REGISTRADA CON EXITO';
+        elseif operacion = 2 then
+        		update marca_vehiculo
+				set marve_descripcion=upper(marvedescripcion), marve_estado='ACTIVO'
+				where marve_codigo=marvecodigo;
+				raise notice 'LA MARCA DE VEHICULO FUE MODIFICADA CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
+    if operacion = 3 then 
+    	update marca_vehiculo 
+		set marve_estado='INACTIVO'
+		where marve_codigo=marvecodigo;
+		raise notice 'LA MARCA DE VEHICULO FUE BORRADA CON EXITO';
+    end if;
+	-- Consultamos el audit anterior
+	select coalesce(marve_audit, '') into marveAudit from marca_vehiculo where marve_codigo = marvecodigo;
+	-- A los datos anteriores le agregamos los nuevos
+	update marca_vehiculo 
+	set marve_audit = marveAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'marve_descripcion', upper(marvedescripcion),
+		'marve_estado', upper(marveestado)
+	)||','
+	where marve_codigo = marvecodigo;
+end
+$function$ 
+language plpgsql;
+
 --Red Pago
 create or replace function sp_red_pago(
     redpacodigo integer,

@@ -61,7 +61,7 @@ const validacionInputsVacios1 = () => {
   ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
 };
 
-//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras, numeros y el simbolo -
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras y numeros
 const validacionInputsVacios2 = () => {
   // Agregamos un listener al evento blur a nivel de documento
   document.body.addEventListener(
@@ -70,14 +70,14 @@ const validacionInputsVacios2 = () => {
       // Capturamos el input que disparó el evento, mediante delegacion de eventos
       const input = event.target;
 
-      //Si el input tiene la clase letras-numeros-algunos-simbolos realizamos las validaciones
+      //Si el input tiene la clase letras-numeros realizamos las validaciones
       if (
         input.tagName === "INPUT" &&
-        input.classList.contains("letras-numeros-algunos-simbolos")
+        input.classList.contains("letras-numeros")
       ) {
         //Definimos variables a utilizar
         let mensaje = "";
-        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\=\[\]{};':"\\|,.<>\/?]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
 
         // Comprobamos si el input esta vacio
         if (input.value.trim() === "") {
@@ -90,57 +90,6 @@ const validacionInputsVacios2 = () => {
           const labelText = label ? label.textContent.trim() : "VACIO";
           mensaje = `El campo ${labelText} se encuentra vacío.`;
         } else {
-          // Si no está vacío, comprobamos si tiene simbolos distintos a -
-          // Obtenemos la clase padre del input y sacamos el valor del elemento label
-          const label = input
-            .closest(".form-line")
-            ?.querySelector("label.form-label");
-          const labelText = label ? label.textContent.trim() : "VACIO";
-
-          // Verificamos si el input contiene simbolos distintos a -
-          if (tieneSimbolo.test(input.value)) {
-            mensaje = `El campo ${labelText} solo acepta letras, números y el simbolo guion(-)`;
-          }
-        }
-
-        // Si mensaje no está vacío, mostramos la alerta
-        if (mensaje !== "") {
-          swal({
-            title: "VALIDACION DE CAMPO",
-            text: mensaje.toUpperCase(),
-            type: "info",
-          });
-          // Limpiamos el valor del input
-          input.value = "";
-        }
-      }
-    },
-    true
-  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
-};
-
-//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
-const validacionInputsVacios3 = () => {
-  // Agregamos un listener al evento blur a nivel de documento
-  document.body.addEventListener(
-    "blur",
-    (event) => {
-      // Capturamos el input que disparó el evento, mediante delegacion de eventos
-      const input = event.target;
-
-      //Si el input tiene la clase solo-numeros realizamos las validaciones
-      if (
-        input.tagName === "INPUT" &&
-        input.classList.contains("solo-numeros")
-      ) {
-        //Definimos variables a utilizar
-        let mensaje = "";
-        const tieneMinuscula = /[a-z]/;
-        const tieneMayuscula = /[A-Z]/;
-        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
-
-        // Comprobamos si el input esta vacio
-        if (!(input.value.trim() === "")) {
           // Si no está vacío, comprobamos si contiene letras o símbolos
           // Obtenemos la clase padre del input y sacamos el valor del elemento label
           const label = input
@@ -149,12 +98,8 @@ const validacionInputsVacios3 = () => {
           const labelText = label ? label.textContent.trim() : "VACIO";
 
           // Verificamos si el input contiene números o símbolos
-          if (
-            tieneMayuscula.test(input.value) ||
-            tieneMinuscula.test(input.value) ||
-            tieneSimbolo.test(input.value)
-          ) {
-            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
           }
         }
 
@@ -199,7 +144,7 @@ const getCodigo = () => {
       consulta: 1,
     },
   }).done(function (respuesta) {
-    $("#funpro_codigo").val(respuesta.funpro_codigo);
+    $("#modve_codigo").val(respuesta.modve_codigo);
   });
 };
 
@@ -219,25 +164,16 @@ const listar = () => {
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
           ")'>";
         tabla += "<td>";
-        tabla += objeto.funpro_codigo;
+        tabla += objeto.modve_codigo;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.funpro_nombre;
+        tabla += objeto.modve_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.funpro_apellido;
+        tabla += objeto.marve_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.funpro_documento;
-        tabla += "</td>";
-        tabla += "<td>";
-        tabla += objeto.pro_razonsocial;
-        tabla += "</td>";
-        tabla += "<td>";
-        tabla += objeto.tipro_descripcion;
-        tabla += "</td>";
-        tabla += "<td>";
-        tabla += objeto.funpro_estado;
+        tabla += objeto.modve_estado;
         tabla += "</td>";
         tabla += "</tr>";
       }
@@ -272,50 +208,44 @@ const agregar = () => {
   $("#procedimiento").val("ALTA");
   habilitarCampos();
   $(".activar").attr("class", "form-line activar focused");
-  getCodigo();
   $(".est").attr("class", "form-line est focused");
-  $(".foco").attr("class", "form-line foco");
-  $(".pro").attr("class", "form-line pro");
-  $("#funpro_estado").val("ACTIVO");
-  $("#funpro_nombre").val("");
-  $("#funpro_apellido").val("");
-  $("#funpro_documento").val("");
-  $("#pro_codigo").val("");
-  $("#tipro_codigo").val("");
-  $("#tipro_descripcion").val("");
-  $("#pro_razonsocial").val("");
+  getCodigo();
+  $("#modve_estado").val("ACTIVO");
   habilitarBotones(false);
-  $("#funcionarios_proveedor").attr("style", "display: none");
+  $(".activar").attr("class", "form-line activar focused");
+  $("#modve_descripcion").val("");
+  $("#marve_descripcion").val("");
+  $(".foco").attr("class", "form-line foco");
+  $(".mar").attr("class", "form-line mar");
+  $("#modelos_vehiculos").attr("style", "display: none;");
   validacionInputsVacios1();
   validacionInputsVacios2();
-  validacionInputsVacios3();
 };
 
 //Metodo que establece la modificacion
 const modificar = () => {
   $("#operacion").val(2);
   $("#procedimiento").val("MODIFICACION");
-  $("#funpro_estado").val("ACTIVO");
+  $("#modve_estado").val("ACTIVO");
   $(".est").attr("class", "form-line est focused");
   habilitarCampos();
   habilitarBotones(false);
   validacionInputsVacios1();
   validacionInputsVacios2();
-  validacionInputsVacios3();
 };
 
 //Metodo que establece la baja, en esta caso de manera logica
 const borrar = () => {
   $("#operacion").val(3);
   $("#procedimiento").val("BAJA");
-  $("#funpro_estado").val("INACTIVO");
+  $("#modve_estado").val("INACTIVO");
   $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
 };
 
 //Limpia los campos del formulario
 const limpiarCampos = () => {
-  window.location.reload(true);
+  window.location.reload();
 };
 
 //Pasa parametros en el controlador para persistir los mismos
@@ -325,19 +255,15 @@ const abm = () => {
     method: "POST",
     url: "controlador.php",
     data: {
-      funpro_codigo: $("#funpro_codigo").val(),
-      funpro_nombre: $("#funpro_nombre").val(),
-      funpro_apellido: $("#funpro_apellido").val(),
-      funpro_documento: $("#funpro_documento").val(),
-      pro_codigo: $("#pro_codigo").val(),
-      tipro_codigo: $("#tipro_codigo").val(),
-      funpro_estado: $("#funpro_estado").val(),
+      modve_codigo: $("#modve_codigo").val(),
+      modve_descripcion: $("#modve_descripcion").val(),
+      marve_codigo: $("#marve_codigo").val(),
+      modve_estado: $("#modve_estado").val(),
       operacion: $("#operacion").val(),
       usu_codigo: $("#usu_codigo").val(),
       usu_login: $("#usu_login").val(),
       procedimiento: $("#procedimiento").val(),
-      tipro_descripcion: $("#tipro_descripcion").val(),
-      pro_razonsocial: $("#pro_razonsocial").val(),
+      marve_descripcion: $("#marve_descripcion").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
     .done(function (respuesta) {
@@ -419,17 +345,13 @@ const confirmar = () => {
 const controlVacio = () => {
   let condicion;
 
-  if ($("#funpro_codigo").val() == 0) {
+  if ($("#modve_codigo").val() == "0") {
     condicion = true;
-  } else if ($("#funpro_nombre").val() == "") {
+  } else if ($("#modve_descripcion").val() == "") {
     condicion = true;
-  } else if ($("#funpro_apellido").val() == "") {
+  } else if ($("#marve_descripcion").val() == "") {
     condicion = true;
-  } else if ($("#tipro_descripcion").val() == "") {
-    condicion = true;
-  } else if ($("#pro_razonsocial").val() == "") {
-    condicion = true;
-  } else if ($("#funpro_estado").val() == "") {
+  } else if ($("#modve_estado").val() == "") {
     condicion = true;
   }
 
@@ -444,7 +366,7 @@ const controlVacio = () => {
   }
 };
 
-//Controla que todos los inputs de la referencial no se pasen con valores vacios
+//Envia a los inputs de la referencial lo seleccionado por el usuario en la grilla
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -453,29 +375,29 @@ const seleccionarFila = (objetoJSON) => {
 
   $(".activar").attr("class", "form-line activar focused");
   $(".foco").attr("class", "form-line foco focused");
-  $(".pro").attr("class", "form-line pro focused");
+  $(".mar").attr("class", "form-line mar focused");
   $(".est").attr("class", "form-line est focused");
 };
 
 //Envia a su respectivo input lo seleccionado por el usuario en la lista
-const seleccionProveedor = (datos) => {
+const seleccionMarcaVehiculo = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
     $("#" + key).val(datos[key]);
   });
-  $("#ulProveedor").html();
-  $("#listaProveedor").attr("style", "display: none;");
-  $(".pro").attr("class", "form-line pro focused");
+  $("#ulMarca").html();
+  $("#listaMarca").attr("style", "display: none;");
+  $(".mar").attr("class", "form-line mar focused");
 };
 
-//Obtiene los datos del proveedor y los muestra en una lista
-const getProveedor = () => {
+//Obtiene los datos de la ciudad y los muestra en una lista
+const getMarcaVehiculo = () => {
   $.ajax({
-    //Solicitamos los datos a listaProveedor
+    //Solicitamos los datos a listaModulo
     method: "POST",
-    url: "/sys8DD/others/complements_php/listas/listaProveedor.php",
+    url: "/sys8DD/others/complements_php/listas/listaMarcaVehiculo.php",
     data: {
-      pro_razonsocial: $("#pro_razonsocial").val(),
+      marve_descripcion: $("#marve_descripcion").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -485,18 +407,18 @@ const getProveedor = () => {
           fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
         } else {
           fila +=
-            "<li class='list-group-item' onclick='seleccionProveedor(" +
+            "<li class='list-group-item' onclick='seleccionMarcaVehiculo(" +
             JSON.stringify(objeto) +
             ")'>" +
-            objeto.pro_razonsocial +
+            objeto.marve_descripcion +
             "</li>";
         }
       });
 
       //cargamos la lista
-      $("#ulProveedor").html(fila);
+      $("#ulMarca").html(fila);
       //hacemos visible la lista
-      $("#listaProveedor").attr(
+      $("#listaMarca").attr(
         "style",
         "display: block; position:absolute; z-index: 3000; width:100%;"
       );
