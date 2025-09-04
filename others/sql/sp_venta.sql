@@ -1,4 +1,69 @@
 --Procedimiento Almacenado
+-- Chapa Vehiculo
+create or replace function sp_chapa_vehiculo(
+	chavecodigo integer,
+    chavechapa varchar,
+    modvecodigo integer,
+    chaveestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar,
+    modvedescripcion varchar,
+    marvedescripcion varchar
+) returns void as
+$function$
+-- Definimos las variables
+declare chaveAudit text;
+begin 
+	-- Validamos la operacion de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos que no se repita el numero de chapa
+        perform * from chapa_vehiculo
+        where upper(chave_chapa)=upper(chavechapa) and chave_codigo != chavecodigo;
+        if found then
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'chapa';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+    	elseif operacion = 1 then
+	        	insert into chapa_vehiculo(chave_codigo, chave_chapa, modve_codigo, chave_estado)
+				values(chavecodigo, upper(chavechapa), modvecodigo, 'ACTIVO');
+				raise notice 'LA CHAPA DE VEHICULO FUE REGISTRADO CON EXITO';
+        elseif operacion = 2 then
+        		update chapa_vehiculo
+				set chave_chapa=upper(chavechapa), modve_codigo=modvecodigo, chave_estado='ACTIVO'
+				where chave_codigo=chavecodigo;
+				raise notice 'LA CHAPA DE VEHICULO FUE MODIFICADO CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
+    if operacion = 3 then 
+    	update chapa_vehiculo 
+		set chave_estado='INACTIVO'
+		where chave_codigo=chavecodigo;
+		raise notice 'LA CHAPA DE VEHICULO FUE BORRADA CON EXITO';
+    end if;
+	-- Consultamos el audit anterior
+	select coalesce(chave_audit, '') into chaveAudit from chapa_vehiculo where chave_codigo = chavecodigo;
+	-- A los datos anteriores le agregamos los nuevos
+	update chapa_vehiculo 
+	set chave_audit = chaveAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'chave_chapa', upper(chavechapa),
+		'modve_codigo', modvecodigo,
+		'modve_descripcion', upper(modvedescripcion),
+		'marve_codigo', marvecodigo,
+		'marve_descripcion', upper(marvedescripcion),
+		'chave_estado', upper(chaveestado)
+	)||','
+	where chave_codigo = chavecodigo;
+end
+$function$ 
+language plpgsql;
+
 -- Modelo Vehiculo
 create or replace function sp_modelo_vehiculo(
     modvecodigo integer,

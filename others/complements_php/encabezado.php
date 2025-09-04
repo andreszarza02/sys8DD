@@ -56,6 +56,7 @@ $guis = [
    'CLIENTES' => 'ref_clientes',
    'MARCA VEHICULO' => 'ref_marcaVehiculo',
    'MODELO VEHICULO' => 'ref_modeloVehiculo',
+   'CHAPA VEHICULO' => 'ref_chapaVehiculo',
    'MODULO' => 'ref_modulo',
    'PERMISOS' => 'ref_permisos',
    'PERFIL' => 'ref_perfil',
@@ -656,6 +657,16 @@ if (isset($_SESSION['apertura'])) {
                               <?php if ($permisos_interfaz['ref_modeloVehiculo']) { ?>
                                  <li>
                                     <a href="/sys8DD/referenciales/venta/modelo_vehiculo/index.php">Modelo Vehiculo</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_modeloVehiculo']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/modelo_vehiculo/index.php">Modelo Vehiculo</a>
+                                 </li>
+                              <?php } ?>
+                              <?php if ($permisos_interfaz['ref_chapaVehiculo']) { ?>
+                                 <li>
+                                    <a href="/sys8DD/referenciales/venta/chapa_vehiculo/index.php">Chapa Vehiculo</a>
                                  </li>
                               <?php } ?>
                            </ul>
