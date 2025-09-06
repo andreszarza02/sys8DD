@@ -15,6 +15,7 @@ $sql = "select
          p.pro_codigo,
          p.tipro_codigo,
          p.pro_razonsocial,
+         p.pro_ruc,
          tp.tipro_descripcion 
       from proveedor p 
          join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo 

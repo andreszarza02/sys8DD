@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,29 +13,22 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   $estado = $_POST['prepro_estado'];
-   $prepro_estado = str_replace("'", "''", $estado);
+   // Definimos y cargamos las variables
+   $prepro_estado = pg_escape_string($conexion, $_POST['prepro_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace(search: "'", replace: "''", subject: $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $proRUC = $_POST['pro_ruc'];
-   $pro_ruc = str_replace("'", "''", $proRUC);
+   $pro_ruc = pg_escape_string($conexion, $_POST['pro_ruc']);
 
-   $proRazonSocial = $_POST['pro_razonsocial'];
-   $pro_razonsocial = str_replace("'", "''", $proRazonSocial);
+   $pro_razonsocial = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 
-   $empRazonSocial = $_POST['emp_razonsocial'];
-   $emp_razonsocial = str_replace("'", "''", $empRazonSocial);
+   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
 
-   $sucDescripcion = $_POST['suc_descripcion'];
-   $suc_descripcion = str_replace("'", "''", $sucDescripcion);
+   $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
 
-   $tiproDescripcion = $_POST['tipro_descripcion'];
-   $tipro_descripcion = str_replace("'", "''", $tiproDescripcion);
+   $tipro_descripcion = pg_escape_string($conexion, $_POST['tipro_descripcion']);
 
    $sql = "select sp_presupuesto_proveedor_cab(
       {$_POST['prepro_codigo']}, 
@@ -48,7 +43,7 @@ if (isset($_POST['operacion_cabecera'])) {
       {$_POST['pedco_codigo']}, 
       {$_POST['operacion_cabecera']},
       '$usu_login',
-      '$procedimiento2',
+      '$procedimiento',
       '$pro_ruc',
       '$pro_razonsocial',
       '$emp_razonsocial',
@@ -60,14 +55,19 @@ if (isset($_POST['operacion_cabecera'])) {
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
 
-   if (strpos($error, "1") !== false) {
+   if (strpos($error, "fecha") !== false) {
       $response = array(
          "mensaje" => "LA FECHA DE REGISTRO ES MAYOR A LA FECHA DE VENCIMIENTO",
          "tipo" => "error"
       );
-   } else if (strpos($error, "2") !== false) {
+   } else if (strpos($error, "pedido") !== false) {
       $response = array(
          "mensaje" => "EL PROVEEDOR SELECCIONADO YA TIENE DESIGNADO UN PRESUPUESTO DE ACUERDO AL PEDIDO",
+         "tipo" => "error"
+      );
+   } else if (strpos($error, "asociado") !== false) {
+      $response = array(
+         "mensaje" => "YA SE ENCUENTRA ASOCIADO EL PRESUPUESTO DE PROVEEDOR A UNA ORDEN DE COMPRA",
          "tipo" => "error"
       );
    } else {
@@ -90,7 +90,9 @@ if (isset($_POST['operacion_cabecera'])) {
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_presupuesto_proveedor_cab vppc where vppc.prepro_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+            from v_presupuesto_proveedor_cab vppc where vppc.prepro_estado <> 'ANULADO';";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);

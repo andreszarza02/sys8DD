@@ -8,13 +8,13 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$presupuesto = pg_escape_string($conexion, $_POST['pro_razonsocial']);
+$pro_razonsocial = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 
 //Establecemos y mostramos la consulta
 $sql = "select 
          pp.pedco_codigo,
          pp.prepro_codigo,
-         'Presupuesto Proveedor N°'||pp.prepro_codigo||' '||to_char(ppc.prepro_fechaactual, 'DD-MM-YYYY') as presupuesto,
+         'PRESUPUESTO PROVEEDOR N°'||pp.prepro_codigo||' '||to_char(ppc.prepro_fechaactual, 'DD-MM-YYYY') as presupuesto,
          ppc.pro_codigo,
          ppc.tipro_codigo,
          p.pro_razonsocial,
@@ -23,7 +23,7 @@ $sql = "select
          join presupuesto_proveedor_cab ppc on ppc.prepro_codigo=pp.prepro_codigo
          join proveedor p on p.pro_codigo=ppc.pro_codigo
          join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo
-         where (p.pro_razonsocial ilike '%$presupuesto%' or p.pro_ruc ilike '%$presupuesto%') and ppc.prepro_estado='ACTIVO'
+         where (p.pro_razonsocial ilike '%$pro_razonsocial%' or p.pro_ruc ilike '%$pro_razonsocial%') and ppc.prepro_estado='ACTIVO'
       order by pp.prepro_codigo;";
 
 $resultado = pg_query($conexion, $sql);

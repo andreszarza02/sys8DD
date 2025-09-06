@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,33 +13,24 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   $estado = $_POST['orcom_estado'];
-   $orcom_estado = str_replace("'", "''", $estado);
+   // Definimos y cargamos las variables
+   $orcom_estado = pg_escape_string($conexion, $_POST['orcom_estado']);
 
-   $interfecha = $_POST['orcom_interfecha'];
-   $orcom_interfecha = str_replace("'", "''", $interfecha);
+   $orcom_interfecha = pg_escape_string($conexion, $_POST['orcom_interfecha']);
 
-   $montoCuota = $_POST['orcom_montocuota'];
-   $orcom_montocuota = str_replace(",", ".", $montoCuota);
+   $orcom_montocuota = str_replace(",", ".", $_POST['orcom_montocuota']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace(search: "'", replace: "''", subject: $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $proRazonSocial = $_POST['pro_razonsocial'];
-   $pro_razonsocial = str_replace("'", "''", $proRazonSocial);
+   $pro_razonsocial = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 
-   $tiproDescripcion = $_POST['tipro_descripcion'];
-   $tipro_descripcion = str_replace("'", "''", $tiproDescripcion);
+   $tipro_descripcion = pg_escape_string($conexion, $_POST['tipro_descripcion']);
 
-   $empRazonSocial = $_POST['emp_razonsocial'];
-   $emp_razonsocial = str_replace("'", "''", $empRazonSocial);
+   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
 
-   $sucDescripcion = $_POST['suc_descripcion'];
-   $suc_descripcion = str_replace("'", "''", $sucDescripcion);
-
+   $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
 
    $sql = "select sp_orden_compra_cab(
       {$_POST['orcom_codigo']}, 
@@ -56,7 +49,7 @@ if (isset($_POST['operacion_cabecera'])) {
       {$_POST['pedco_codigo']}, 
       {$_POST['operacion_cabecera']},
       '$usu_login',
-      '$procedimiento2',
+      '$procedimiento',
       '$pro_razonsocial',
       '$tipro_descripcion',
       '$emp_razonsocial',
@@ -65,11 +58,19 @@ if (isset($_POST['operacion_cabecera'])) {
 
    //Ejecutamos la consulta
    $result = pg_query($conexion, $sql);
+   $error = pg_last_error($conexion);
 
-   $response = array(
-      "mensaje" => pg_last_notice($conexion),
-      "tipo" => "info"
-   );
+   if (strpos($error, "asociado") !== false) {
+      $response = array(
+         "mensaje" => "YA SE ENCUENTRA ASOCIADA LA ORDEN DE COMPRA A UNA COMPRA",
+         "tipo" => "error"
+      );
+   } else {
+      $response = array(
+         "mensaje" => pg_last_notice($conexion),
+         "tipo" => "info"
+      );
+   }
 
    echo json_encode($response);
 
@@ -83,7 +84,9 @@ if (isset($_POST['operacion_cabecera'])) {
 
 } else {
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_orden_compra_cab vocc where vocc.orcom_estado <> 'ANULADO';";
+   $sql = "select * 
+           from v_orden_compra_cab vocc 
+           where vocc.orcom_estado <> 'ANULADO';";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);

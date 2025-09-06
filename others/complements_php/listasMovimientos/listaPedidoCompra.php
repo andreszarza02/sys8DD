@@ -13,7 +13,7 @@ $pedido = $_POST['pedco_codigo'];
 //Establecemos y mostramos la consulta
 $sql = "select 
          pcc.pedco_codigo, 
-         'Pedido Compra N°'||pcc.pedco_codigo||' '||to_char(pcc.pedco_fecha, 'DD-MM-YYYY') as pedido 
+         'PEDIDO COMPRA N°'||pcc.pedco_codigo||' '||to_char(pcc.pedco_fecha, 'DD-MM-YYYY') as pedido 
       from pedido_compra_cab pcc 
          where cast(pcc.pedco_codigo as varchar) ilike '%$pedido%' and
       pedco_estado = 'PENDIENTE';";

@@ -8,41 +8,35 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-//Consultamos si existe la variable operacion cabecera
-if (isset($_POST['operacion_cabecera'])) {
+//Consultamos si existe la variable operacion
+if (isset($_POST['operacion'])) {
 
    // Definimos y cargamos las variables
-   $pedco_estado = pg_escape_string($conexion, $_POST['pedco_estado']);
+   $ticli_descripcion = pg_escape_string($conexion, $_POST['ticli_descripcion']);
+
+   $ticli_estado = pg_escape_string($conexion, $_POST['ticli_estado']);
 
    $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
    $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
+   $sql = "select sp_tipo_cliente(
+   {$_POST['ticli_codigo']}, 
+   '$ticli_descripcion',
+   '$ticli_estado',
+   {$_POST['operacion']},
+   {$_POST['usu_codigo']},
+   '$usu_login',
+   '$procedimiento'
+   )";
 
-   $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
-
-   $sql = "select sp_pedido_compra_cab(
-      {$_POST['pedco_codigo']}, 
-      '{$_POST['pedco_fecha']}', 
-      '$pedco_estado', 
-      {$_POST['suc_codigo']}, 
-      {$_POST['emp_codigo']}, 
-      {$_POST['usu_codigo']}, 
-      {$_POST['operacion_cabecera']},
-      '$usu_login',
-      '$procedimiento',
-      '$emp_razonsocial',
-      '$suc_descripcion'
-      )";
-
-   //ejecutamos la consulta
+   //Validamos la consulta
    $result = pg_query($conexion, $sql);
    $error = pg_last_error($conexion);
-
-   if (strpos($error, "asociado") !== false) {
+   //Si ocurre un error lo capturamos y lo enviamos al front-end
+   if (strpos($error, "descripcion") !== false) {
       $response = array(
-         "mensaje" => "YA SE ENCUENTRA ASOCIADO EL PEDIDO DE COMPRA A UN PRESUPUESTO DE PROVEEDOR",
+         "mensaje" => "YA SE ENCUENTRA REGISTRADO EL TIPO DE CLIENTE",
          "tipo" => "error"
       );
    } else {
@@ -54,10 +48,11 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
+   //Consulta,os si existe la variable consulta y si es igual a 1
 } else if (isset($_POST['consulta']) == 1) {
 
    //Consultamos y enviamos el ultimo codigo
-   $sql = "select coalesce(max(pedco_codigo),0)+1 as pedco_codigo from pedido_compra_cab;";
+   $sql = "select coalesce(max(ticli_codigo),0)+1 as ticli_codigo from tipo_cliente;";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_assoc($resultado);
    echo json_encode($datos);
@@ -66,13 +61,15 @@ if (isset($_POST['operacion_cabecera'])) {
 
    //Si el post no recibe la operacion realizamos una consulta
    $sql = "select 
-               * 
-            from v_pedido_compra_cab vpcc 
-            where vpcc.pedco_estado <> 'ANULADO';";
+               tc.ticli_codigo,
+               tc.ticli_descripcion,
+               tc.ticli_estado 
+            from tipo_cliente tc 
+            order by tc.ticli_codigo;";
+
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);
-
 }
 
 ?>

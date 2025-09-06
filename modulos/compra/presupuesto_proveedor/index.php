@@ -108,8 +108,8 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line pe">
-                                 <input type="text" class="form-control no-disabled" id="pedco_codigo" disabled
-                                    onkeyup="getPedidoCompra()">
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="pedco_codigo"
+                                    disabled onkeyup="getPedidoCompra()">
                                  <label class="form-label">N° Pedido</label>
                                  <div id="listaPedido" style="display: none;">
                                     <ul class="list-group" id="ulPedido" Style="height: 100px; overflow: auto"></ul>
@@ -120,9 +120,9 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line pro">
-                                 <input type="text" class="form-control no-disabled" id="pro_ruc" disabled
-                                    onkeyup="getProveedor()">
-                                 <label class="form-label">RUC Proveedor</label>
+                                 <input type="text" class="form-control no-disabled letras-numeros-algunos-simbolos"
+                                    id="pro_ruc" disabled onkeyup="getProveedor()">
+                                 <label class="form-label">RUC o Razón Social Proveedor</label>
                                  <div id="listaProvedor" style="display: none;">
                                     <ul class="list-group" id="ulProveedor" Style="height: 100px; overflow: auto"></ul>
                                  </div>
@@ -235,8 +235,8 @@ foreach ($permisos as $permiso) {
                                  <div class="form-line it">
                                     <input type="hidden" id="it_codigo" value="0">
                                     <input type="hidden" id="tipit_codigo" value="0">
-                                    <input type="text" class="form-control no-disabled2" id="it_descripcion" disabled
-                                       onkeyup="getItem()">
+                                    <input type="text" class="form-control no-disabled2 letras-numeros"
+                                       id="it_descripcion" disabled onkeyup="getItem()">
                                     <label class="form-label">Item</label>
                                     <div id="listaItem" style="display: none;">
                                        <ul class="list-group" id="ulItem" Style="height: 80px; width: overflow: auto">
@@ -248,8 +248,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line it2">
-                                    <input type="number" class="form-control no-disabled2" id="peprodet_cantidad"
-                                       disabled>
+                                    <input type="text" class="form-control no-disabled2 numeros-algunos-simbolos"
+                                       id="peprodet_cantidad" disabled>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>
@@ -266,8 +266,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line foco2">
-                                    <input type="number" class="form-control no-disabled2" id="peprodet_precio"
-                                       disabled>
+                                    <input type="text" class="form-control no-disabled2 numeros-algunos-simbolos"
+                                       id="peprodet_precio" disabled>
                                     <label class="form-label">Precio</label>
                                  </div>
                               </div>

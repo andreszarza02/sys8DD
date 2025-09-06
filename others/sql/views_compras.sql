@@ -46,7 +46,8 @@ select
 	tp.tipro_descripcion,
 	s.suc_descripcion,
 	e.emp_razonsocial,
-	pp.pedco_codigo
+	pp.pedco_codigo,
+	ppc.pro_codigo 
 from presupuesto_proveedor_cab ppc
 join usuario u on u.usu_codigo=ppc.usu_codigo
 join proveedor p on p.pro_codigo=ppc.pro_codigo
@@ -74,7 +75,7 @@ and i.tipit_codigo=ppd.tipit_codigo
 join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
 join tipo_impuesto ti2 on ti2.tipim_codigo=i.tipim_codigo
 join unidad_medida um on um.unime_codigo=i.unime_codigo
-order by ppd.prepro_codigo;
+order by ppd.prepro_codigo, ppd.it_codigo;
 
 create or replace view v_orden_compra_cab as
 select 

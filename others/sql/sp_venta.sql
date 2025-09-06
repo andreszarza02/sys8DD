@@ -1,4 +1,62 @@
 --Procedimiento Almacenado
+-- Tipo Cliente
+create or replace function sp_tipo_cliente(
+    ticlicodigo integer,
+    ticlidescripcion varchar,
+    ticliestado varchar,
+    operacion integer,
+    usucodigo integer,
+    usulogin varchar,
+    procedimiento varchar
+) returns void as
+$function$
+-- Definimos las variables
+declare ticliAudit text;
+begin 
+	-- Validamos la operacion de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos que no se repita la descripcion de tipo cliente
+        perform * from tipo_cliente
+        where upper(ticli_descripcion)=upper(ticlidescripcion) and ticli_codigo != ticlicodigo;
+        if found then
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+    	elseif operacion = 1 then
+	        	insert into tipo_cliente(ticli_codigo, ticli_descripcion, ticli_estado)
+				values(ticlicodigo, upper(ticlidescripcion), 'ACTIVO');
+				raise notice 'EL TIPO DE CLIENTE FUE REGISTRADO CON EXITO';
+        elseif operacion = 2 then
+        		update tipo_cliente
+				set ticli_descripcion=upper(ticlidescripcion), ticli_estado='ACTIVO'
+				where ticli_codigo=ticlicodigo;
+				raise notice 'EL TIPO DE CLIENTE FUE MODIFICADO CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de eliminacion (borrado logíco)
+    if operacion = 3 then 
+    	update tipo_cliente 
+		set ticli_estado='INACTIVO'
+		where ticli_codigo=ticlicodigo;
+		raise notice 'EL TIPO DE CLIENTE FUE BORRADO CON EXITO';
+    end if;
+	-- Consultamos el audit anterior
+	select coalesce(ticli_audit, '') into ticliAudit from tipo_cliente where ticli_codigo = ticlicodigo;
+	-- A los datos anteriores le agregamos los nuevos
+	update tipo_cliente 
+	set ticli_audit = ticliAudit||''||json_build_object(
+		'usu_codigo', usucodigo,
+		'usu_login', usulogin,
+		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+		'procedimiento', upper(procedimiento),
+		'ticli_descripcion', upper(ticlidescripcion),
+		'ticli_estado', upper(ticliestado)
+	)||','
+	where ticli_codigo = ticlicodigo;
+end
+$function$ 
+language plpgsql;
+
 -- Chapa Vehiculo
 create or replace function sp_chapa_vehiculo(
 	chavecodigo integer,

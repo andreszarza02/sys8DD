@@ -9,8 +9,8 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$presupuesto = $_POST['prepro_codigo'];
-$descripcion = pg_escape_string($conexion, $_POST['it_descripcion']);
+$prepro_codigo = $_POST['prepro_codigo'];
+$it_descripcion = pg_escape_string($conexion, $_POST['it_descripcion']);
 
 //Establecemos y mostramos la consulta
 $sql = "select 
@@ -25,9 +25,9 @@ $sql = "select
             join items i on i.it_codigo=ppd.it_codigo 
             and i.tipit_codigo=ppd.tipit_codigo
             join unidad_medida um on um.unime_codigo=i.unime_codigo 
-            where ppd.prepro_codigo=$presupuesto 
+            where ppd.prepro_codigo=$prepro_codigo 
             and i.it_estado='ACTIVO'
-            and i.it_descripcion ilike '%$descripcion%'
+            and i.it_descripcion ilike '%$it_descripcion%'
             and i.tipit_codigo <> 2
       order by ppd.prepro_codigo;";
 

@@ -775,22 +775,35 @@ create or replace function sp_pedido_compra_cab(
     sucdescripcion varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare pedcoAudit text;
 begin 
+	 -- Validamos la operacion de insercion
      if operacion = 1 then
 	     insert into pedido_compra_cab(pedco_codigo, pedco_fecha, pedco_estado, suc_codigo, emp_codigo, usu_codigo)
 		 values(pedcocodigo, pedcofecha, 'PENDIENTE', succodigo, empcodigo, usucodigo);
 		 raise notice 'EL PEDIDO DE COMPRA FUE REGISTRADO CON EXITO';
     end if;
+	-- Validamos la operacion de anulacion
     if operacion = 2 then 
-    	update pedido_compra_cab 
-		set pedco_estado='ANULADO', usu_codigo=usucodigo
-		where pedco_codigo=pedcocodigo;
-		raise notice 'EL PEDIDO DE COMPRA FUE ANULADO CON EXITO';
+		-- Si ya se encuentra asociado un pedido a un presupuesto en un estado distinto a anulado 
+		perform 1 from pedido_presupuesto pp 
+		join pedido_compra_cab pcc on pcc.pedco_codigo=pp.pedco_codigo 
+		join presupuesto_proveedor_cab ppc on ppc.prepro_codigo=pp.prepro_codigo 
+		where pp.pedco_codigo=pedcocodigo and ppc.prepro_estado <> 'ANULADO';
+		if found then
+			-- En caso de ser asi, generamos una excepcion
+			raise exception 'asociado';
+		elseif operacion = 2 then
+			update pedido_compra_cab 
+			set pedco_estado='ANULADO', usu_codigo=usucodigo
+			where pedco_codigo=pedcocodigo;
+			raise notice 'EL PEDIDO DE COMPRA FUE ANULADO CON EXITO';
+		end if;
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(pedco_audit, '') into pedcoAudit from pedido_compra_cab where pedco_codigo = pedcocodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update pedido_compra_cab 
 	set pedco_audit = pedcoAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -819,17 +832,21 @@ create or replace function sp_pedido_compra_det(
 ) returns void as
 $function$
 begin 
+	 -- Validamos la operacion de insercion
      if operacion = 1 then
+		-- Validamos que no se repota el ítem en el detalle
      	perform * from pedido_compra_det
      	where it_codigo=itcodigo and pedco_codigo=pedcocodigo;
      	if found then
-     		 raise exception 'item repetido';
+			 -- Si es asi, generamos una excepcion
+     		 raise exception 'item';
      	elseif operacion = 1 then
 		     insert into pedido_compra_det(pedco_codigo, it_codigo, tipit_codigo, pedcodet_cantidad, pedcodet_precio)
 			 values(pedcocodigo, itcodigo, tipitcodigo, pedcodetcantidad, pedcodetprecio);
 			 raise notice 'EL PEDIDO DE COMPRA DETALLE FUE REGISTRADO CON EXITO';
 		end if;
     end if;
+	-- Validamos la operacion de eliminación
     if operacion = 2 then 
     	delete from pedido_compra_det 
     	where pedco_codigo=pedcocodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo;
@@ -861,14 +878,20 @@ create or replace function sp_presupuesto_proveedor_cab(
     tiprodescripcion varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare ultCodPedidoPresupuesto integer;
 declare preproAudit text;
 begin 
+	 -- Validamos la operacion de insercion 
      if operacion = 1 then
+		 -- Guardamos el serial de pedido_presupuesto
 	 	 ultCodPedidoPresupuesto = (select coalesce(max(pedpre_codigo),0)+1 from pedido_presupuesto);
+		 -- Validamos si la fecha actual es mayor a la fecha de vencimiento
      	 if preprofechaactual > preprofechavencimiento then
-     	 	raise exception '1';
+			-- En caso de ser asi, generamos un excepcion
+     	 	raise exception 'fecha';
      	 end if;
+		 -- Validamos que no se repita el presupuesto de un pedido de compra por el mismo proveedor
 		 perform 
 			ppc.prepro_codigo,
 			pp.pedco_codigo,
@@ -879,15 +902,18 @@ begin
 			and ppc.pro_codigo = procodigo 
 			and ppc.prepro_codigo != preprocodigo;
      	 if found then
-     		 raise exception '2';
+			 -- En caso de ser asi, generamos un excepcion
+     		 raise exception 'pedido';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro 
      	 elseif operacion = 1 then
 		     insert into presupuesto_proveedor_cab(prepro_codigo, prepro_fechaactual, prepro_estado, prepro_fechavencimiento, usu_codigo,
 		     pro_codigo, tipro_codigo, suc_codigo, emp_codigo)
 			 values(preprocodigo, preprofechaactual, 'ACTIVO', preprofechavencimiento, usucodigo, procodigo, tiprocodigo,
 			 succodigo, empcodigo);
+			 -- Insertamos datos en tabla intermedia de relacion pedido_presupuesto
 			 insert into pedido_presupuesto(pedco_codigo, prepro_codigo, pedpre_codigo)
 			 values(pedcocodigo, preprocodigo, ultCodPedidoPresupuesto);
-			 --Cargamos la columna de auditoria de pedido presupuesto
+			 -- Cargamos la columna de auditoria de pedido presupuesto
 			 update pedido_presupuesto 
 			 set pedpre_audit = json_build_object(
 				'usu_codigo', usucodigo,
@@ -898,18 +924,31 @@ begin
 				'prepro_codigo', preprocodigo
 			 )
 			 where pedpre_codigo = ultCodPedidoPresupuesto;
+			 -- Se envia un mensaje de confirmacion
 			 raise notice 'EL PRESUPUESTO DEL PROVEEDOR FUE REGISTRADO CON EXITO';
 		end if;
     end if;
+	-- Validamos la operacion de anulacion
     if operacion = 2 then 
-    	update presupuesto_proveedor_cab 
-		set prepro_estado='ANULADO', usu_codigo=usucodigo
-		where prepro_codigo=preprocodigo;
-		raise notice 'EL PRESUPUESTO DEL PROVEEDOR FUE ANULADO CON EXITO';
+		-- Validamos si ya se encuentra asociado un presupuesto a una orden y tiene un estado distinto a anulado 
+		perform 1 from presupuesto_orden po 
+		join presupuesto_proveedor_cab ppc on ppc.prepro_codigo=po.prepro_codigo 
+		join orden_compra_cab occ on occ.orcom_codigo=po.orcom_codigo 
+		where po.prepro_codigo=preprocodigo and occ.orcom_estado <> 'ANULADO';
+		if found then
+			-- En caso de ser asi, generamos una excepcion
+			raise exception 'asociado';		
+		elseif operacion = 2 then
+			update presupuesto_proveedor_cab 
+			set prepro_estado='ANULADO', usu_codigo=usucodigo
+			where prepro_codigo=preprocodigo;
+			-- Se envia un mensaje de confirmacion
+			raise notice 'EL PRESUPUESTO DEL PROVEEDOR FUE ANULADO CON EXITO';
+		end if;
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(prepro_audit, '') into preproAudit from presupuesto_proveedor_cab where prepro_codigo = preprocodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update presupuesto_proveedor_cab 
 	set prepro_audit = preproAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -941,14 +980,17 @@ create or replace function sp_presupuesto_proveedor_det(
     tipitcodigo integer,
     peprodetcantidad numeric,
     peprodetprecio numeric,
-    operacion integer --1:insert 2:delete
+    operacion integer
 ) returns void as
 $function$
 begin 
+	 -- Validamos la operacion de insercion
      if operacion = 1 then
+		-- Validamos que no se repota el ítem en el detalle
      	perform * from presupuesto_proveedor_det
      	where it_codigo=itcodigo and prepro_codigo=preprocodigo;
      	if found then
+			 -- Si es asi, generamos una excepcion
      		 raise exception 'item';
      	elseif operacion = 1 then
 		     insert into presupuesto_proveedor_det(prepro_codigo, it_codigo, tipit_codigo, peprodet_cantidad, peprodet_precio)
@@ -956,6 +998,7 @@ begin
 			 raise notice 'EL PRESUPUESTO PROVEEDOR DETALLE FUE REGISTRADO CON EXITO';
 		end if;
     end if;
+	-- Validamos la operacion de eliminación
     if operacion = 2 then 
     	delete from presupuesto_proveedor_det	 
     	where prepro_codigo=preprocodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo;

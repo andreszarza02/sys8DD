@@ -191,8 +191,8 @@ foreach ($permisos as $permiso) {
                                  <div class="form-line it">
                                     <input type="hidden" id="it_codigo" value="0">
                                     <input type="hidden" id="tipit_codigo" value="0">
-                                    <input type="text" class="form-control no-disabled2" id="it_descripcion" disabled
-                                       onkeyup="getItem()">
+                                    <input type="text" class="form-control no-disabled2 letras_numeros"
+                                       id="it_descripcion" disabled onkeyup="getItem()">
                                     <label class="form-label">Item</label>
                                     <div id="listaItem" style="display: none;">
                                        <ul class="list-group" id="ulItem" Style="height: 80px; overflow: auto">
@@ -204,8 +204,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line foco2">
-                                    <input type="number" class="form-control no-disabled2" id="pedcodet_cantidad"
-                                       disabled>
+                                    <input type="text" class="form-control no-disabled2 numeros-algunos-simbolos"
+                                       id="pedcodet_cantidad" disabled>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>
@@ -222,7 +222,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line it">
-                                    <input type="number" class="form-control" id="pedcodet_precio" disabled>
+                                    <input type="text" class="form-control" id="pedcodet_precio" disabled>
                                     <label class="form-label">Precio</label>
                                  </div>
                               </div>

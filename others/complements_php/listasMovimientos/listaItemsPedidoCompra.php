@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -8,7 +10,7 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$item = $_POST['it_descripcion'];
+$it_descripcion = pg_escape_string($conexion, $_POST['it_descripcion']);
 
 //Establecemos y mostramos la consulta
 $sql = "select 
@@ -21,7 +23,7 @@ $sql = "select
          from items i
          	join unidad_medida um on um.unime_codigo=i.unime_codigo
          where 
-            i.it_descripcion ilike '%$item%' 
+            i.it_descripcion ilike '%$it_descripcion%' 
             and i.tipit_codigo <> 2
             and i.it_estado = 'ACTIVO'
          order by i.it_codigo;";

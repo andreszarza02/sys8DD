@@ -467,7 +467,7 @@ const confirmar = () => {
 
 //Establece los mensajes pára agregar y eliminar detalle
 const confirmar2 = () => {
-  //solicitamos el value del input operacion_cabecera
+  //solicitamos el value del input operacion_detalle
   var oper = $("#operacion_detalle").val();
 
   preg = "¿Desea agregar el registro?";
