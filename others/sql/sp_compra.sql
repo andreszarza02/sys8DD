@@ -760,6 +760,90 @@ end
 $function$ 
 language plpgsql;
 
+--Solicitud Presupuesto Cabecera
+create or replace function sp_solicitud_presupuesto_cab(
+    solprecodigo integer,
+    pedcocodigo integer,
+    procodigo integer,
+    tiprocodigo integer,
+    solprefecha date,
+    solprecorreoproveedor varchar,
+    usucodigo integer,
+    succodigo varchar,
+    empcodigo varchar,
+    operacion integer
+) returns void as
+$function$
+begin 
+	 -- Validamos la operacion de insercion
+     if operacion = 1 then
+		-- Validamos que no se repita el pedido y el proveedor
+		perform * from solicitud_presupuesto_cab spc
+		where pedco_codigo=pedcocodigo and pro_codigo=procodigo 
+		and tipro_codigo=tiprocodigo and solpre_codigo != solprecodigo;
+		if found then
+			-- En caso de ser asi, generamos una excepcion
+			raise exception 'pedido';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro
+		elseif operacion = 1 then
+			insert into solicitud_presupuesto_cab(solpre_codigo, pedco_codigo, pro_codigo, tipro_codigo, solpre_fecha, solpre_correo_proveedor,
+			usu_codigo, suc_codigo, emp_codigo)
+		 	values(solprecodigo, pedcocodigo, procodigo, tiprocodigo, solprefecha, solprecorreoproveedor, usucodigo, succodigo, empcodigo);
+			-- Se envia un mensaje de confirmacion
+		 	raise notice 'LA SOLICITUD DE PRESUPUESTO CABECERA YA SE REGISTRO, PUEDE PROCEDER CON EL DETALLE';
+		end if;
+    end if;
+	-- Validamos la operacion de eliminacion
+    if operacion = 2 then 
+		-- Eliminamos el detalle de cabecera
+		delete from solicitud_presupuesto_det where solpre_codigo=solprecodigo;
+		-- Eliminamos la cabera
+		delete from solicitud_presupuesto_cab where solpre_codigo=solprecodigo;
+		-- Se envia un mensaje de confirmacion
+		raise notice 'LA SOLICITUD DE PRESUPUESTO CABECERA FUE ELIMINADA CON SU RESPECTIVO DETALLE';
+    end if;
+end
+$function$ 
+language plpgsql;
+
+-- Solicitud Presupuesto Detalle
+create or replace function sp_solicitud_presupuesto_det(
+    solprecodigo integer,
+    pedcocodigo integer,
+    procodigo integer,
+    tiprocodigo integer,
+    itcodigo integer, 
+    tipitcodigo integer,
+    solpredetcantidad numeric,
+    operacion integer
+) returns void as
+$function$
+begin 
+	 -- Validamos la operacion de insercion
+     if operacion = 1 then
+		-- Validamos que no se repita el ítem en el detalle
+     	perform * from solicitud_presupuesto_det
+     	where it_codigo=itcodigo and solpre_codigo=solprecodigo;
+     	if found then
+			 -- Si es asi, generamos una excepcion
+     		 raise exception 'item';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro
+     	elseif operacion = 1 then
+		     insert into solicitud_presupuesto_det(solpre_codigo, pedco_codigo, pro_codigo, tipro_codigo, it_codigo, tipit_codigo, solpredet_cantidad)
+			 values(solprecodigo, pedcocodigo, procodigo, tiprocodigo, tipitcodigo, solpredetcantidad);
+			 raise notice 'LA SOLICITUD DE PRESUPUESTO DETALLE FUE REGISTRADA CON EXITO';
+		end if;
+    end if;
+	-- Validamos la operacion de eliminación
+    if operacion = 2 then 
+    	delete from solicitud_presupuesto_det	 
+    	where solpre_codigo=solprecodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo;
+		raise notice 'LA SOLICITUD DE PRESUPUESTO DETALLE FUE ELIMINADA CON EXITO';
+    end if;
+end
+$function$ 
+language plpgsql;
+
 --Pedido Compra Cabecera
 create or replace function sp_pedido_compra_cab(
     pedcocodigo integer,

@@ -538,10 +538,9 @@ const habilitarCampos = (booleano) => {
 const getDate = () => {
   const date = new Date();
   const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const fecha = `${day}/${month}/${year}`;
-
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const fecha = `${year}-${month}-${day}`;
   return fecha;
 };
 
@@ -566,7 +565,6 @@ const nuevo = () => {
   habilitarCampos(true);
   $(".activar").attr("class", "form-line activar focused");
   $(".est").attr("class", "form-line est focused");
-  $(".fecha").attr("class", "form-line fecha focused");
   getCodigo();
   $("#prepro_estado").val("ACTIVO");
   $("#prepro_fechaactual").val(getDate());
@@ -687,6 +685,72 @@ const grabar = () => {
     });
 };
 
+function grabarExcel() {
+  let archivo = $("#seleccionarExcel")[0].files[0];
+
+  let formData = new FormData();
+  formData.append("seleccionarExcel", archivo);
+
+  // Agregar datos
+  formData.append("prepro_codigo", $("#prepro_codigo").val());
+  formData.append("prepro_fechaactual", $("#prepro_fechaactual").val());
+  formData.append("prepro_estado", $("#prepro_estado").val());
+  formData.append("usu_codigo", $("#usu_codigo").val());
+  formData.append("suc_codigo", $("#suc_codigo").val());
+  formData.append("emp_codigo", $("#emp_codigo").val());
+  formData.append("usu_login", $("#usu_login").val());
+  formData.append("suc_descripcion", $("#suc_descripcion").val());
+  formData.append("emp_razonsocial", $("#emp_razonsocial").val());
+  formData.append("operacion_cabecera", $("#operacion_cabecera").val());
+  formData.append("procedimiento", $("#procedimiento").val());
+
+  $.ajax({
+    method: "POST",
+    url: "controladorArchivoExterno.php",
+    data: formData,
+    contentType: false,
+    processData: false,
+  })
+    .done(function (respuesta) {
+      swal(
+        {
+          title: "RESPUESTA!!",
+          text: respuesta.mensaje,
+          type: respuesta.tipo,
+        },
+        function () {
+          if (respuesta.tipo === "info") {
+            location.reload(true);
+          }
+        }
+      );
+    })
+    .fail(function (a, b, c) {
+      //obtenemos el error generado y guardamos dentro de una variable
+      let errorTexto = a.responseText;
+      let inicio = errorTexto.indexOf("{");
+      let final = errorTexto.lastIndexOf("}") + 1;
+      let errorJson = errorTexto.substring(inicio, final);
+
+      //convertimos el string generado en un objeto
+      let errorObjeto = JSON.parse(errorJson);
+
+      //condicionamos la respuesta con el objeto
+      if (errorObjeto.tipo == "error") {
+        swal(
+          {
+            title: "RESPUESTA!!",
+            text: errorObjeto.mensaje,
+            type: errorObjeto.tipo,
+          },
+          function () {
+            window.location.reload(true);
+          }
+        );
+      }
+    });
+}
+
 //Pasa parametros en el controlador de detalle
 const grabarDetalle = () => {
   $.ajax({
@@ -744,6 +808,8 @@ const confirmar = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_cabecera").val();
 
+  let archivo = $("#seleccionarExcel")[0].files[0];
+
   preg = "¿Desea agregar el registro?";
 
   if (oper == 2) {
@@ -765,7 +831,11 @@ const confirmar = () => {
     function (isConfirm) {
       //Si la operacion_cabecera es correcta llamamos al metodo grabar
       if (isConfirm) {
-        grabar();
+        if (archivo) {
+          grabarExcel();
+        } else {
+          grabar();
+        }
       } else {
         //Si cancelamos la operacion_cabecera realizamos un reload
         window.location.reload(true);
@@ -812,6 +882,7 @@ const confirmar2 = () => {
 //Controla que todos los inputs de cabecera no se pasen con valores vacios
 const controlVacio = () => {
   let condicion;
+  let archivo = $("#seleccionarExcel")[0].files[0];
 
   if ($("#prepro_codigo").val() == "") {
     condicion = true;
@@ -838,11 +909,15 @@ const controlVacio = () => {
   }
 
   if (condicion) {
-    swal({
-      title: "RESPUESTA!!",
-      text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
-      type: "error",
-    });
+    if (archivo) {
+      confirmar();
+    } else {
+      swal({
+        title: "RESPUESTA!!",
+        text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
+        type: "error",
+      });
+    }
   } else {
     confirmar();
   }
@@ -893,7 +968,6 @@ const seleccionarFila = (objetoJSON) => {
 
   $(".activar").attr("class", "form-line activar focused");
   $(".foco").attr("class", "form-line foco focused");
-  $(".fecha").attr("class", "form-line fecha focused");
   $(".pe").attr("class", "form-line pe focused");
   $(".pro").attr("class", "form-line pro focused");
   $(".est").attr("class", "form-line est focused");

@@ -38,6 +38,10 @@ foreach ($permisos as $permiso) {
       $btnEliminar = true;
    }
 
+   if (($permiso['perm_descripcion'] === 'CARGAR ARCHIVO') && ($permiso['asigperm_estado'] === 'ACTIVO')) {
+      $btnCargarArchivo = true;
+   }
+
 }
 
 ?>
@@ -70,6 +74,14 @@ foreach ($permisos as $permiso) {
 
             <!-- Formulario Presupuesto Proveedor -->
             <div class="col-lg-12 col-md-12 col-sm-12">
+               <?php if ($btnCargarArchivo === true) { ?>
+                  <div class="icon-button-demo">
+                     <button type="button" class="btn bg-teal waves-effect"
+                        onclick="document.getElementById('seleccionarExcel').click(); nuevo()">
+                        <i class="material-icons">description</i>
+                     </button>
+                  </div>
+               <?php } ?>
                <div class="card">
                   <div class="header" style="background: #4DC18B;">
                      <h2 style="color: white; font-weight: bold;">
@@ -79,6 +91,8 @@ foreach ($permisos as $permiso) {
                   <div class="body">
                      <input type="hidden" id="operacion_cabecera" value="0">
                      <input type="hidden" id="procedimiento" value="">
+                     <input type="file" id="seleccionarExcel" name="seleccionarExcel" accept=".xls,.xlsx"
+                        style="display:none;">
                      <div class="row clearfix">
                         <div class="col-sm-1">
                            <div class="form-group form-float">
@@ -90,8 +104,8 @@ foreach ($permisos as $permiso) {
                         </div>
                         <div class="col-sm-2">
                            <div class="form-group form-float">
-                              <div class="form-line fecha">
-                                 <input type="text" class="form-control" id="prepro_fechaactual" disabled>
+                              <div class="form-line foco focused">
+                                 <input type="date" class="form-control no-disabled" id="prepro_fechaactual" disabled>
                                  <label class="form-label">Fecha</label>
                               </div>
                            </div>

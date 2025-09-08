@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -16,7 +18,8 @@ $sql = "select
          p.tipro_codigo,
          p.pro_razonsocial,
          p.pro_ruc,
-         tp.tipro_descripcion 
+         p.pro_email as solpre_correo_proveedor,
+         tp.tipro_descripcion
       from proveedor p 
          join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo 
          where (p.pro_ruc ilike '%$pro_razonsocial%' or p.pro_razonsocial ilike '%$pro_razonsocial%')
