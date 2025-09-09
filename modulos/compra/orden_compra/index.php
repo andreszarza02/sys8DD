@@ -274,7 +274,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line it">
-                                    <input type="text" class="form-control" id="orcomdet_cantidad" disabled>
+                                    <input type="text" class="form-control no-disabled2" id="orcomdet_cantidad"
+                                       disabled>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>

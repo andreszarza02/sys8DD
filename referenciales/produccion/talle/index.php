@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -52,9 +53,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Talle -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE TALLE<small>Mantener referencial talle</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE TALLE<small style="color: white; font-weight: bold;">Mantener referencial
+                           talle</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -74,7 +76,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="tall_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros"
+                                    id="tall_descripcion" disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
@@ -136,9 +139,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="talles" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           TALLES REGISTRADOS <small>Lista de talles registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           TALLES REGISTRADOS <small style="color: white; font-weight: bold;">Lista de talles
+                              registrados</small>
                         </h2>
                      </div>
                      <div class="body">

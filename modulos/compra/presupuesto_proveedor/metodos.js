@@ -685,7 +685,8 @@ const grabar = () => {
     });
 };
 
-function grabarExcel() {
+//Pasa parametros en el controlador para recorrer e insertar datos del excel
+const grabarExcel = () => {
   let archivo = $("#seleccionarExcel")[0].files[0];
 
   let formData = new FormData();
@@ -749,7 +750,7 @@ function grabarExcel() {
         );
       }
     });
-}
+};
 
 //Pasa parametros en el controlador de detalle
 const grabarDetalle = () => {

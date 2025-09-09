@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -52,9 +53,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Cargo -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE CARGO<small>Mantener referencial cargo</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE CARGO<small style="color: white; font-weight: bold;">Mantener referencial
+                           cargo</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -74,7 +76,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="car_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="car_descripcion"
+                                    disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
@@ -120,7 +123,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="botonesExtra2" style="display: none;">
                            <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                               <i class="material-icons">save</i>
-                              <span>GRABAR</span>
+                              <span>CONFIRMAR</span>
                            </button>
                            <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
@@ -136,9 +139,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="cargos" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           CARGOS REGISTRADOS <small>Lista de cargos registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           CARGOS REGISTRADOS <small style="color: white; font-weight: bold;">Lista de cargos
+                              registrados</small>
                         </h2>
                      </div>
                      <div class="body">

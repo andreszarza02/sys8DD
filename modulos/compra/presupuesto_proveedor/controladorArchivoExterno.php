@@ -47,8 +47,21 @@ $resProveedor = pg_query($conexion, $sqlProvedor);
 $datosProvedor = pg_fetch_assoc($resProveedor);
 
 // Definimos datos para la cabecera
-$prepro_fechaactual = $sheet->getCell("B2")->getFormattedValue() ?? $_POST['prepro_fechaactual'];
-$prepro_fechavencimiento = $sheet->getCell("B5")->getFormattedValue();
+$excelDate = $sheet->getCell("B2")->getValue();
+if (Date::isDateTime($sheet->getCell("B2"))) {
+   $dateTime = Date::excelToDateTimeObject($excelDate);
+   $prepro_fechaactual = $dateTime->format('d/m/Y'); // fecha en formato día/mes/año
+} else {
+   $prepro_fechaactual = $_POST['prepro_fechaactual'];
+}
+
+$excelDateVencimiento = $sheet->getCell("B5")->getValue();
+if (Date::isDateTime($sheet->getCell("B5"))) {
+   $dateTimeVen = Date::excelToDateTimeObject($excelDateVencimiento);
+   $prepro_fechavencimiento = $dateTimeVen->format('d/m/Y');
+} else {
+   $prepro_fechavencimiento = null; // o como prefieras manejarlo
+}
 $pedco_codigo = (int) $sheet->getCell("B1")->getFormattedValue();
 $pro_ruc = $sheet->getCell("B4")->getValue();
 $pro_razonsocial = pg_escape_string($conexion, $sheet->getCell("B3")->getValue());
@@ -112,6 +125,8 @@ if (strpos($error, "fecha") !== false) {
    // Si se ejecuto los datos de cabecera en cabecera, procedemos con el detalle
    // Definimos la fila de inicio
    $fila = 8;
+   // Definimos el array donde guardar los items que se duplican
+   $erroresItemsDuplicados = [];
 
    // Mientras tenga datos el archivo continuamos recorriendo
    while ($sheet->getCell("A" . $fila)->getValue() != "") {
@@ -140,21 +155,46 @@ if (strpos($error, "fecha") !== false) {
       pg_query($conexion, $sqlDetalle);
       $errorDetalle = pg_last_error($conexion);
 
-      //En caso de ocurrir un error lo enviamos al view
+      //En caso de ocurrir un error guardamos la variable que lo genero
       if (strpos($errorDetalle, 'item') !== false) {
-         $response = array(
-            "mensaje" => "EL ITEM " . $datosTipo['it_descripcion'] . " SE ENCUENTRA DUPLICADO EN EL ARCHIVO",
-            "tipo" => "error"
-         );
-      } else {
-         $response = array(
-            "mensaje" => pg_last_notice($conexion),
-            "tipo" => "info"
-         );
+         // Guardamos solo el nombre del item
+         $erroresItemsDuplicados[] = $datosTipo['it_descripcion'];
       }
 
       // En cada vuelta aumentamos el contador
       $fila++;
+   }
+
+   // Función para unir en lista con comas y "y" antes del último
+   function listaConjuntada($array)
+   {
+      if (count($array) == 1) {
+         return $array[0];
+      }
+      $ultimo = array_pop($array);
+      return implode(", ", $array) . " y " . $ultimo;
+   }
+
+   // Eliminamos duplicados
+   $itemsUnicos = array_unique($erroresItemsDuplicados);
+
+   // Construimos el mensaje final
+   if (count($itemsUnicos) > 0) {
+      if (count($itemsUnicos) == 1) {
+         $mensaje = "EL ITEM " . listaConjuntada($itemsUnicos) . " SE ENCUENTRA DUPLICADO EN EL ARCHIVO";
+      } else {
+         $mensaje = "LOS ITEMS " . listaConjuntada($itemsUnicos) . " SE ENCUENTRAN DUPLICADOS EN EL ARCHIVO";
+      }
+
+      $response = array(
+         "mensaje" => $mensaje,
+         "tipo" => "error"
+      );
+   } else {
+      $response = array(
+         "mensaje" => "LA CABECERA Y EL DETALLE DEL PRESUPUESTO DE PROVEEDOR SE REGISTRARON DE MANERA CORRECTA",
+         "tipo" => "info"
+      );
    }
 }
 echo json_encode($response);
