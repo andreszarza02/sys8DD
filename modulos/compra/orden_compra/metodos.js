@@ -883,6 +883,7 @@ const grabarDetalle = () => {
       orcomdet_cantidad: $("#orcomdet_cantidad").val(),
       orcomdet_precio: $("#orcomdet_precio").val(),
       operacion_detalle: $("#operacion_detalle").val(),
+      orcom_cuota: $("#orcom_cuota").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
     .done(function (respuesta) {
@@ -1056,7 +1057,18 @@ const controlVacio2 = () => {
       type: "error",
     });
   } else {
-    confirmar2();
+    if (
+      $("#tipit_codigo").val() == "3" &&
+      $("#orcomdet_cantidad").val() !== "0"
+    ) {
+      swal({
+        title: "RESPUESTA!!",
+        text: "LA CANTIDAD, EN CASO DE ORDENAR UN SERVICIO, ES CERO(0)",
+        type: "error",
+      });
+    } else {
+      confirmar2();
+    }
   }
 };
 

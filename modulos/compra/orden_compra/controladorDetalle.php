@@ -24,7 +24,9 @@ if (isset($_POST['operacion_detalle'])) {
       {$_POST['tipit_codigo']}, 
       $orcomdet_cantidad, 
       $orcomdet_precio, 
-      {$_POST['operacion_detalle']}
+      {$_POST['operacion_detalle']},
+      1,
+      {$_POST['orcom_cuota']}
       )";
 
    //Validamos la consulta

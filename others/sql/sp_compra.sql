@@ -1117,11 +1117,20 @@ create or replace function sp_orden_compra_cab(
     sucdescripcion varchar
 ) returns void as
 $function$
+-- Definimos las variables
 declare 
 	ultCodPresupuestoOrden integer;
 	orcomAudit text;
 	preproAudit text;
 	pedcoAudit text;
+	c_presupuesto_det cursor is
+		select 
+  		ppd.it_codigo,
+  		ppd.tipit_codigo,
+  		ppd.peprodet_cantidad as cantidad,
+  		ppd.peprodet_precio as precio
+		from presupuesto_proveedor_det ppd 
+		where ppd.prepro_codigo=preprocodigo;
 	c_presupuesto cursor is
 		select 
 		ppc.prepro_fechaactual,
@@ -1143,18 +1152,23 @@ declare
 		from pedido_compra_cab pcc
 		where pcc.pedco_codigo=pedcocodigo;	
 begin 
+	 -- Validamos la operacion de insercion 
      if operacion = 1 then
+		 -- Guardamos el serial de presupuesto_orden
 		 ultCodPresupuestoOrden = (select coalesce(max(presor_codigo),0)+1 from presupuesto_orden);
+		 -- Se inserta datos en orden compra cabecera
 	     insert into orden_compra_cab(orcom_codigo, orcom_fecha, orcom_condicionpago, orcom_cuota, orcom_interfecha,
 	     orcom_estado, usu_codigo, pro_codigo, tipro_codigo, suc_codigo, emp_codigo, orcom_montocuota)
 		 values(orcomcodigo, orcomfecha, orcomcondicionpago, orcomcuota, orcominterfecha, 'ACTIVO', usucodigo, procodigo, tiprocodigo,
 		 succodigo, empcodigo, orcommontocuota);
+		 -- Se inserta datos en presupuesto orden
 		 insert into presupuesto_orden(orcom_codigo, prepro_codigo, presor_codigo)
 		 values(orcomcodigo, preprocodigo, ultCodPresupuestoOrden);
-		 --Actualizamos el estado de presupuesto proveedor seleccionado
+		 --Actualizamos el estado del presupuesto proveedor cabecera seleccionado
 		 update presupuesto_proveedor_cab set prepro_estado='APROBADO', usu_codigo=usucodigo where prepro_codigo=preprocodigo;
-		 --Actualizamos el estado del pedido compra que se haya ordenado
+		 --Actualizamos el estado del pedido compra cabecera que se haya ordenado
 		 update pedido_compra_cab set pedco_estado='APROBADO', usu_codigo=usucodigo where pedco_codigo=pedcocodigo;
+		 -- Auditamos movimiento de presupuesto_orden
 		 update presupuesto_orden 
 			 set presor_audit = json_build_object(
 				'usu_codigo', usucodigo,
@@ -1165,22 +1179,40 @@ begin
 				'prepro_codigo', preprocodigo
 			 )
 			 where presor_codigo = ultCodPresupuestoOrden;
+		 -- Insertamos datos de detalle de orden compra 
+		 for predet in c_presupuesto_det loop
+			-- Recorremos el detalle de presupuesto de forma indivdualizada y cargamos el detalle de orden compra en cada recorrido
+			perform sp_orden_compra_det(orcomcodigo, predet.it_codigo, predet.tipit_codigo, predet.cantidad, predet.precio, 1, 0, orcomcuota);
+		 end loop;
+		 -- Se envia un mensaje de confirmacion
 		 raise notice 'LA ORDEN DE COMPRA FUE REGISTRADA CON EXITO';
     end if;
+	-- Validamos la operacion de anulacion
     if operacion = 2 then 
-    	--Anulamos la orden de compra cabecera
-    	update orden_compra_cab 
-		set orcom_estado='ANULADO', usu_codigo=usucodigo
-		where orcom_codigo=orcomcodigo;
-		--Activamos de nuevo el presupesto 
-		update presupuesto_proveedor_cab set prepro_estado='ACTIVO', usu_codigo=usucodigo where prepro_codigo=preprocodigo;
-		--Activamos el pedido de compra asociado al presupuesto
-		update pedido_compra_cab set pedco_estado='ACTIVO', usu_codigo=usucodigo where pedco_codigo=pedcocodigo;
-		raise notice 'LA ORDEN DE COMPRA FUE ANULADA CON EXITO';
+	    -- Validamos si ya se encuentra asociado la orden de compra a una compra y si la compra tiene un estado distinto a anulado 
+		perform 1 from orden_compra oc 
+		join orden_compra_cab occ on occ.orcom_codigo=oc.orcom_codigo
+		join compra_cab cc on cc.comp_codigo=oc.comp_codigo 
+		where oc.orcom_codigo=orcomcodigo and cc.comp_estado <> 'ANULADO';
+		if found then
+			-- En caso de ser asi, generamos una excepcion
+			raise exception 'asociado';		
+		elseif operacion = 2 then
+			--Anulamos la orden de compra cabecera
+    		update orden_compra_cab 
+			set orcom_estado='ANULADO', usu_codigo=usucodigo
+			where orcom_codigo=orcomcodigo;
+			--Activamos de nuevo el presupesto 
+			update presupuesto_proveedor_cab set prepro_estado='ACTIVO', usu_codigo=usucodigo where prepro_codigo=preprocodigo;
+			--Activamos el pedido de compra asociado al presupuesto
+			update pedido_compra_cab set pedco_estado='ACTIVO', usu_codigo=usucodigo where pedco_codigo=pedcocodigo;
+			-- Se envia un mensaje de confirmacion
+			raise notice 'LA ORDEN DE COMPRA FUE ANULADA CON EXITO';
+		end if;
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(orcom_audit, '') into orcomAudit from orden_compra_cab where orcom_codigo = orcomcodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update orden_compra_cab 
 	set orcom_audit = orcomAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -1257,26 +1289,104 @@ create or replace function sp_orden_compra_det(
     tipitcodigo integer,
     orcomdetcantidad numeric,
     orcomdetprecio numeric,
-    operacion integer --1:insert 2:delete
+    operacion integer,
+    cabecera_detalle integer,-- 0 cabecera - 1 detalle
+    orcomcuota integer
 ) returns void as
 $function$
+-- Definimos las variables a utilizar
+declare suma_detalle numeric;
+		monto_cuota numeric;
+		orcomAudit text;
+		c_orden cursor is
+		select 
+		occ.usu_codigo,
+		u.usu_login,
+		occ.orcom_fecha,
+		occ.orcom_condicionpago,
+		occ.orcom_cuota,
+		occ.orcom_montocuota,
+		occ.orcom_interfecha,
+		occ.pro_codigo,
+		p.pro_razonsocial,
+		occ.tipro_codigo,
+		tp.tipro_descripcion,
+		occ.emp_codigo,
+		e.emp_razonsocial,
+		occ.suc_codigo,
+		s.suc_descripcion,
+		occ.orcom_estado 
+		from orden_compra_cab occ 
+		join usuario u on u.usu_codigo=occ.usu_codigo
+		join proveedor p on p.pro_codigo=occ.pro_codigo
+		and p.tipro_codigo=occ.tipro_codigo 
+		join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo 
+		join sucursal s on s.suc_codigo=occ.suc_codigo 
+		and s.emp_codigo=occ.emp_codigo 
+		join empresa e on e.emp_codigo=s.emp_codigo 
+		where occ.orcom_codigo=orcomcodigo;
 begin 
-     if operacion = 1 then
+	 -- Validamos la operacion de insercion
+     if (operacion = 1 and cabecera_detalle = 0) or (operacion = 1 and cabecera_detalle = 1) then
+		-- Validamos que no se repita el ítem en el detalle
      	perform * from orden_compra_det
      	where it_codigo=itcodigo and orcom_codigo=orcomcodigo;
      	if found then
+			 -- Si es asi, generamos una excepcion
      		 raise exception 'item';
      	elseif operacion = 1 then
+			 -- Si los parametros pasan la validación, procedemos con la insercion
 		     insert into orden_compra_det(orcom_codigo, it_codigo, tipit_codigo, orcomdet_cantidad, orcomdet_precio)
 			 values(orcomcodigo, itcodigo, tipitcodigo, orcomdetcantidad, orcomdetprecio);
+			 -- Se envia un mensaje de confirmacion
 			 raise notice 'LA ORDEN COMPRA DETALLE FUE REGISTRADA CON EXITO';
 		end if;
     end if;
-    if operacion = 2 then 
+	-- Validamos la operacion de eliminación
+    if (operacion = 2 and cabecera_detalle = 0) or (operacion = 2 and cabecera_detalle = 1) then 
+		-- Procedemos con la eliminacion
     	delete from orden_compra_det	 
     	where orcom_codigo=orcomcodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo;
 		raise notice 'LA ORDEN COMPRA DETALLE FUE ELIMINADA CON EXITO';
     end if;
+	-- Validamos que cuando se inserte o elimine en detalle, se actualice el monto cuota de cabecera
+	if (operacion = 1 and cabecera_detalle = 1) or (operacion = 2 and cabecera_detalle = 1) then
+		-- Realizamos la sumatoria y guardamos en una variable
+		select sum(case ocd.tipit_codigo when 3 then ocd.orcomdet_precio else ocd.orcomdet_cantidad*ocd.orcomdet_precio end) into suma_detalle 
+		from orden_compra_det ocd where ocd.orcom_codigo = orcomcodigo;
+		-- Calculamos el nuevo monto de orcom_montocuota
+		select round(suma_detalle/orcomcuota) into monto_cuota;
+		-- Definimos el nuevo orcom_montocuota
+		update orden_compra_cab set orcom_montocuota=monto_cuota where orcom_codigo=orcomcodigo;
+		-- Una vez actualizado la cabecera, la auditamos
+		-- Consultamos el audit anterior
+		select coalesce(orcom_audit, '') into orcomAudit from orden_compra_cab where orcom_codigo = orcomcodigo;
+		-- A los datos anteriores le agregamos los nuevos
+		for orden in c_orden loop
+	       	 	update orden_compra_cab 
+				set orcom_audit = orcomAudit||''||json_build_object(
+				'usu_codigo', orden.usu_codigo,
+				'usu_login', orden.usu_login,
+				'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+				'procedimiento', 'MODIFICACION',
+				'orcom_fecha', orden.orcom_fecha,
+				'orcom_condicionpago', orden.orcom_condicionpago,
+				'orcom_cuota', orden.orcom_cuota,
+				'orcom_montocuota', orden.orcom_montocuota,
+				'orcom_interfecha', upper(orden.orcom_interfecha),
+				'pro_codigo', orden.pro_codigo,
+				'pro_razonsocial', upper(orden.pro_razonsocial),
+				'tipro_codigo', orden.tipro_codigo,
+				'tipro_descripcion', upper(orden.tipro_descripcion),
+				'emp_codigo', orden.emp_codigo,
+				'emp_razonsocial', upper(orden.emp_razonsocial),
+				'suc_codigo', orden.suc_codigo,
+				'suc_descripcion', upper(orden.suc_descripcion),
+				'orcom_estado', upper(orden.orcom_estado)
+				)||','
+				where orcom_codigo = orcomcodigo;
+        end loop;
+	end if;
 end
 $function$ 
 language plpgsql;
