@@ -30,7 +30,7 @@ $sql = "select
          	i.it_costo
          else 
          	i.it_precio 
-         end) as ajuindet_precio,
+         end) as ajusdet_precio,
          um.unime_codigo,
          um.unime_descripcion 
       from stock s 

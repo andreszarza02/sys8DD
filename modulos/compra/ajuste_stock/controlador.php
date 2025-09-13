@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,32 +13,30 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   $estado = $_POST['ajuin_estado'];
-   $ajuin_estado = str_replace("'", "''", $estado);
+   // Definimos y cargamos las variables
+   $ajus_estado = pg_escape_string($conexion, $_POST['ajus_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace(search: "'", replace: "''", subject: $usuLogin);
+   $ajus_tipoajuste = pg_escape_string($conexion, $_POST['ajus_tipoajuste']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $empRazonSocial = $_POST['emp_razonsocial'];
-   $emp_razonsocial = str_replace("'", "''", $empRazonSocial);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $sucDescripcion = $_POST['suc_descripcion'];
-   $suc_descripcion = str_replace("'", "''", $sucDescripcion);
+   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
 
-   $sql = "select sp_ajuste_inventario_cab(
-      {$_POST['ajuin_codigo']}, 
-      '{$_POST['ajuin_fecha']}', 
-      '{$_POST['ajuin_tipoajuste']}', 
-      '$ajuin_estado', 
+   $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
+
+   $sql = "select sp_ajuste_stock_cab(
+      {$_POST['ajus_codigo']}, 
+      '{$_POST['ajus_fecha']}', 
+      '$ajus_tipoajuste', 
+      '$ajus_estado', 
       {$_POST['suc_codigo']}, 
       {$_POST['emp_codigo']}, 
       {$_POST['usu_codigo']}, 
       {$_POST['operacion_cabecera']},
       '$usu_login',
-      '$procedimiento2',
+      '$procedimiento',
       '$emp_razonsocial',
       '$suc_descripcion'
       )";
@@ -54,14 +54,14 @@ if (isset($_POST['operacion_cabecera'])) {
 } else if (isset($_POST['consulta']) == 1) {
 
    //Consultamos y enviamos el ultimo codigo
-   $sql = "select coalesce(max(ajuin_codigo),0)+1 as ajuin_codigo from ajuste_inventario_cab;";
+   $sql = "select coalesce(max(ajus_codigo),0)+1 as ajus_codigo from ajuste_stock_cab;";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_assoc($resultado);
    echo json_encode($datos);
 
 } else {
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_ajuste_inventario_cab vaic where vaic.ajuin_estado <> 'ANULADO';";
+   $sql = "select * from v_ajuste_stock_cab vasc where vasc.ajus_estado <> 'ANULADO';";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);

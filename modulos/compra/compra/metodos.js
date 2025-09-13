@@ -319,48 +319,6 @@ const getCodigo = () => {
   });
 };
 
-// Pasa parametros en controlador detalle 2 para persistir datos
-const setLibroCompra = () => {
-  $.ajax({
-    //actualizamos el libro
-    method: "POST",
-    url: "controladorDetalle2.php",
-    data: {
-      comp_codigo: $("#comp_codigo").val(),
-      tipim_codigo: $("#tipim_codigo").val(),
-      compdet_cantidad: $("#compdet_cantidad").val(),
-      compdet_precio: $("#compdet_precio").val(),
-      tipco_codigo: $("#tipco_codigo").val(),
-      tipit_codigo: $("#tipit_codigo").val(),
-      tipco_descripcion: $("#tipco_descripcion").val(),
-      com_numfactura: $("#com_numfactura").val(),
-      operacion_detalle: $("#operacion_detalle").val(),
-      usu_codigo: $("#usu_codigo").val(),
-      usu_login: $("#usu_login").val(),
-      consulta: "1",
-    },
-  });
-};
-
-// Pasa parametros en controlador detalle 2 para persistir datos
-const setCuentaPagar = () => {
-  $.ajax({
-    //actualizamos la cuenta
-    method: "POST",
-    url: "controladorDetalle2.php",
-    data: {
-      comp_codigo: $("#comp_codigo").val(),
-      compdet_cantidad: $("#compdet_cantidad").val(),
-      compdet_precio: $("#compdet_precio").val(),
-      tipit_codigo: $("#tipit_codigo").val(),
-      operacion_detalle: $("#operacion_detalle").val(),
-      usu_codigo: $("#usu_codigo").val(),
-      usu_login: $("#usu_login").val(),
-      consulta: "2",
-    },
-  });
-};
-
 //Consulta y lista los datos de compra cabecera
 const listar = () => {
   $.ajax({

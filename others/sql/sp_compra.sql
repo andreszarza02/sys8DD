@@ -1455,12 +1455,12 @@ end
 $function$ 
 language plpgsql;
 
---Ajuste Inventario Cabecera
-create or replace function sp_ajuste_inventario_cab(
-    ajuincodigo integer,
-    ajuinfecha date,
-    ajuintipoajuste tipo_ajuste,
-    ajuinestado varchar,
+--Ajuste Stock Cabecera
+create or replace function sp_ajuste_stock_cab(
+    ajuscodigo integer,
+    ajusfecha date,
+    ajustipoajuste tipo_ajuste,
+    ajusestado varchar,
     succodigo integer,
     empcodigo integer,
     usucodigo integer,
@@ -1471,112 +1471,168 @@ create or replace function sp_ajuste_inventario_cab(
     sucdescripcion varchar
 ) returns void as
 $function$
+-- Definimos las variables a utilizar
 declare ajusteDet record;
-		ajuinAudit text;
-begin 
+		cantidadStockAuditoria numeric;
+		ajusAudit text;
+begin
+	-- Validamos la operacion de insercion
     if operacion = 1 then
-	     insert into ajuste_inventario_cab(ajuin_codigo, ajuin_fecha, ajuin_tipoajuste, ajuin_estado, suc_codigo, emp_codigo, usu_codigo)
-		 values(ajuincodigo, ajuinfecha, ajuintipoajuste, 'ACTIVO', succodigo, empcodigo, usucodigo);
-		 raise notice 'EL AJUSTE DE INVENTARIO FUE REGISTRADO CON EXITO';
+		 -- Insertamos un nuevo registro
+	     insert into ajuste_stock_cab(ajus_codigo, ajus_fecha, ajus_tipoajuste, ajus_estado, suc_codigo, emp_codigo, usu_codigo)
+		 values(ajuscodigo, ajusfecha, ajustipoajuste, 'ACTIVO', succodigo, empcodigo, usucodigo);
+		 -- Enviamos un mensaje de confirmacion
+		 raise notice 'EL AJUSTE DE STOCK FUE REGISTRADO CON EXITO';
     end if;
+	-- Validamos la operacion de anulacion
     if operacion = 2 then 
-    	update ajuste_inventario_cab 
-		set ajuin_estado='ANULADO'
-		where ajuin_codigo=ajuincodigo;
-		--Actualizamos el stock en caso de anular el registro
-	    if ajuintipoajuste='POSITIVO' then
-	    	for ajusteDet in select * from ajuste_inventario_det where ajuin_codigo=ajuincodigo loop
-	       	 	update stock set st_cantidad=st_cantidad-ajusteDet.ajuindet_cantidad 
+		-- Actualizamos el estado de cabecera a Anulado
+    	update ajuste_stock_cab 
+		set ajus_estado='ANULADO', usu_codigo=usucodigo
+		where ajus_codigo=ajuscodigo;
+		--Actualizamos el stock en caso de anular la cabecera
+	    if ajustipoajuste='POSITIVO' then
+			-- Si es positivo restamos
+	    	for ajusteDet in select * from ajuste_stock_det where ajus_codigo=ajuscodigo loop
+	       	 	update stock set st_cantidad=st_cantidad-ajusteDet.ajusdet_cantidad 
 				where it_codigo=ajusteDet.it_codigo and tipit_codigo=ajusteDet.tipit_codigo and dep_codigo=ajusteDet.dep_codigo
 				and suc_codigo=ajusteDet.suc_codigo and emp_codigo=ajusteDet.emp_codigo;
+				-- Auditamos nueva cantidad de stock
+				select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=ajusteDet.it_codigo and s.tipit_codigo=ajusteDet.tipit_codigo
+				and s.dep_codigo=ajusteDet.dep_codigo and s.suc_codigo=ajusteDet.suc_codigo and s.emp_codigo=ajusteDet.emp_codigo;
+				-- Procedemos con el audit del registro modificado
+				perform sp_stock(ajusteDet.it_codigo, ajusteDet.tipit_codigo, ajusteDet.dep_codigo, ajusteDet.suc_codigo, 
+				ajusteDet.emp_codigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
         	end loop;
-        elseif ajuintipoajuste='NEGATIVO' then
+        elseif ajustipoajuste='NEGATIVO' then
+			-- Si es negativo sumamos
         	for ajusteDet in select * from ajuste_inventario_det where ajuin_codigo=ajuincodigo loop
-	       	 	update stock set st_cantidad=st_cantidad+ajusteDet.ajuindet_cantidad 
+	       	 	update stock set st_cantidad=st_cantidad+ajusteDet.ajusdet_cantidad 
 				where it_codigo=ajusteDet.it_codigo and tipit_codigo=ajusteDet.tipit_codigo and dep_codigo=ajusteDet.dep_codigo
 				and suc_codigo=ajusteDet.suc_codigo and emp_codigo=ajusteDet.emp_codigo;
+				-- Auditamos nueva cantidad de stock
+				select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=ajusteDet.it_codigo and s.tipit_codigo=ajusteDet.tipit_codigo
+				and s.dep_codigo=ajusteDet.dep_codigo and s.suc_codigo=ajusteDet.suc_codigo and s.emp_codigo=ajusteDet.emp_codigo;
+				-- Procedemos con el audit del registro modificado
+				perform sp_stock(ajusteDet.it_codigo, ajusteDet.tipit_codigo, ajusteDet.dep_codigo, ajusteDet.suc_codigo, 
+				ajusteDet.emp_codigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
         	end loop;
 	    end if;
-		raise notice 'EL AJUSTE DE INVENTARIO FUE ANULADO CON EXITO';
+		-- Enviamos un mensaje de confirmacion
+		raise notice 'EL AJUSTE DE STOCK FUE ANULADO CON EXITO';
     end if;
-	--AJUSTE INVENTARIO CABECERA AUDITORIA
-	--consultamos el audit anterior de ajuste inventario cabecera
-	select coalesce(aic.ajuin_audit, '') into ajuinAudit from ajuste_inventario_cab aic where aic.ajuin_codigo=ajuincodigo;
-	--a los datos anteriores le agregamos los nuevos
-	update ajuste_inventario_cab
-	set ajuin_audit = ajuinAudit||''||json_build_object(
+	--AJUSTE STOCK CABECERA AUDITORIA
+	-- Consultamos el audit anterior de ajuste inventario cabecera
+	select coalesce(aju.ajus_audit, '') into ajusAudit from ajuste_stock_cab aju where aju.ajus_codigo=ajuscodigo;
+	-- A los datos anteriores le agregamos los nuevos
+	update ajuste_stock_cab
+	set ajus_audit = ajusAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
 		'usu_login', usulogin,
 		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
 		'procedimiento', upper(procedimiento),
-		'ajuin_fecha', ajuinfecha,
-		'ajuin_tipoajuste', ajuintipoajuste,
+		'ajus_fecha', ajusfecha,
+		'ajus_tipoajuste', ajustipoajuste,
 		'emp_codigo', empcodigo,
 		'emp_razonsocial', upper(emprazonsocial),
 		'suc_codigo', succodigo,
 		'suc_descripcion', upper(sucdescripcion),
-		'ajuin_estado', upper(ajuinestado)
+		'ajus_estado', upper(ajusestado)
 	)||','
-	where ajuin_codigo = ajuincodigo;
+	where ajus_codigo = ajuscodigo;
 end
 $function$ 
 language plpgsql;
 
---Ajuste Inventario Detalle
-create or replace function sp_ajuste_inventario_det(
-    ajuincodigo integer,
+--Ajuste Stock Detalle
+create or replace function sp_ajuste_stock_det(
+    ajuscodigo integer,
     itcodigo integer,
     tipitcodigo integer,
     depcodigo integer,
     succodigo integer,
     empcodigo integer,
-    ajuindetcantidad numeric,
-    ajuindetmotivo varchar,
-    ajuintipoajuste varchar,
-    ajuindetprecio numeric,
+    ajusdetcantidad numeric,
+    ajusdetprecio numeric,
+    ajusdetmotivo varchar,
+    ajustipoajuste varchar,
+    usucodigo integer,
+    usulogin varchar,
     operacion integer 
 ) returns void as
 $function$
+declare cantidadStockAuditoria numeric;
 begin 
+	 -- Validamos la operacion de insercion
      if operacion = 1 then
-     	perform * from ajuste_inventario_det
-     	where it_codigo=itcodigo and dep_codigo=depcodigo and ajuin_codigo=ajuincodigo;
+		-- Validamos que no se repita el item y deposito en un mismo detalle de ajuste
+     	perform * from ajuste_stock_det
+     	where it_codigo=itcodigo and dep_codigo=depcodigo and ajus_codigo=ajuscodigo;
      	if found then
+			 -- En caso de ser asi, generamos una excepcion
      		 raise exception 'item';
+		-- Si los parametros superan la validacion se procede con la persistencia
      	elseif operacion = 1 then
      	 	 --Insertamos detalle de ajuste
-		     insert into ajuste_inventario_det(ajuin_codigo, it_codigo, tipit_codigo, dep_codigo, suc_codigo,
-		     emp_codigo, ajuindet_cantidad, ajuindet_motivo, ajuindet_precio)
-			 values(ajuincodigo, itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, ajuindetcantidad, upper(ajuindetmotivo), ajuindetprecio);
+		     insert into ajuste_stock_det(ajus_codigo, it_codigo, tipit_codigo, dep_codigo, suc_codigo,
+		     emp_codigo, ajusdet_cantidad, ajusdet_precio, ajusdet_motivo)
+			 values(ajuscodigo, itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, ajusdetcantidad, ajusdetprecio, upper(ajusdetmotivo));
 			 --Actualizamos el stock en caso de que sea positivo o negativo
-			 if ajuintipoajuste='POSITIVO' then
-			 	update stock set st_cantidad=st_cantidad+ajuindetcantidad 
+			 if ajustipoajuste='POSITIVO' then
+				-- Si es positivo sumamos
+			 	update stock set st_cantidad=st_cantidad+ajusdetcantidad 
 			 	where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
 			 	and suc_codigo=succodigo and emp_codigo=empcodigo;
+				-- Auditamos nueva cantidad de stock
+				select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+				and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+				-- Procedemos con el audit del registro modificado
+				perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
 			 elseif ajuintipoajuste='NEGATIVO' then
-			 	update stock set st_cantidad=st_cantidad-ajuindetcantidad 
+				-- Si es negativo restamos
+			 	update stock set st_cantidad=st_cantidad-ajusdetcantidad 
 			 	where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
 			 	and suc_codigo=succodigo and emp_codigo=empcodigo;
+				-- Auditamos nueva cantidad de stock
+				select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+				and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+				-- Procedemos con el audit del registro modificado
+				perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
 			 end if;
-			 raise notice 'EL AJUSTE INVENTARIO DETALLE FUE REGISTRADO CON EXITO';
+			 -- Se envia mensaje de confirmacion
+			 raise notice 'EL AJUSTE STOCK DETALLE FUE REGISTRADO CON EXITO';
 		end if;
     end if;
+	-- Validamos la operacion de eliminacion
     if operacion = 2 then 
     	--Eliminamos el item y devolvemos la cantidad
-    	delete from ajuste_inventario_det 
-    	where ajuin_codigo=ajuincodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo
+    	delete from ajuste_stock_det 
+    	where ajus_codigo=ajuscodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo
         and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
        	--Actualizamos el stock en caso de eliminar un registro
-        if ajuintipoajuste='POSITIVO' then
-		   update stock set st_cantidad=st_cantidad-ajuindetcantidad 
-		   where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-		   and suc_codigo=succodigo and emp_codigo=empcodigo;
-	    elseif ajuintipoajuste='NEGATIVO' then
-		   update stock set st_cantidad=st_cantidad+ajuindetcantidad 
-		   where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-		   and suc_codigo=succodigo and emp_codigo=empcodigo;
+        if ajustipoajuste='POSITIVO' then
+			-- Si es positivo restamos
+			 update stock set st_cantidad=st_cantidad-ajusdetcantidad 
+			 where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
+			 and suc_codigo=succodigo and emp_codigo=empcodigo;
+			-- Auditamos nueva cantidad de stock
+			select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+			and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+			-- Procedemos con el audit del registro modificado
+			perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
+        elseif ajustipoajuste='NEGATIVO' then
+			-- Si es negativo sumamos
+        	update stock set st_cantidad=st_cantidad+ajusdetcantidad 
+			 where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
+			 and suc_codigo=succodigo and emp_codigo=empcodigo;
+			-- Auditamos nueva cantidad de stock
+			select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+			and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+			-- Procedemos con el audit del registro modificado
+			perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
 	    end if;
-		raise notice 'EL AJUSTE INVENTARIO DETALLE FUE ELIMINADO CON EXITO';
+		-- Se envia mensaje de confirmacion
+		raise notice 'EL AJUSTE STOCK DETALLE FUE ELIMINADO CON EXITO';
     end if;
 end
 $function$ 

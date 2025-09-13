@@ -313,7 +313,7 @@ AFTER INSERT OR DELETE ON compra_det
 FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_compra_det();
 
 -- TRIGGER
-CREATE OR REPLACE FUNCTION spt_insercion_eliminacion_ajuste_inventario_det()
+CREATE OR REPLACE FUNCTION spt_insercion_eliminacion_ajuste_stock_det()
 RETURNS TRIGGER AS $$
 --Creamos las variables
 DECLARE usuCodigo integer;
@@ -322,77 +322,77 @@ BEGIN
     -- Validamos si la operacion es de insercion
     IF TG_OP = 'INSERT' THEN
 		--Sacamos el codigo y nombre de usuario
-		usuCodigo = (select aic.usu_codigo from ajuste_inventario_cab aic where aic.ajuin_codigo=NEW.ajuin_codigo);
-		usuLogin = (select u.usu_login from ajuste_inventario_cab aic join usuario u on u.usu_codigo=aic.usu_codigo where aic.ajuin_codigo=NEW.ajuin_codigo);
-        INSERT INTO ajuste_inventario_det_auditoria(
-            ajuindetaud_codigo,
+		usuCodigo = (select aju.usu_codigo from ajuste_stock_cab aju where aju.ajus_codigo=NEW.ajus_codigo);
+		usuLogin = (select u.usu_login from ajuste_stock_cab aju join usuario u on u.usu_codigo=aju.usu_codigo where aju.ajus_codigo=NEW.ajus_codigo);
+        INSERT INTO ajuste_stock_det_auditoria(
+            ajusdetaud_codigo,
             usu_codigo,
             usu_login,
-            ajuindetaud_fecha,
-            ajuindetaud_procedimiento,
-            ajuin_codigo,
+            ajusdetaud_fecha,
+            ajusdetaud_procedimiento,
+            ajus_codigo,
             it_codigo,
             tipit_codigo,
 			dep_codigo,
 			suc_codigo,
 			emp_codigo,
-            ajuindet_cantidad,
-			ajuindet_motivo,
-            ajuindet_precio
+            ajusdet_cantidad,
+			ajusdet_precio,
+            ajusdet_motivo
         )
         VALUES (
-            (SELECT COALESCE(MAX(ajuindetaud_codigo), 0) + 1 FROM ajuste_inventario_det_auditoria), 
+            (SELECT COALESCE(MAX(ajusdetaud_codigo), 0) + 1 FROM ajuste_stock_det_auditoria), 
             usuCodigo, 
             usuLogin,  
             current_timestamp,
             'ALTA',   
-            NEW.ajuin_codigo,
+            NEW.ajus_codigo,
             NEW.it_codigo,
             NEW.tipit_codigo,
 			NEW.dep_codigo,
 			NEW.suc_codigo,
 			NEW.emp_codigo,
-            NEW.ajuindet_cantidad,
-			NEW.ajuindet_motivo,
-            NEW.ajuindet_precio
+            NEW.ajusdet_cantidad,
+			NEW.ajusdet_precio,
+            NEW.ajusdet_motivo
         );
 
     --Validamos si la operacion es una eliminacion
     ELSIF TG_OP = 'DELETE' THEN
 		--Sacamos el codigo y nombre de usuario
-		usuCodigo = (select aic.usu_codigo from ajuste_inventario_cab aic where aic.ajuin_codigo=OLD.ajuin_codigo);
-		usuLogin = (select u.usu_login from ajuste_inventario_cab aic join usuario u on u.usu_codigo=aic.usu_codigo where aic.ajuin_codigo=OLD.ajuin_codigo);
-        INSERT INTO ajuste_inventario_det_auditoria(
-            ajuindetaud_codigo,
+		usuCodigo = (select aju.usu_codigo from ajuste_stock_cab aju where aju.ajus_codigo=OLD.ajus_codigo);
+		usuLogin = (select u.usu_login from ajuste_stock_cab aju join usuario u on u.usu_codigo=aju.usu_codigo where aju.ajus_codigo=OLD.ajus_codigo);
+        INSERT INTO ajuste_stock_det_auditoria(
+            ajusdetaud_codigo,
             usu_codigo,
             usu_login,
-            ajuindetaud_fecha,
-            ajuindetaud_procedimiento,
-            ajuin_codigo,
+            ajusdetaud_fecha,
+            ajusdetaud_procedimiento,
+            ajus_codigo,
             it_codigo,
             tipit_codigo,
 			dep_codigo,
 			suc_codigo,
 			emp_codigo,
-            ajuindet_cantidad,
-			ajuindet_motivo,
-            ajuindet_precio
+            ajusdet_cantidad,
+			ajusdet_precio,
+            ajusdet_motivo
         )
         VALUES (
-            (SELECT COALESCE(MAX(ajuindetaud_codigo), 0) + 1 FROM ajuste_inventario_det_auditoria), 
+            (SELECT COALESCE(MAX(ajusdetaud_codigo), 0) + 1 FROM ajuste_stock_det_auditoria), 
             usuCodigo, 
             usuLogin,  
             current_timestamp,
             'BAJA',   
-            OLD.ajuin_codigo,
+            OLD.ajus_codigo,
             OLD.it_codigo,
             OLD.tipit_codigo,
 			OLD.dep_codigo,
 			OLD.suc_codigo,
 			OLD.emp_codigo,
-            OLD.ajuindet_cantidad,
-			OLD.ajuindet_motivo,
-            OLD.ajuindet_precio
+            OLD.ajusdet_cantidad,
+			OLD.ajusdet_precio,
+            OLD.ajusdet_motivo
         );
     END IF;
 		RETURN NEW;--Este return no se utiliza
@@ -400,10 +400,10 @@ END;
 $$
  LANGUAGE plpgsql;
 
---Creamos el trigger que ejecutara la funcion spt_insercion_eliminacion_ajuste_inventario_det
-CREATE TRIGGER t_insercion_eliminacion_ajuste_inventario_det
-AFTER INSERT OR DELETE ON ajuste_inventario_det
-FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_ajuste_inventario_det();
+--Creamos el trigger que ejecutara la funcion spt_insercion_eliminacion_ajuste_stock_det
+CREATE TRIGGER t_insercion_eliminacion_ajuste_stock_det
+AFTER INSERT OR DELETE ON ajuste_stock_det
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_eliminacion_ajuste_stock_det();
 
 --NOTA COMPRA DETALLE
 CREATE OR REPLACE FUNCTION spt_insercion_eliminacion_nota_compra_det()

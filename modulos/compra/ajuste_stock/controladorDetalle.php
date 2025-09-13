@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,23 +13,30 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion detalle
 if (isset($_POST['operacion_detalle'])) {
 
-   $cantidad = $_POST['ajuindet_cantidad'];
-   $ajuindet_cantidad = str_replace(",", ".", $cantidad);
+   // Definimos y cargamos las variables
+   $ajusdet_cantidad = str_replace(",", ".", $_POST['ajusdet_cantidad']);
 
-   $precio = $_POST['ajuindet_precio'];
-   $ajuindet_precio = str_replace(",", ".", $precio);
+   $ajusdet_precio = str_replace(",", ".", $_POST['ajusdet_precio']);
 
-   $sql = "select sp_ajuste_inventario_det(
-      {$_POST['ajuin_codigo']}, 
+   $ajusdet_motivo = pg_escape_string($conexion, $_POST['ajusdet_motivo']);
+
+   $ajus_tipoajuste = pg_escape_string($conexion, $_POST['ajus_tipoajuste']);
+
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
+
+   $sql = "select sp_ajuste_stock_det(
+      {$_POST['ajus_codigo']}, 
       {$_POST['it_codigo']}, 
       {$_POST['tipit_codigo']}, 
       {$_POST['dep_codigo']}, 
       {$_POST['suc_codigo']}, 
       {$_POST['emp_codigo']}, 
-      $ajuindet_cantidad, 
-      '{$_POST['ajuindet_motivo']}', 
-      '{$_POST['ajuin_tipoajuste']}',
-      $ajuindet_precio,
+      $ajusdet_cantidad, 
+      $ajusdet_precio, 
+      '$ajusdet_motivo', 
+      '$ajus_tipoajuste',
+      {$_POST['usu_codigo']},
+      '$usu_login',
       {$_POST['operacion_detalle']}
       )";
 
@@ -52,7 +61,7 @@ if (isset($_POST['operacion_detalle'])) {
 } else if (isset($_POST['ajuste'])) {
 
    $ajuste = $_POST['ajuste'];
-   $sql = "select * from v_ajuste_inventario_det where ajuin_codigo=$ajuste";
+   $sql = "select * from v_ajuste_stock_det where ajus_codigo=$ajuste";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);

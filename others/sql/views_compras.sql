@@ -128,30 +128,30 @@ join tipo_impuesto ti2 on ti2.tipim_codigo=i.tipim_codigo
 join unidad_medida um on um.unime_codigo=i.unime_codigo
 order by ocd.orcom_codigo;
 
-create or replace view v_ajuste_inventario_cab as
+create or replace view v_ajuste_stock_cab as
 select 
-	aic.ajuin_codigo,
-	aic.ajuin_fecha,
-	aic.ajuin_tipoajuste,
-	aic.ajuin_estado,
-	aic.suc_codigo,
-	aic.emp_codigo,
-	aic.usu_codigo,
+	aju.ajus_codigo,
+	aju.ajus_fecha,
+	aju.ajus_tipoajuste,
+	aju.ajus_estado,
+	aju.suc_codigo,
+	aju.emp_codigo,
+	aju.usu_codigo,
 	u.usu_login,
 	e.emp_razonsocial,
 	s.suc_descripcion
-from ajuste_inventario_cab aic
-join usuario u on u.usu_codigo=aic.usu_codigo
-join sucursal s on s.suc_codigo=aic.suc_codigo
-and s.emp_codigo=aic.emp_codigo
+from ajuste_stock_cab aju
+join usuario u on u.usu_codigo=aju.usu_codigo
+join sucursal s on s.suc_codigo=aju.suc_codigo
+and s.emp_codigo=aju.emp_codigo
 join empresa e on e.emp_codigo=s.emp_codigo
-order by aic.ajuin_codigo;
+order by aju.ajus_codigo;
 
-create or replace view v_ajuste_inventario_det as
+create or replace view v_ajuste_stock_det as
 select
-	aid.*,
-	(case i.tipit_codigo 
-	when 1 
+	ajust.*,
+	(case 
+	when i.tipit_codigo in(1, 3, 4)
 		then 
 			i.it_descripcion 
 		else 
@@ -161,21 +161,21 @@ select
 	d.dep_descripcion,
 	um.unime_codigo,
 	um.unime_descripcion,
-	aid.ajuindet_cantidad*aid.ajuindet_precio as subtotal
-from ajuste_inventario_det aid
-join stock s on s.it_codigo=aid.it_codigo
-and s.tipit_codigo=aid.tipit_codigo and
-s.dep_codigo=aid.dep_codigo and s.suc_codigo=aid.suc_codigo
-and s.emp_codigo=aid.emp_codigo
-join items i on i.it_codigo=s.it_codigo 
-and i.tipit_codigo=s.tipit_codigo 
-join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
-join modelo m on m.mod_codigo=i.mod_codigo
-join talle t on t.tall_codigo=i.tall_codigo
-join deposito d on d.dep_codigo=s.dep_codigo and
-d.suc_codigo=s.suc_codigo and d.emp_codigo=s.emp_codigo 
-join unidad_medida um on um.unime_codigo=i.unime_codigo
-order by aid.it_codigo;
+	ajust.ajusdet_cantidad*ajust.ajusdet_precio as subtotal
+from ajuste_stock_det ajust
+	join stock s on s.it_codigo=ajust.it_codigo
+	and s.tipit_codigo=ajust.tipit_codigo and
+	s.dep_codigo=ajust.dep_codigo and s.suc_codigo=ajust.suc_codigo
+	and s.emp_codigo=ajust.emp_codigo
+	join items i on i.it_codigo=s.it_codigo 
+	and i.tipit_codigo=s.tipit_codigo 
+	join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
+	join modelo m on m.mod_codigo=i.mod_codigo
+	join talle t on t.tall_codigo=i.tall_codigo
+	join deposito d on d.dep_codigo=s.dep_codigo and
+	d.suc_codigo=s.suc_codigo and d.emp_codigo=s.emp_codigo 
+	join unidad_medida um on um.unime_codigo=i.unime_codigo
+	order by ajust.ajus_codigo, ajust.it_codigo;
 
 create or replace view v_compra_cab as
 select 

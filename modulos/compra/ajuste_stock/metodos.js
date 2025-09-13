@@ -1,3 +1,196 @@
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-letras realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-letras")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneNumero = /[0-9]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene números o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneNumero.test(input.value) && tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números y símbolos`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          } else if (tieneNumero.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan simbolos
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan letras y simbolos que no sean . y ,
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\-=\[\]{};':"\\|<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o simbolos distintos a . y ,
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene letras o simbolos distintos a . y ,
+          if (
+            tieneSimbolo.test(input.value) &&
+            (tieneMayuscula.test(input.value) ||
+              tieneMinuscula.test(input.value))
+          ) {
+            mensaje = `El campo ${labelText} contiene letras y simbolos distintos a .(punto) y ,(coma)`;
+          } else if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} contiene letras`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene simbolos distintos a .(punto) y ,(coma)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
     method: "GET",
@@ -9,6 +202,7 @@ const actualizacionCabecera = () => {
   });
 };
 
+// Permite aplicar un formato de tabla a la lista de ajuste stock cabecera
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -24,6 +218,7 @@ function formatoTabla() {
   });
 }
 
+// Consulta y establece el codigo de ajuste stock en cabecera
 const getCodigo = () => {
   $.ajax({
     method: "POST",
@@ -32,10 +227,11 @@ const getCodigo = () => {
       consulta: 1,
     },
   }).done(function (respuesta) {
-    $("#ajuin_codigo").val(respuesta.ajuin_codigo);
+    $("#ajus_codigo").val(respuesta.ajus_codigo);
   });
 };
 
+//Consulta y lista los datos de ajuste stock cabecera
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador
@@ -51,13 +247,13 @@ const listar = () => {
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
           ")'>";
         tabla += "<td>";
-        tabla += objeto.ajuin_codigo;
+        tabla += objeto.ajus_codigo;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.ajuin_fecha;
+        tabla += objeto.ajus_fecha;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.ajuin_tipoajuste;
+        tabla += objeto.ajus_tipoajuste;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.usu_login;
@@ -69,7 +265,7 @@ const listar = () => {
         tabla += objeto.emp_razonsocial;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.ajuin_estado;
+        tabla += objeto.ajus_estado;
         tabla += "</td>";
         tabla += "</tr>";
       }
@@ -82,13 +278,14 @@ const listar = () => {
     });
 };
 
+//Consulta y lista los datos de ajuste stock detalle
 const listarDetalle = () => {
   $.ajax({
     //solicitamos los datos al controladorDetalle
     method: "POST",
     url: "controladorDetalle.php",
     data: {
-      ajuste: $("#ajuin_codigo").val(),
+      ajuste: $("#ajus_codigo").val(),
     },
   })
     .done(function (respuesta) {
@@ -109,18 +306,16 @@ const listarDetalle = () => {
         tabla += objeto.dep_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += new Intl.NumberFormat("us-US").format(
-          objeto.ajuindet_cantidad
-        );
+        tabla += new Intl.NumberFormat("us-US").format(objeto.ajusdet_cantidad);
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.unime_descripcion;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.ajuindet_motivo;
+        tabla += objeto.ajusdet_motivo;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += new Intl.NumberFormat("us-US").format(objeto.ajuindet_precio);
+        tabla += new Intl.NumberFormat("us-US").format(objeto.ajusdet_precio);
         tabla += "</td>";
         tabla += "</tr>";
       }
@@ -133,6 +328,7 @@ const listarDetalle = () => {
     });
 };
 
+// Habilita botones en cabecera
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -143,6 +339,7 @@ const habilitarBotones = (booleano) => {
   }
 };
 
+// Habilita botones en detalle
 const habilitarBotones2 = (booleano) => {
   if (booleano) {
     $(".botonesExtra3").attr("style", "display: block;");
@@ -153,6 +350,7 @@ const habilitarBotones2 = (booleano) => {
   }
 };
 
+// Saca el disabled de los inputs
 const habilitarCampos = (booleano) => {
   if (booleano) {
     $(".no-disabled").removeAttr("disabled");
@@ -161,6 +359,7 @@ const habilitarCampos = (booleano) => {
   }
 };
 
+//Obtiene la fecha actual
 const getDate = () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -171,6 +370,24 @@ const getDate = () => {
   return fecha;
 };
 
+// Limpia campos de detalle
+const limpiarCamposDetalle = () => {
+  $("#dep_codigo").val(0);
+  $("#dep_descripcion").val("");
+  $("#it_codigo").val(0);
+  $("#tipit_codigo").val(0);
+  $("#it_descripcion").val("");
+  $("#ajusdet_cantidad").val("");
+  $("#unime_codigo").val(0);
+  $("#unime_descripcion").val("");
+  $("#ajusdet_precio").val("");
+  $("#ajusdet_motivo").val("");
+  $(".dep").attr("class", "form-line dep");
+  $(".it").attr("class", "form-line it");
+  $(".foco2").attr("class", "form-line foco2");
+};
+
+// Metodo que establece el alta de cabecera
 const nuevo = () => {
   $("#operacion_cabecera").val(1);
   $("#procedimiento").val("ALTA");
@@ -180,61 +397,58 @@ const nuevo = () => {
   $(".fecha").attr("class", "form-line fecha focused");
   $(".est").attr("class", "form-line est focused");
   $(".aju").attr("class", "form-line aju");
-  $("#ajuin_estado").val("ACTIVO");
-  $("#ajuin_fecha").val(getDate());
-  $("#ajuin_tipoajuste").val("");
+  $("#ajus_estado").val("ACTIVO");
+  $("#ajus_fecha").val(getDate());
+  $("#ajus_tipoajuste").val("");
   $("#cabecera").attr("style", "display: none");
   $("#detalle").attr("style", "display: none");
   actualizacionCabecera();
   habilitarBotones(false);
+  validacionInputsVacios1();
 };
 
+// Metodo que establece el alta del detalle
 const nuevoDetalle = () => {
   $("#operacion_detalle").val(1);
-  $("#dep_codigo").val(0);
-  $("#dep_descripcion").val("");
-  $("#it_codigo").val(0);
-  $("#tipit_codigo").val(0);
-  $("#it_descripcion").val("");
-  $("#ajuindet_cantidad").val("");
-  $("#unime_codigo").val(0);
-  $("#unime_descripcion").val("");
-  $("#ajuindet_precio").val("");
-  $("#ajuindet_motivo").val("");
-  $(".dep").attr("class", "form-line dep");
-  $(".it").attr("class", "form-line it");
-  $(".foco2").attr("class", "form-line foco2");
+  limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
+  validacionInputsVacios1();
+  validacionInputsVacios2();
+  validacionInputsVacios3();
 };
 
+// Metodo que establece la baja de cabecera
 const anular = () => {
   $("#operacion_cabecera").val(2);
   $("#procedimiento").val("BAJA");
-  $("#ajuin_estado").val("ANULADO");
+  $("#ajus_estado").val("ANULADO");
   $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
 };
 
+//Metodo que establece la baja de detalle
 const eliminar = () => {
   $("#operacion_detalle").val(2);
   habilitarBotones2(false);
 };
 
+//Se encarga de limpiar campos
 const limpiarCampos = () => {
   window.location.reload(true);
 };
 
+//Pasa parametros en el controlador de cabecera
 const grabar = () => {
   $.ajax({
     //Enviamos datos al controlador
     method: "POST",
     url: "controlador.php",
     data: {
-      ajuin_codigo: $("#ajuin_codigo").val(),
-      ajuin_fecha: $("#ajuin_fecha").val(),
-      ajuin_tipoajuste: $("#ajuin_tipoajuste").val(),
-      ajuin_estado: $("#ajuin_estado").val(),
+      ajus_codigo: $("#ajus_codigo").val(),
+      ajus_fecha: $("#ajus_fecha").val(),
+      ajus_tipoajuste: $("#ajus_tipoajuste").val(),
+      ajus_estado: $("#ajus_estado").val(),
       suc_codigo: $("#suc_codigo").val(),
       emp_codigo: $("#emp_codigo").val(),
       usu_codigo: $("#usu_codigo").val(),
@@ -281,23 +495,26 @@ const grabar = () => {
     });
 };
 
+//Pasa parametros en el controlador de detalle
 const grabarDetalle = () => {
   $.ajax({
     //Enviamos datos al controlador detalle
     method: "POST",
     url: "controladorDetalle.php",
     data: {
-      ajuin_codigo: $("#ajuin_codigo").val(),
+      ajus_codigo: $("#ajus_codigo").val(),
       it_codigo: $("#it_codigo").val(),
       tipit_codigo: $("#tipit_codigo").val(),
       dep_codigo: $("#dep_codigo").val(),
       suc_codigo: $("#suc_codigo").val(),
       emp_codigo: $("#emp_codigo").val(),
-      ajuindet_cantidad: $("#ajuindet_cantidad").val(),
-      ajuindet_motivo: $("#ajuindet_motivo").val(),
-      ajuin_tipoajuste: $("#ajuin_tipoajuste").val(),
-      ajuindet_precio: $("#ajuindet_precio").val(),
+      ajusdet_cantidad: $("#ajusdet_cantidad").val(),
+      ajusdet_precio: $("#ajusdet_precio").val(),
+      ajusdet_motivo: $("#ajusdet_motivo").val(),
+      ajus_tipoajuste: $("#ajus_tipoajuste").val(),
       operacion_detalle: $("#operacion_detalle").val(),
+      usu_codigo: $("#usu_codigo").val(),
+      usu_login: $("#usu_login").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
     .done(function (respuesta) {
@@ -310,7 +527,8 @@ const grabarDetalle = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            limpiarCampos();
+            habilitarBotones2(true);
+            listarDetalle();
           }
         }
       );
@@ -336,6 +554,7 @@ const grabarDetalle = () => {
     });
 };
 
+//Establece los mensajes para agregar y anular cabecera
 const confirmar = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_cabecera").val();
@@ -348,8 +567,8 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -370,6 +589,7 @@ const confirmar = () => {
   );
 };
 
+//Establece los mensajes para agregar y eliminar detalle
 const confirmar2 = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_detalle").val();
@@ -382,8 +602,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -404,16 +624,17 @@ const confirmar2 = () => {
   );
 };
 
+//Controla que todos los inputs de cabecera no se pasen con valores vacios
 const controlVacio = () => {
   let condicion;
 
-  if ($("#ajuin_codigo").val() == "") {
+  if ($("#ajus_codigo").val() == "") {
     condicion = true;
-  } else if ($("#ajuin_fecha").val() == "") {
+  } else if ($("#ajus_fecha").val() == "") {
     condicion = true;
-  } else if ($("#ajuin_tipoajuste").val() == "") {
+  } else if ($("#ajus_tipoajuste").val() == "") {
     condicion = true;
-  } else if ($("#ajuin_estado").val() == "") {
+  } else if ($("#ajus_estado").val() == "") {
     condicion = true;
   } else if ($("#usu_login").val() == "") {
     condicion = true;
@@ -426,7 +647,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -434,6 +655,7 @@ const controlVacio = () => {
   }
 };
 
+//Controla que todos los inputs de detalle no se pasen con valores vacios
 const controlVacio2 = () => {
   let condicion;
 
@@ -441,20 +663,20 @@ const controlVacio2 = () => {
     condicion = true;
   } else if ($("#dep_descripcion").val() == "") {
     condicion = true;
-  } else if ($("#ajuindet_cantidad").val() == "") {
+  } else if ($("#ajusdet_cantidad").val() == "") {
     condicion = true;
   } else if ($("#unime_descripcion").val() == "") {
     condicion = true;
-  } else if ($("#ajuindet_precio").val() == "") {
+  } else if ($("#ajusdet_precio").val() == "") {
     condicion = true;
-  } else if ($("#ajuindet_motivo").val() == "") {
+  } else if ($("#ajusdet_motivo").val() == "") {
     condicion = true;
   }
 
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE DETALLE QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -462,6 +684,7 @@ const controlVacio2 = () => {
   }
 };
 
+//Envia a los inputs de cabecera los seleccionado en la tabla de cabecera
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -476,8 +699,10 @@ const seleccionarFila = (objetoJSON) => {
   $("#detalle").attr("style", "display: block;");
   actualizacionCabecera();
   listarDetalle();
+  limpiarCamposDetalle();
 };
 
+//Envia a los inputs de detalle lo seleccionado en la tabla de detalle
 const seleccionarFila2 = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -489,6 +714,7 @@ const seleccionarFila2 = (objetoJSON) => {
   $(".foco2").attr("class", "form-line foco2 focused");
 };
 
+//Envia a los input de item lo seleccionado en el autocompletado de item
 const seleccionItem = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -499,6 +725,7 @@ const seleccionItem = (datos) => {
   $(".it").attr("class", "form-line it focused");
 };
 
+//Busca, filtra y muestra los items
 const getItem = () => {
   $.ajax({
     //Solicitamos los datos a listaItemsAjusteCompra
@@ -539,6 +766,7 @@ const getItem = () => {
     });
 };
 
+//Envia a los input de tipo ajuste lo seleccionado en el autocompletado de tipo ajuste
 const seleccionTipoAjuste = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -549,6 +777,7 @@ const seleccionTipoAjuste = (datos) => {
   $(".aju").attr("class", "form-line aju focused");
 };
 
+//Busca, filtra y muestra los tipos de ajuste
 const getTipoAjuste = () => {
   $.ajax({
     //Solicitamos los datos a listaTipoAjuste
@@ -562,7 +791,7 @@ const getTipoAjuste = () => {
           "<li class='list-group-item' onclick='seleccionTipoAjuste(" +
           JSON.stringify(objeto) +
           ")'>" +
-          objeto.ajuin_tipoajuste +
+          objeto.ajus_tipoajuste +
           "</li>";
       });
 
@@ -579,6 +808,7 @@ const getTipoAjuste = () => {
     });
 };
 
+//Envia a los input de deposito lo seleccionado en el autocompletado de deposito
 const seleccionDeposito = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -589,6 +819,7 @@ const seleccionDeposito = (datos) => {
   $(".dep").attr("class", "form-line dep focused");
 };
 
+//Busca, filtra y muestra los depositos
 const getDeposito = () => {
   $.ajax({
     //Solicitamos los datos a listaDeposito
@@ -628,6 +859,7 @@ const getDeposito = () => {
     });
 };
 
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };
