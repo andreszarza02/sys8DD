@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -14,12 +16,11 @@ $pro_razonsocial = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 //Establecemos y mostramos la consulta
 $sql = "select
          occ.orcom_codigo,
-         'Orden Compra N°'||occ.orcom_codigo||' '||to_char(occ.orcom_fecha, 'DD-MM-YYYY') as orden,
+         'ORDEN COMPRA N°'||occ.orcom_codigo||' '||to_char(occ.orcom_fecha, 'DD-MM-YYYY') as orden,
          occ.pro_codigo,
          occ.tipro_codigo,
          tp.tipro_descripcion,
          p.pro_razonsocial,
-         p.pro_timbrado as comp_timbrado,
          occ.orcom_condicionpago as comp_tipofactura,
          occ.orcom_cuota as comp_cuota,
          occ.orcom_montocuota as comp_montocuota,

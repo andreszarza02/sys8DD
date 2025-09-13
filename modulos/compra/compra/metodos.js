@@ -1,3 +1,284 @@
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras, numeros y el simbolo -
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si tiene simbolos distintos a -
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos distintos a -
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} solo acepta letras, números y el simbolo guion(-)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value) ||
+            tieneSimbolo.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan simbolos
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan letras y simbolos que no sean . y ,
+const validacionInputsVacios4 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\-=\[\]{};':"\\|<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o simbolos distintos a . y ,
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene letras o simbolos distintos a . y ,
+          if (
+            tieneSimbolo.test(input.value) &&
+            (tieneMayuscula.test(input.value) ||
+              tieneMinuscula.test(input.value))
+          ) {
+            mensaje = `El campo ${labelText} contiene letras y simbolos distintos a .(punto) y ,(coma)`;
+          } else if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} contiene letras`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene simbolos distintos a .(punto) y ,(coma)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+// Valida si la compra esta asociado a una nota de compra
+const consultaAsociacion = (escenario, mensaje) => {
+  $.ajax({
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      comp_codigo: $("#comp_codigo").val(),
+      consulta1: 1,
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (respuesta) {
+      if (respuesta.validacion == "asociado") {
+        swal(
+          {
+            title: "VALIDACION " + escenario.toUpperCase(),
+            text: mensaje.toUpperCase(),
+            type: "error",
+            confirmButtonText: "OK",
+          },
+          function (isConfirm) {
+            if (isConfirm) {
+              window.location.reload(true);
+            }
+          }
+        );
+      }
+    });
+};
+
+//Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
     method: "GET",
@@ -9,6 +290,7 @@ const actualizacionCabecera = () => {
   });
 };
 
+// Permite aplicar un formato de tabla a la lista de compra cabecera
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -24,18 +306,20 @@ function formatoTabla() {
   });
 }
 
+// Consulta y establece el codigo de compra en cabecera
 const getCodigo = () => {
   $.ajax({
     method: "POST",
     url: "controlador.php",
     data: {
-      consulta: 1,
+      consulta1: 1,
     },
   }).done(function (respuesta) {
     $("#comp_codigo").val(respuesta.comp_codigo);
   });
 };
 
+// Pasa parametros en controlador detalle 2 para persistir datos
 const setLibroCompra = () => {
   $.ajax({
     //actualizamos el libro
@@ -58,6 +342,7 @@ const setLibroCompra = () => {
   });
 };
 
+// Pasa parametros en controlador detalle 2 para persistir datos
 const setCuentaPagar = () => {
   $.ajax({
     //actualizamos la cuenta
@@ -76,6 +361,7 @@ const setCuentaPagar = () => {
   });
 };
 
+//Consulta y lista los datos de compra cabecera
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador
@@ -97,10 +383,13 @@ const listar = () => {
         tabla += objeto.comp_fecha;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.com_numfactura;
+        tabla += objeto.comp_numfactura;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.comp_timbrado;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.comp_timbrado_venc;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.comp_tipofactura;
@@ -143,6 +432,7 @@ const listar = () => {
     });
 };
 
+//Consulta y lista los datos de compra detalle
 const listarDetalle = () => {
   $.ajax({
     //solicitamos los datos al controladorDetalle
@@ -268,6 +558,7 @@ const listarDetalle = () => {
     });
 };
 
+//Habilita botones en cabecera
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -278,6 +569,7 @@ const habilitarBotones = (booleano) => {
   }
 };
 
+//Habilita botones en detalle
 const habilitarBotones2 = (booleano) => {
   if (booleano) {
     $(".botonesExtra3").attr("style", "display: block;");
@@ -288,6 +580,7 @@ const habilitarBotones2 = (booleano) => {
   }
 };
 
+//Saca el disabled de los inputs
 const habilitarCampos = (booleano) => {
   if (booleano) {
     $(".no-disabled").removeAttr("disabled");
@@ -296,16 +589,33 @@ const habilitarCampos = (booleano) => {
   }
 };
 
+//Obtiene la fecha actual
 const getDate = () => {
   const date = new Date();
   const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const fecha = `${day}/${month}/${year}`;
-
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const fecha = `${year}-${month}-${day}`;
   return fecha;
 };
 
+// Limpia campos de detalle
+const limpiarCamposDetalle = () => {
+  $("#dep_codigo").val(0);
+  $("#dep_descripcion").val("");
+  $("#it_codigo").val(0);
+  $("#tipit_codigo").val(0);
+  $("#it_descripcion").val("");
+  $("#compdet_cantidad").val("");
+  $("#unime_codigo").val(0);
+  $("#unime_descripcion").val("");
+  $("#compdet_precio").val("");
+  $(".dep").attr("class", "form-line dep");
+  $(".it").attr("class", "form-line it");
+  $(".foco2").attr("class", "form-line foco2");
+};
+
+// Metodo que establece el alta de cabecera
 const nuevo = () => {
   $("#operacion_cabecera").val(1);
   $("#procedimiento").val("ALTA");
@@ -329,43 +639,49 @@ const nuevo = () => {
   $("#cabecera").attr("style", "display: none");
   $("#detalle").attr("style", "display: none");
   habilitarBotones(false);
+  validacionInputsVacios1();
+  validacionInputsVacios2();
 };
 
+// Metodo que establece el alta del detalle
 const nuevoDetalle = () => {
   $("#operacion_detalle").val(1);
-  $("#dep_codigo").val(0);
-  $("#dep_descripcion").val("");
-  $("#it_codigo").val(0);
-  $("#tipit_codigo").val(0);
-  $("#it_descripcion").val("");
-  $("#compdet_cantidad").val("");
-  $("#unime_codigo").val(0);
-  $("#unime_descripcion").val("");
-  $("#compdet_precio").val("");
-  $(".dep").attr("class", "form-line dep");
-  $(".it").attr("class", "form-line it");
-  $(".foco2").attr("class", "form-line foco2");
+  limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
+  validacionInputsVacios3();
+  validacionInputsVacios4();
+  consultaAsociacion(
+    "Nuevo",
+    "Esta compra ya está asociado a una nota de compra; no se pueden añadir más ítems."
+  );
 };
 
+//Metodo que establece la baja de cabecera
 const anular = () => {
   $("#operacion_cabecera").val(2);
   $("#procedimiento").val("BAJA");
   $("#comp_estado").val("ANULADO");
   $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
+  consultaAsociacion(
+    "Eliminar",
+    "Esta compra ya está asociado a una nota de compra; no se pueden eliminar más ítems."
+  );
 };
 
+//Metodo que establece la baja de detalle
 const eliminar = () => {
   $("#operacion_detalle").val(2);
   habilitarBotones2(false);
 };
 
+//Se encarga de limpiar campos
 const limpiarCampos = () => {
   window.location.reload(true);
 };
 
+//Pasa parametros en el controlador de cabecera
 const grabar = () => {
   $.ajax({
     //Enviamos datos al controlador
@@ -374,7 +690,7 @@ const grabar = () => {
     data: {
       comp_codigo: $("#comp_codigo").val(),
       comp_fecha: $("#comp_fecha").val(),
-      com_numfactura: $("#com_numfactura").val(),
+      comp_numfactura: $("#comp_numfactura").val(),
       comp_timbrado: $("#comp_timbrado").val(),
       comp_tipofactura: $("#comp_tipofactura").val(),
       comp_cuota: $("#comp_cuota").val(),
@@ -388,6 +704,7 @@ const grabar = () => {
       usu_codigo: $("#usu_codigo").val(),
       orcom_codigo: $("#orcom_codigo").val(),
       tipco_codigo: $("#tipco_codigo").val(),
+      comp_timbrado_venc: $("#comp_timbrado_venc").val(),
       operacion_cabecera: $("#operacion_cabecera").val(),
       usu_login: $("#usu_login").val(),
       procedimiento: $("#procedimiento").val(),
@@ -434,6 +751,7 @@ const grabar = () => {
     });
 };
 
+//Pasa parametros en el controlador de detalle
 const grabarDetalle = () => {
   $.ajax({
     //Enviamos datos al controlador detalle
@@ -448,6 +766,10 @@ const grabarDetalle = () => {
       emp_codigo: $("#emp_codigo").val(),
       compdet_cantidad: $("#compdet_cantidad").val(),
       compdet_precio: $("#compdet_precio").val(),
+      usu_codigo: $("#usu_codigo").val(),
+      usu_login: $("#usu_login").val(),
+      comp_cuota: $("#comp_cuota").val(),
+      it_descripcion: $("#it_descripcion").val(),
       operacion_detalle: $("#operacion_detalle").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
@@ -461,7 +783,8 @@ const grabarDetalle = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            limpiarCampos();
+            habilitarBotones2(true);
+            listarDetalle();
           }
         }
       );
@@ -487,6 +810,7 @@ const grabarDetalle = () => {
     });
 };
 
+//Establece los mensajes para agregar y anular cabecera
 const confirmar = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_cabecera").val();
@@ -499,8 +823,8 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -521,6 +845,7 @@ const confirmar = () => {
   );
 };
 
+//Establece los mensajes para agregar y eliminar detalle
 const confirmar2 = () => {
   //solicitamos el value del input operacion_detalle
   var oper = $("#operacion_detalle").val();
@@ -533,8 +858,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -546,8 +871,8 @@ const confirmar2 = () => {
     function (isConfirm) {
       //Si la operacion_cabecera es correcta llamamos al metodo grabar
       if (isConfirm) {
-        setLibroCompra();
-        setCuentaPagar();
+        //setLibroCompra();
+        //setCuentaPagar();
         grabarDetalle();
       } else {
         //Si cancelamos la operacion_cabecera realizamos un reload
@@ -557,6 +882,7 @@ const confirmar2 = () => {
   );
 };
 
+//Controla que todos los inputs de cabecera no se pasen con valores vacios
 const controlVacio = () => {
   let condicion;
 
@@ -568,17 +894,21 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#pro_razonsocial").val() == "") {
     condicion = true;
-  } else if ($("#tipro_descripcion").val() == "") {
+  } else if ($("#orcom_codigo").val() == "") {
     condicion = true;
-  } else if ($("#com_numfactura").val() == "") {
+  } else if ($("#tipco_descripcion").val() == "") {
     condicion = true;
   } else if ($("#comp_timbrado").val() == "") {
     condicion = true;
-  } else if ($("#orcom_montocuota").val() == "") {
-    condicion = true;
-  } else if ($("#comp_interfecha").val() == "") {
+  } else if ($("#pro_timbrado_venc").val() == "") {
     condicion = true;
   } else if ($("#comp_tipofactura").val() == "") {
+    condicion = true;
+  } else if ($("#comp_cuota").val() == "") {
+    condicion = true;
+  } else if ($("#comp_montocuota").val() == "") {
+    condicion = true;
+  } else if ($("#comp_interfecha").val() == "") {
     condicion = true;
   } else if ($("#emp_razonsocial").val() == "") {
     condicion = true;
@@ -593,7 +923,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -601,6 +931,7 @@ const controlVacio = () => {
   }
 };
 
+//Controla que todos los inputs de detalle no se pasen con valores vacios
 const controlVacio2 = () => {
   let condicion;
 
@@ -619,7 +950,7 @@ const controlVacio2 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE DETALLE QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -629,7 +960,7 @@ const controlVacio2 = () => {
     ) {
       swal({
         title: "RESPUESTA!!",
-        text: "El servicio no lleva cantidad",
+        text: "LA CANTIDAD, EN CASO DE REGISTRAR UN SERVICIO, ES CERO(0)",
         type: "error",
       });
     } else {
@@ -638,6 +969,7 @@ const controlVacio2 = () => {
   }
 };
 
+//Envia a los inputs de cabecera los seleccionado en la tabla de cabecera
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -646,16 +978,16 @@ const seleccionarFila = (objetoJSON) => {
 
   $(".activar").attr("class", "form-line activar focused");
   $(".foco").attr("class", "form-line foco focused");
-  $(".fecha").attr("class", "form-line fecha focused");
   $(".orc").attr("class", "form-line orc focused");
-  $(".tip").attr("class", "form-line tip focused");
   $(".est").attr("class", "form-line est focused");
   $(".foco3").attr("class", "form-line foco3 focused");
   $("#detalle").attr("style", "display: block;");
   actualizacionCabecera();
   listarDetalle();
+  limpiarCamposDetalle();
 };
 
+//Envia a los inputs de detalle lo seleccionado en la tabla de detalle
 const seleccionarFila2 = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -667,6 +999,7 @@ const seleccionarFila2 = (objetoJSON) => {
   $(".foco2").attr("class", "form-line foco2 focused");
 };
 
+//Envia a los input de item lo seleccionado en el autocompletado de item
 const seleccionItem = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -676,9 +1009,9 @@ const seleccionItem = (datos) => {
   $("#listaItem").attr("style", "display: none;");
   $(".it").attr("class", "form-line it focused");
   $(".foco2").attr("class", "form-line foco2 focused");
-  controlServicio();
 };
 
+//Busca, filtra y muestra los items
 const getItem = () => {
   $.ajax({
     //Solicitamos los datos a listaItemsCompra
@@ -716,6 +1049,7 @@ const getItem = () => {
     });
 };
 
+//Envia a los input de orden compra cabecera lo seleccionado en el autocompletado de orden compra cabecera
 const seleccionOrdenCompra = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -726,6 +1060,7 @@ const seleccionOrdenCompra = (datos) => {
   $(".orc").attr("class", "form-line orc focused");
 };
 
+//Busca, filtra y muestra las ordenes de compra cabecera
 const getOrdenCompra = () => {
   $.ajax({
     //Solicitamos los datos a listaOrdenCompra
@@ -762,6 +1097,7 @@ const getOrdenCompra = () => {
     });
 };
 
+//Envia a los input de deposito lo seleccionado en el autocompletado de deposito
 const seleccionDeposito = (datos) => {
   //Enviamos los datos a su respectivo input
   Object.keys(datos).forEach((key) => {
@@ -772,6 +1108,7 @@ const seleccionDeposito = (datos) => {
   $(".dep").attr("class", "form-line dep focused");
 };
 
+//Busca, filtra y muestra los depositos
 const getDeposito = () => {
   $.ajax({
     //Solicitamos los datos a listaDeposito
@@ -810,16 +1147,9 @@ const getDeposito = () => {
     });
 };
 
+//Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
-};
-
-const controlServicio = () => {
-  let tipoItem = $("#tipit_codigo").val();
-  if (tipoItem == "3") {
-    $("#compdet_cantidad").val("0");
-    $(".foco2").attr("class", "form-line foco2 focused");
-  }
 };
 
 listar();

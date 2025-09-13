@@ -26,7 +26,8 @@ if (isset($_POST['operacion_detalle'])) {
       $orcomdet_precio, 
       {$_POST['operacion_detalle']},
       1,
-      {$_POST['orcom_cuota']}
+      {$_POST['orcom_cuota']},
+      {$_POST['usu_codigo']}
       )";
 
    //Validamos la consulta
@@ -75,7 +76,7 @@ if (isset($_POST['operacion_detalle'])) {
 
    echo json_encode($response);
 
-   // Consultamos si existe la variable consulta y si es igual a 3
+   // Consultamos si existe la variable consulta2
 } else if (isset($_POST['consulta2']) && !empty($_POST['prepro_codigo'])) {
 
    $prepro_codigo = (int) $_POST['prepro_codigo'];

@@ -181,25 +181,33 @@ create or replace view v_compra_cab as
 select 
 	cc.comp_codigo,
 	cc.comp_fecha,
-	cc.com_numfactura,
+	cc.comp_numfactura,
 	cc.comp_tipofactura,
 	cc.comp_cuota,
-	cc.comp_montocuota,
 	cc.comp_interfecha,
 	cc.comp_estado,
 	cc.pro_codigo,
 	cc.tipro_codigo,
+	cc.suc_codigo,
+	cc.emp_codigo,
+	cc.usu_codigo,
+	cc.comp_montocuota,
+	cc.comp_timbrado,
+	cc.tipco_codigo,
+	cc.comp_timbrado_venc,
 	p.pro_razonsocial,
 	tp.tipro_descripcion,
-	u.usu_login,
 	s.suc_descripcion,
 	e.emp_razonsocial,
+	u.usu_login,
+	tc.tipco_descripcion ,
 	oc.orcom_codigo
 from compra_cab cc
 	join orden_compra oc on oc.comp_codigo=cc.comp_codigo
 	join proveedor p on p.pro_codigo=cc.pro_codigo
 	and p.tipro_codigo=cc.tipro_codigo
 	join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo
+	join tipo_comprobante tc on tc.tipco_codigo=cc.tipco_codigo 
 	join usuario u on u.usu_codigo=cc.usu_codigo
 	join sucursal s on s.suc_codigo=cc.suc_codigo
 	and s.emp_codigo=cc.emp_codigo
@@ -213,8 +221,6 @@ select
 	i.it_descripcion,
 	ti.tipit_descripcion,
 	d.dep_descripcion,
-	su.suc_descripcion,
-	e.emp_razonsocial,
 	um.unime_codigo,
 	um.unime_descripcion,
 	(case i.tipim_codigo when 1 then cd.compdet_cantidad * cd.compdet_precio else 0 end) as grav5,
@@ -237,7 +243,7 @@ from compra_det cd
 	and su.emp_codigo=d.emp_codigo
 	join empresa e on e.emp_codigo=su.emp_codigo
 	join unidad_medida um on um.unime_codigo=i.unime_codigo
-order by cd.comp_codigo;
+order by cd.comp_codigo, cd.it_codigo;
 
 create or replace view v_nota_compra_cab as
 select 

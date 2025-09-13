@@ -606,3 +606,122 @@ CREATE TRIGGER t_insercion_actualizacion_eliminacion_stock
 AFTER INSERT OR UPDATE OR DELETE ON stock
 FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_eliminacion_stock();
 
+-- Libro Compra y Cuenta Pagar
+CREATE OR REPLACE FUNCTION spt_actualizacion_libro_compra_cuenta_pagar() 
+RETURNS TRIGGER AS $$
+--Creamos las variables
+DECLARE tipoImpuesto integer;
+		monto5 numeric;
+		monto10 numeric;
+		exenta numeric;
+		monto numeric;
+		codigo_comprobante integer;
+		comprobante varchar;
+		numero_comprobante varchar;
+		codigoUsuario integer;
+		usuario varchar;
+BEGIN
+    -- Validamos si la operacion es de insercion
+    IF TG_OP = 'INSERT' THEN
+		-- Consultamos datos para modificacion en libro_compra y cuenta_pagar
+		-- Consultamos datos del item
+		select i.tipim_codigo into tipoImpuesto from items i where i.it_codigo=NEW.it_codigo;
+		-- Definimos valores por defecto a las variables 
+		monto5 := 0;
+	    monto10 := 0;
+	    exenta := 0;
+		monto := 0;
+		-- Validamos y asignamos la multiplicacion en base al tipo de impuesto, esto solo para libro_compra
+		if tipoImpuesto = 1 then -- 5%
+			if NEW.tipit_codigo = 3 then -- validamos servicio
+				monto5 := round(NEW.compdet_precio);
+			else 
+				monto5 := round(NEW.compdet_cantidad*NEW.compdet_precio);
+			end if;
+		elseif tipoImpuesto = 2 then -- 10%
+			if NEW.tipit_codigo = 3 then -- validamos servicio
+				monto10 := round(NEW.compdet_precio);
+			else 
+				monto10 := round(NEW.compdet_cantidad*NEW.compdet_precio);
+			end if;
+		else -- exenta
+			if NEW.tipit_codigo = 3 then -- validamos servicio
+				exenta := round(NEW.compdet_precio);
+			else 
+				exenta := round(NEW.compdet_cantidad*NEW.compdet_precio);
+			end if;
+		end if;
+		-- Multiplicamos cantidad por precio y asignamos a total, esto solo para cuenta pagar
+		if NEW.tipit_codigo = 3 then -- validamos servicio
+			monto := round(NEW.compdet_precio);
+		else 
+			monto := round(NEW.compdet_cantidad*NEW.compdet_precio);
+		end if;
+		-- Consultamos datos de la cabecera
+		select cc.tipco_codigo into codigo_comprobante from compra_cab cc where cc.comp_codigo=NEW.comp_codigo;
+		select tc.tipco_descripcion into comprobante from compra_cab cc join tipo_comprobante tc on tc.tipco_codigo=cc.tipco_codigo  where cc.comp_codigo=NEW.comp_codigo;
+		select cc.comp_numfactura into numero_comprobante from compra_cab cc where cc.comp_codigo=NEW.comp_codigo;
+		select cc.usu_codigo into codigoUsuario from compra_cab cc where cc.comp_codigo=NEW.comp_codigo;
+		select u.usu_login into usuario from compra_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.comp_codigo=NEW.comp_codigo;
+		-- Llamamos al sp de libro compra y le pasamos los parametros
+	    perform sp_libro_compra(NEW.comp_codigo, exenta, monto5, monto10, codigo_comprobante, comprobante, numero_comprobante, 1, codigoUsuario, usuario);
+		-- Llammos al sp de cuenta pagar y le pasamos los parametros
+		perform sp_cuenta_pagar(NEW.comp_codigo, monto, monto, 1, codigoUsuario, usuario);
+    --Validamos si la operacion es una eliminacion
+    ELSIF TG_OP = 'DELETE' THEN
+		-- Consultamos datos para modificacion en libro_compra y cuenta_pagar
+		-- Consultamos datos del item
+		select i.tipim_codigo into tipoImpuesto from items i where i.it_codigo=OLD.it_codigo;
+		-- Definimos valores por defecto a las variables 
+		monto5 := 0;
+	    monto10 := 0;
+	    exenta := 0;
+		monto := 0;
+		-- Validamos y asignamos la multiplicacion en base al tipo de impuesto, esto solo para libro_compra
+		if tipoImpuesto = 1 then -- 5%
+			if OLD.tipit_codigo = 3 then -- validamos servicio
+				monto5 := round(OLD.compdet_precio);
+			else 
+				monto5 := round(OLD.compdet_cantidad*OLD.compdet_precio);
+			end if;
+		elseif tipoImpuesto = 2 then -- 10%
+			if OLD.tipit_codigo = 3 then -- validamos servicio
+				monto10 := round(OLD.compdet_precio);
+			else 
+				monto10 := round(OLD.compdet_cantidad*OLD.compdet_precio);
+			end if;
+		else -- exenta
+			if OLD.tipit_codigo = 3 then -- validamos servicio
+				exenta := round(OLD.compdet_precio);
+			else 
+				exenta := round(OLD.compdet_cantidad*OLD.compdet_precio);
+			end if;
+		end if;
+		-- Multiplicamos cantidad por precio y asignamos a total, esto solo para cuenta pagar
+		if OLD.tipit_codigo = 3 then -- validamos servicio
+			monto := round(OLD.compdet_precio);
+		else 
+			monto := round(OLD.compdet_cantidad*OLD.compdet_precio);
+		end if;
+		-- Consultamos datos de la cabecera
+		select cc.tipco_codigo into codigo_comprobante from compra_cab cc where cc.comp_codigo=OLD.comp_codigo;
+		select tc.tipco_descripcion into comprobante from compra_cab cc join tipo_comprobante tc on tc.tipco_codigo=cc.tipco_codigo  where cc.comp_codigo=OLD.comp_codigo;
+		select cc.comp_numfactura into numero_comprobante from compra_cab cc where cc.comp_codigo=OLD.comp_codigo;
+		select cc.usu_codigo into codigoUsuario from compra_cab cc where cc.comp_codigo=OLD.comp_codigo;
+		select u.usu_login into usuario from compra_cab cc join usuario u on u.usu_codigo=cc.usu_codigo where cc.comp_codigo=OLD.comp_codigo;
+		-- Llamamos al sp de libro compra y le pasamos los parametros
+	    perform sp_libro_compra(OLD.comp_codigo, exenta, monto5, monto10, codigo_comprobante, comprobante, numero_comprobante, 2, codigoUsuario, usuario);
+		-- Llammos al sp de cuenta pagar y le pasamos los parametros
+		perform sp_cuenta_pagar(OLD.comp_codigo, monto, monto, 2, codigoUsuario, usuario);
+    END IF;
+		RETURN NULL;
+END;
+$$
+ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_actualizacion_libro_compra_cuenta_pagar()
+CREATE TRIGGER t_actualizacion_libro_compra_cuenta_pagar
+AFTER INSERT OR DELETE ON compra_det
+FOR EACH ROW EXECUTE FUNCTION spt_actualizacion_libro_compra_cuenta_pagar();
+
+

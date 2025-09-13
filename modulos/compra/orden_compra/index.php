@@ -111,7 +111,7 @@ foreach ($permisos as $permiso) {
                                  <input type="hidden" id="pro_email">
                                  <input type="text" class="form-control no-disabled letras-numeros-algunos-simbolos"
                                     id="pro_razonsocial" disabled onkeyup="getPresupuestoProveedor()">
-                                 <label class="form-label">RUC o Razon Social</label>
+                                 <label class="form-label">RUC o Razon Social Proveedor</label>
                                  <div id="listaPresupuesto" style="display: none;">
                                     <ul class="list-group" id="ulPresupuesto" Style="height: 100px; overflow: auto">
                                     </ul>
@@ -274,8 +274,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line it">
-                                    <input type="text" class="form-control no-disabled2" id="orcomdet_cantidad"
-                                       disabled>
+                                    <input type="text" class="form-control no-disabled2 numeros-algunos-simbolos"
+                                       id="orcomdet_cantidad" disabled>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>

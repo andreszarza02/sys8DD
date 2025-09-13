@@ -744,6 +744,7 @@ const nuevoDetalle = () => {
   limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
+  validacionInputsVacios4();
   validacionInputsVacios6();
   consultaAsociacion(
     "Nuevo",
@@ -884,6 +885,7 @@ const grabarDetalle = () => {
       orcomdet_precio: $("#orcomdet_precio").val(),
       operacion_detalle: $("#operacion_detalle").val(),
       orcom_cuota: $("#orcom_cuota").val(),
+      usu_codigo: $("#usu_codigo").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
     .done(function (respuesta) {

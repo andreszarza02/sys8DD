@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -90,8 +91,8 @@ foreach ($permisos as $permiso) {
                         </div>
                         <div class="col-sm-1">
                            <div class="form-group form-float">
-                              <div class="form-line fecha">
-                                 <input type="text" class="form-control" id="comp_fecha" disabled>
+                              <div class="form-line focused">
+                                 <input type="date" class="form-control no-disabled" id="comp_fecha" disabled>
                                  <label class="form-label">Fecha</label>
                               </div>
                            </div>
@@ -102,9 +103,9 @@ foreach ($permisos as $permiso) {
                                  <input type="hidden" id="pro_codigo" value="0">
                                  <input type="hidden" id="tipro_codigo" value="0">
                                  <input type="hidden" id="tipro_descripcion">
-                                 <input type="text" class="form-control no-disabled" id="pro_razonsocial" disabled
-                                    onkeyup="getOrdenCompra()">
-                                 <label class="form-label">RUC o Razon Social</label>
+                                 <input type="text" class="form-control no-disabled letras-numeros-algunos-simbolos"
+                                    id="pro_razonsocial" disabled onkeyup="getOrdenCompra()">
+                                 <label class="form-label">RUC o Razon Social Proveedor</label>
                                  <div id="listaOrden" style="display: none;">
                                     <ul class="list-group" id="ulOrden" Style="height: 100px; overflow: auto">
                                     </ul>
@@ -112,7 +113,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-1">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line orc">
                                  <input type="text" class="form-control" id="orcom_codigo" disabled>
@@ -120,36 +121,30 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco3">
                                  <input type="hidden" id="tipco_codigo" value="4">
                                  <input type="hidden" id="tipco_descripcion" value="FACTURA">
-                                 <input type="text" class="form-control no-disabled" id="comp_numfactura" disabled>
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="comp_numfactura"
+                                    disabled>
                                  <label class="form-label">N° Factura</label>
                               </div>
                            </div>
                         </div>
                         <div class="col-sm-2">
                            <div class="form-group form-float">
-                              <div class="form-line foco focused">
-                                 <input type="date" class="form-control no-disabled" id="comp_fecha_fact" disabled>
-                                 <label class="form-label">Fecha Factura</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-2">
-                           <div class="form-group form-float">
-                              <div class="form-line orc">
-                                 <input type="text" class="form-control" id="comp_timbrado" disabled>
+                              <div class="form-line foco3">
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="comp_timbrado"
+                                    disabled>
                                  <label class="form-label">Timbrado</label>
                               </div>
                            </div>
                         </div>
                         <div class="col-sm-2">
                            <div class="form-group form-float">
-                              <div class="form-line orc focused">
-                                 <input type="date" class="form-control" id="pro_timbrado_venc" disabled>
+                              <div class="form-line focused">
+                                 <input type="date" class="form-control no-disabled" id="comp_timbrado_venc" disabled>
                                  <label class="form-label">Timbrado Vencimiento</label>
                               </div>
                            </div>
@@ -280,8 +275,8 @@ foreach ($permisos as $permiso) {
                               <div class="form-group form-float">
                                  <div class="form-line dep">
                                     <input type="hidden" id="dep_codigo" value="0">
-                                    <input type="text" class="form-control no-disabled2" id="dep_descripcion"
-                                       onkeyup="getDeposito()" disabled>
+                                    <input type="text" class="form-control no-disabled2 letras-numeros"
+                                       id="dep_descripcion" onkeyup="getDeposito()" disabled>
                                     <label class="form-label">Deposito</label>
                                     <div id="listaDeposito" style="display: none;">
                                        <ul class="list-group" id="ulDeposito" Style="height: 80px; overflow: auto"></ul>
@@ -295,8 +290,8 @@ foreach ($permisos as $permiso) {
                                     <input type="hidden" id="it_codigo" value="0">
                                     <input type="hidden" id="tipit_codigo" value="0">
                                     <input type="hidden" id="tipim_codigo" value="0">
-                                    <input type="text" class="form-control no-disabled2" id="it_descripcion" disabled
-                                       onkeyup="getItem()">
+                                    <input type="text" class="form-control no-disabled2 letras-numeros"
+                                       id="it_descripcion" disabled onkeyup="getItem()">
                                     <label class="form-label">Item</label>
                                     <div id="listaItem" style="display: none;">
                                        <ul class="list-group" id="ulItem" Style="height: 100px; overflow: auto"></ul>
@@ -306,8 +301,9 @@ foreach ($permisos as $permiso) {
                            </div>
                            <div class="col-sm-2">
                               <div class="form-group form-float">
-                                 <div class="form-line foco2">
-                                    <input type="number" class="form-control" id="compdet_cantidad" disabled>
+                                 <div class="form-line it">
+                                    <input type="text" class="form-control no-disabled2 numeros-algunos-simbolos"
+                                       id="compdet_cantidad" disabled>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>
@@ -324,7 +320,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line it">
-                                    <input type="number" class="form-control" id="compdet_precio" disabled>
+                                    <input type="text" class="form-control" id="compdet_precio" disabled>
                                     <label class="form-label">Precio</label>
                                  </div>
                               </div>
@@ -404,6 +400,7 @@ foreach ($permisos as $permiso) {
                                  <th>FECHA</th>
                                  <th>N° FACTURA</th>
                                  <th>TIMBRADO</th>
+                                 <th>FECHA VENC. TIMBRADO</th>
                                  <th>TIPO FACTURA</th>
                                  <th>CUOTA</th>
                                  <th>MONTO CUOTA</th>

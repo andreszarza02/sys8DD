@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -13,44 +15,35 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   $numeroFactura = $_POST['com_numfactura'];
+   // Definimos y cargamos las variables 
+   $numeroFactura = $_POST['comp_numfactura'];
    $numeroFactura = preg_replace('/\D/', '', $numeroFactura);
-   $com_numfactura = formatearNumeroFactura($numeroFactura);
+   $comp_numfactura = formatearNumeroFactura($numeroFactura);
 
-   $montoCuota = $_POST['comp_montocuota'];
-   $comp_montocuota = str_replace(",", ".", $montoCuota);
+   $comp_montocuota = str_replace(",", ".", $_POST['comp_montocuota']);
 
-   $intervalo = $_POST['comp_interfecha'];
-   $comp_interfecha = str_replace("'", "''", $intervalo);
+   $comp_interfecha = pg_escape_string($conexion, $_POST['comp_interfecha']);
 
-   $estado = $_POST['comp_estado'];
-   $comp_estado = str_replace("'", "''", $estado);
+   $comp_estado = pg_escape_string($conexion, $_POST['comp_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace(search: "'", replace: "''", subject: $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $tipcoDescripcion = $_POST['tipco_descripcion'];
-   $tipco_descripcion = pg_escape_string($conexion, $tipcoDescripcion);
+   $tipco_descripcion = pg_escape_string($conexion, $_POST['tipco_descripcion']);
 
-   $proRazonSocial = $_POST['pro_razonsocial'];
-   $pro_razonsocial = str_replace("'", "''", $proRazonSocial);
+   $pro_razonsocial = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 
-   $tiproDescripcion = $_POST['tipro_descripcion'];
-   $tipro_descripcion = str_replace("'", "''", $tiproDescripcion);
+   $tipro_descripcion = pg_escape_string($conexion, $_POST['tipro_descripcion']);
 
-   $empRazonSocial = $_POST['emp_razonsocial'];
-   $emp_razonsocial = str_replace("'", "''", $empRazonSocial);
+   $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
 
-   $sucDescripcion = $_POST['suc_descripcion'];
-   $suc_descripcion = str_replace("'", "''", $sucDescripcion);
+   $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
 
    $sql = "select sp_compra_cab(
       {$_POST['comp_codigo']}, 
       '{$_POST['comp_fecha']}', 
-      '$com_numfactura',
+      '$comp_numfactura',
       '{$_POST['comp_timbrado']}', 
       '{$_POST['comp_tipofactura']}',
       {$_POST['comp_cuota']}, 
@@ -64,9 +57,10 @@ if (isset($_POST['operacion_cabecera'])) {
       {$_POST['usu_codigo']}, 
       {$_POST['orcom_codigo']}, 
       {$_POST['tipco_codigo']}, 
+      '{$_POST['comp_timbrado_venc']}', 
       {$_POST['operacion_cabecera']},
       '$usu_login',
-      '$procedimiento2',
+      '$procedimiento',
       '$tipco_descripcion',
       '$pro_razonsocial',
       '$tipro_descripcion',
@@ -80,7 +74,12 @@ if (isset($_POST['operacion_cabecera'])) {
 
    if (strpos($error, "factura") !== false) {
       $response = array(
-         "mensaje" => "YA ESTA REGISTRADO EL NUMERO DE FACTURA DEL PROVEEDOR",
+         "mensaje" => "YA SE ENCUENTRA REGISTRADO EL NUMERO DE FACTURA Y TIMBRADO",
+         "tipo" => "error"
+      );
+   } else if (strpos($error, "asociado") !== false) {
+      $response = array(
+         "mensaje" => "YA SE ENCUENTRA ASOCIADO LA COMPRA A UNA NOTA DE COMPRA DE COMPRA",
          "tipo" => "error"
       );
    } else {
@@ -92,7 +91,7 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(comp_codigo),0)+1 as comp_codigo from compra_cab;";
@@ -103,7 +102,11 @@ if (isset($_POST['operacion_cabecera'])) {
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_compra_cab vcc where vcc.comp_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+            from v_compra_cab vcc 
+            where vcc.comp_estado <> 'ANULADO';";
+
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);
