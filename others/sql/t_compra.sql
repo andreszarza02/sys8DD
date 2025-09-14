@@ -724,4 +724,130 @@ CREATE TRIGGER t_actualizacion_libro_compra_cuenta_pagar
 AFTER INSERT OR DELETE ON compra_det
 FOR EACH ROW EXECUTE FUNCTION spt_actualizacion_libro_compra_cuenta_pagar();
 
+-- Libro Compra y Cuenta Pagar 2
+CREATE OR REPLACE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar() 
+RETURNS TRIGGER AS $$
+DECLARE
+    tipoImpuesto       integer;
+    monto5             numeric := 0;
+    monto10            numeric := 0;
+    exenta             numeric := 0;
+    monto              numeric := 0;
+    codigo_comprobante integer;
+    comprobante        varchar;
+    numero_comprobante varchar;
+    codigoUsuario      integer;
+    usuario            varchar;
+    tipoNota           integer;
+    nocomCodigo        int4;
+    itCodigo           int4;
+    tipitCodigo        int4;
+    cantidad           numeric;
+    precio             numeric;
+BEGIN
+    -- Tomamos los valores según si es INSERT o DELETE
+    IF TG_OP = 'INSERT' THEN
+        nocomCodigo := NEW.nocom_codigo;
+        itCodigo    := NEW.it_codigo;
+        tipitCodigo := NEW.tipit_codigo;
+        cantidad    := NEW.nocomdet_cantidad;
+        precio      := NEW.nocomdet_precio;
+    ELSE
+        nocomCodigo := OLD.nocom_codigo;
+        itCodigo    := OLD.it_codigo;
+        tipitCodigo := OLD.tipit_codigo;
+        cantidad    := OLD.nocomdet_cantidad;
+        precio      := OLD.nocomdet_precio;
+    END IF;
+
+    -- Traemos el tipo de nota (crédito o débito)
+    SELECT ncc.tipco_codigo
+    INTO tipoNota
+    FROM nota_compra_cab ncc
+    WHERE ncc.nocom_codigo = nocomCodigo;
+
+    -- Solo procesamos notas de tipo 1 (crédito) y 2 (débito)
+    IF tipoNota IN (1, 2) THEN
+        -- Obtenemos tipo de impuesto del item
+        SELECT i.tipim_codigo
+        INTO tipoImpuesto
+        FROM items i
+        WHERE i.it_codigo = itCodigo;
+
+        -- Inicializamos montos
+        monto5 := 0; monto10 := 0; exenta := 0; monto := 0;
+
+        -- Calculo de montos según impuesto y si es servicio
+        IF tipoImpuesto = 1 THEN -- 5%
+            IF tipitCodigo = 3 THEN
+                monto5 := round(precio);
+            ELSE
+                monto5 := round(cantidad * precio);
+            END IF;
+        ELSIF tipoImpuesto = 2 THEN -- 10%
+            IF tipitCodigo = 3 THEN
+                monto10 := round(precio);
+            ELSE
+                monto10 := round(cantidad * precio);
+            END IF;
+        ELSE -- exenta
+            IF tipitCodigo = 3 THEN
+                exenta := round(precio);
+            ELSE
+                exenta := round(cantidad * precio);
+            END IF;
+        END IF;
+
+        -- Calculo de monto total (cuenta pagar)
+        IF tipitCodigo = 3 THEN
+            monto := round(precio);
+        ELSE
+            monto := round(cantidad * precio);
+        END IF;
+
+        -- Datos de cabecera de nota
+        SELECT ncc.tipco_codigo,
+               tc.tipco_descripcion,
+               ncc.nocom_numeronota,
+               ncc.usu_codigo,
+               u.usu_login
+        INTO codigo_comprobante, comprobante, numero_comprobante, codigoUsuario, usuario
+        FROM nota_compra_cab ncc
+        JOIN tipo_comprobante tc ON tc.tipco_codigo = ncc.tipco_codigo
+        JOIN usuario u ON u.usu_codigo = ncc.usu_codigo
+        WHERE ncc.nocom_codigo = nocomCodigo;
+
+		-- En caso de que sea credito, multiplicamos por -1
+		IF tipoNota = 1 THEN
+			monto10 := monto10*(-1);
+			monto5 := monto5*(-1);
+			exenta := exenta*(-1);
+			monto := monto*(-1);
+		END IF;
+
+        -- Ejecutamos según operación
+        IF TG_OP = 'INSERT' THEN
+            PERFORM sp_libro_compra(nocomCodigo, exenta, monto5, monto10,
+                                    codigo_comprobante, comprobante, numero_comprobante,
+                                    1, codigoUsuario, usuario);
+            PERFORM sp_cuenta_pagar(nocomCodigo, monto, monto,
+                                    1, codigoUsuario, usuario);
+        ELSIF TG_OP = 'DELETE' THEN
+            PERFORM sp_libro_compra(nocomCodigo, exenta, monto5, monto10,
+                                    codigo_comprobante, comprobante, numero_comprobante,
+                                    2, codigoUsuario, usuario);
+            PERFORM sp_cuenta_pagar(nocomCodigo, monto, monto,
+                                    2, codigoUsuario, usuario);
+        END IF;
+    END IF;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+--Creamos el trigger que ejecutara la funcion spt_actualizacion2_libro_compra_cuenta_pagar()
+CREATE TRIGGER t_actualizacion2_libro_compra_cuenta_pagar
+BEFORE INSERT OR DELETE ON nota_compra_det
+FOR EACH ROW EXECUTE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar();
+
 

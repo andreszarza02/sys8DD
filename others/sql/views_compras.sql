@@ -259,11 +259,15 @@ select
 	ncc.comp_codigo,
 	ncc.pro_codigo,
 	ncc.tipro_codigo,
+	ncc.nocom_timbrado,
+	ncc.nocom_timbrado_venc,
+	ncc.nocom_chapa,
+	nocom_funcionario,
 	tc.tipco_descripcion,
 	s.suc_descripcion,
 	e.emp_razonsocial,
 	u.usu_login,
-	cc.com_numfactura,
+	cc.comp_numfactura,
 	p.pro_razonsocial,
 	tp.tipro_descripcion
 from nota_compra_cab ncc
@@ -281,6 +285,7 @@ order by ncc.nocom_codigo;
 create or replace view v_nota_compra_det as
 select 
 	ncd.*,
+	i.tipim_codigo,
 	i.it_descripcion,
 	ti.tipit_descripcion,
 	um.unime_descripcion,
@@ -295,7 +300,7 @@ from nota_compra_det ncd
 	join tipo_impuesto ti2 on ti2.tipim_codigo=i.tipim_codigo
 	join unidad_medida um on um.unime_codigo=i.unime_codigo
 	join deposito d on d.dep_codigo=ncd.dep_codigo
-order by ncd.nocom_codigo;
+order by ncd.nocom_codigo, ncd.it_codigo;
 
 create or replace view v_nota_venta_cab as
 select 

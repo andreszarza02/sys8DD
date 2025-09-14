@@ -660,11 +660,6 @@ if (isset($_SESSION['apertura'])) {
                                     <a href="/sys8DD/referenciales/venta/modelo_vehiculo/index.php">Modelo Vehiculo</a>
                                  </li>
                               <?php } ?>
-                              <?php if ($permisos_interfaz['ref_modeloVehiculo']) { ?>
-                                 <li>
-                                    <a href="/sys8DD/referenciales/venta/modelo_vehiculo/index.php">Modelo Vehiculo</a>
-                                 </li>
-                              <?php } ?>
                               <?php if ($permisos_interfaz['ref_chapaVehiculo']) { ?>
                                  <li>
                                     <a href="/sys8DD/referenciales/venta/chapa_vehiculo/index.php">Chapa Vehiculo</a>
