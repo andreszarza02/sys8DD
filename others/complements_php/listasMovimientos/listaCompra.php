@@ -16,12 +16,12 @@ $proveedor = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 //Establecemos y mostramos la consulta
 $sql = "select 
          cc.comp_codigo,
-         'Compra N°'||cc.comp_codigo||' '||to_char(cc.comp_fecha, 'DD-MM-YYYY') as compra,
+         'COMPRA N°'||cc.comp_codigo||' '||to_char(cc.comp_fecha, 'DD-MM-YYYY') as compra,
          cc.pro_codigo,
          p.pro_razonsocial,
          cc.tipro_codigo,
          tp.tipro_descripcion,
-         cc.com_numfactura
+         cc.comp_numfactura
       from compra_cab cc
          join proveedor p on p.pro_codigo=cc.pro_codigo
          and p.tipro_codigo=cc.tipro_codigo

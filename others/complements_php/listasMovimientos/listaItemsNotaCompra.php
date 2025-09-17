@@ -29,13 +29,7 @@ if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
             cd.it_codigo,
             cd.tipit_codigo,
             i.tipim_codigo,
-            (case 
-                  when i.tipit_codigo in(1, 4)
-                  then 
-                     i.it_descripcion||' '||d.dep_descripcion 
-                  else 
-                     i.it_descripcion
-                  end) as it_descripcion,
+            i.it_descripcion||' '||d.dep_descripcion as it_descripcion,
             cd.compdet_cantidad as nocomdet_cantidad,
             i.unime_codigo,
             um.unime_descripcion,
@@ -49,7 +43,6 @@ if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
             join items i on i.it_codigo=s.it_codigo
             and i.tipit_codigo=s.tipit_codigo
             join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
-            join tipo_impuesto tim on tim.tipim_codigo=i.tipim_codigo
             join deposito d on d.dep_codigo=s.dep_codigo
             and d.suc_codigo=s.suc_codigo
             and d.emp_codigo=s.emp_codigo 
@@ -57,7 +50,7 @@ if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
          where cd.comp_codigo=$comp_codigo
             and i.it_descripcion ilike '%$it_descripcion%'
             and i.it_estado = 'ACTIVO'
-            and i.tipit_codigo <> 2
+            and i.tipit_codigo not in (2, 3)
          order by cd.comp_codigo;";
 
    $resultado = pg_query($conexion, $sql);
@@ -74,13 +67,7 @@ if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
                i.it_descripcion,
                um.unime_codigo,
                um.unime_descripcion,
-               (case 
-               when i.tipit_codigo in(1, 4)
-               then 
-                  i.it_costo 
-               else 
-                  0
-               end) as nocomdet_precio
+               i.it_costo as nocomdet_precio
             from stock s 
                join items i on i.it_codigo=s.it_codigo
                and i.tipit_codigo=s.tipit_codigo
@@ -91,7 +78,7 @@ if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
                and s.suc_codigo=$suc_codigo
                and s.emp_codigo=$emp_codigo
                and i.it_descripcion ilike '%$it_descripcion%'
-               and i.tipit_codigo <> 2
+               and i.tipit_codigo not in (2, 3)
                and i.it_estado='ACTIVO'
             order by s.it_codigo;";
 

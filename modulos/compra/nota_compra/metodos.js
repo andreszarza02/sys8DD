@@ -1,3 +1,317 @@
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value) ||
+            tieneSimbolo.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-letras realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-letras")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneNumero = /[0-9]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene números o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneNumero.test(input.value) && tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números y símbolos`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          } else if (tieneNumero.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras, numeros y el simbolo -
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si tiene simbolos distintos a -
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos distintos a -
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} solo acepta letras, números y el simbolo guion(-)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan simbolos
+const validacionInputsVacios4 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan letras y simbolos que no sean . y ,
+const validacionInputsVacios5 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\-=\[\]{};':"\\|<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o simbolos distintos a . y ,
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene letras o simbolos distintos a . y ,
+          if (
+            tieneSimbolo.test(input.value) &&
+            (tieneMayuscula.test(input.value) ||
+              tieneMinuscula.test(input.value))
+          ) {
+            mensaje = `El campo ${labelText} contiene letras y simbolos distintos a .(punto) y ,(coma)`;
+          } else if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} contiene letras`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene simbolos distintos a .(punto) y ,(coma)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -11,13 +325,13 @@ const actualizacionCabecera = () => {
 };
 
 //Metodo encargado de ejecutar las funciones de detalle
-async function ejecutarFunciones() {
-  await setLibroCompra();
-  await setCuentaPagar();
-  await grabarDetalle();
-}
+// async function ejecutarFunciones() {
+//   await setLibroCompra();
+//   await setCuentaPagar();
+//   await grabarDetalle();
+// }
 
-//Perimte aplicar un formato de tabla a la lista de compra cabecera
+//Perimte aplicar un formato de tabla a la lista de nota compra cabecera
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -33,13 +347,13 @@ function formatoTabla() {
   });
 }
 
-//Consulta  y establece el codigo de nota compra en cabecera
+//Consulta y establece el codigo de nota compra en cabecera
 const getCodigo = () => {
   $.ajax({
     method: "POST",
     url: "controlador.php",
     data: {
-      consulta: 1,
+      consulta1: 1,
     },
   }).done(function (respuesta) {
     $("#nocom_codigo").val(respuesta.nocom_codigo);
@@ -52,39 +366,41 @@ const mostrarInputDeposito = () => {
 
   if (tipoComprobante == 2) {
     $("#deposito").prop("style", false);
+  } else {
+    $("#deposito").attr("style", "display: none;");
   }
 };
 
 //Valida que no se repita el item y deposito en el detalle
-const validarItem = () => {
-  //Establecemos una varibale que nos guarde la operacion
-  let operacionDetalle = $("#operacion_detalle").val();
-  $.ajax({
-    //Enviamos datos al controlador
-    method: "POST",
-    url: "controladorDetalle.php",
-    data: {
-      nocom_codigo: $("#nocom_codigo").val(),
-      it_codigo: $("#it_codigo").val(),
-      tipit_codigo: $("#tipit_codigo").val(),
-      dep_codigo: $("#dep_codigo").val(),
-      suc_codigo: $("#suc_codigo").val(),
-      emp_codigo: $("#emp_codigo").val(),
-      consulta: 1,
-    },
-  }) //Establecemos un mensaje segun el contenido de la respuesta
-    .done(function (respuesta) {
-      if (respuesta.existe_item == "1" && operacionDetalle == 1) {
-        swal({
-          title: "RESPUESTA!",
-          text: "El item con el deposito ya se encuentra registrado en el detalle",
-          type: "info",
-        });
-      } else {
-        ejecutarFunciones();
-      }
-    });
-};
+// const validarItem = () => {
+//   //Establecemos una varibale que nos guarde la operacion
+//   let operacionDetalle = $("#operacion_detalle").val();
+//   $.ajax({
+//     //Enviamos datos al controlador detalle
+//     method: "POST",
+//     url: "controladorDetalle.php",
+//     data: {
+//       nocom_codigo: $("#nocom_codigo").val(),
+//       it_codigo: $("#it_codigo").val(),
+//       tipit_codigo: $("#tipit_codigo").val(),
+//       dep_codigo: $("#dep_codigo").val(),
+//       suc_codigo: $("#suc_codigo").val(),
+//       emp_codigo: $("#emp_codigo").val(),
+//       consulta0: 1,
+//     },
+//   }) //Establecemos un mensaje segun el contenido de la respuesta
+//     .done(function (respuesta) {
+//       if (respuesta.existe_item == "1" && operacionDetalle == 1) {
+//         swal({
+//           title: "RESPUESTA!",
+//           text: "El item con el deposito ya se encuentra registrado en el detalle",
+//           type: "info",
+//         });
+//       } else {
+//         ejecutarFunciones();
+//       }
+//     });
+// };
 
 //Valida que no se devuelva una cantidad mayor de lo que se compro
 const validarCantidadItemCredito = () => {
@@ -102,7 +418,7 @@ const validarCantidadItemCredito = () => {
         dep_codigo: $("#dep_codigo").val(),
         suc_codigo: $("#suc_codigo").val(),
         emp_codigo: $("#emp_codigo").val(),
-        consulta2: 1,
+        consulta1: 1,
       },
     }) //Establecemos un mensaje segun el contenido de la respuesta
       .done(function (respuesta) {
@@ -110,8 +426,8 @@ const validarCantidadItemCredito = () => {
           parseFloat(cantidadNota) > parseFloat(respuesta.cantidad_compra_det)
         ) {
           swal({
-            title: "RESPUESTA!",
-            text: "La cantidad del item en el detalle es mayor al registrado en compras",
+            title: "RESPUESTA!!",
+            text: "LA CANTIDAD A DEVOLVER ES MAYOR A LO REGISTRADO EN EL DETALLE DE COMPRAS",
             type: "info",
           });
         }
@@ -120,60 +436,60 @@ const validarCantidadItemCredito = () => {
 };
 
 //Pasa parametros a libro compra
-const setLibroCompra = () => {
-  return new Promise((resolve, reject) => {
-    // Lógica de libro_compras
-    $.ajax({
-      //actualizamos el libro
-      method: "POST",
-      url: "controladorDetalle2.php",
-      data: {
-        comp_codigo: $("#comp_codigo").val(),
-        tipim_codigo: $("#tipim_codigo").val(),
-        tipco_codigo: $("#tipco_codigo").val(),
-        nocomdet_cantidad: $("#nocomdet_cantidad").val(),
-        nocomdet_precio: $("#nocomdet_precio").val(),
-        tipco_descripcion: $("#tipco_descripcion").val(),
-        nocom_numeronota: $("#nocom_numeronota").val(),
-        operacion_detalle: $("#operacion_detalle").val(),
-        usu_codigo: $("#usu_codigo").val(),
-        usu_login: $("#usu_login").val(),
-        consulta: "1",
-      },
-    });
-    setTimeout(() => {
-      resolve(); // Llama a resolve cuando se complete
-    }, 1000);
-  });
-};
+// const setLibroCompra = () => {
+//   return new Promise((resolve, reject) => {
+//     // Lógica de libro_compras
+//     $.ajax({
+//       //actualizamos el libro
+//       method: "POST",
+//       url: "controladorDetalle2.php",
+//       data: {
+//         comp_codigo: $("#comp_codigo").val(),
+//         tipim_codigo: $("#tipim_codigo").val(),
+//         tipco_codigo: $("#tipco_codigo").val(),
+//         nocomdet_cantidad: $("#nocomdet_cantidad").val(),
+//         nocomdet_precio: $("#nocomdet_precio").val(),
+//         tipco_descripcion: $("#tipco_descripcion").val(),
+//         nocom_numeronota: $("#nocom_numeronota").val(),
+//         operacion_detalle: $("#operacion_detalle").val(),
+//         usu_codigo: $("#usu_codigo").val(),
+//         usu_login: $("#usu_login").val(),
+//         consulta: "1",
+//       },
+//     });
+//     setTimeout(() => {
+//       resolve(); // Llama a resolve cuando se complete
+//     }, 1000);
+//   });
+// };
 
 //Pasa parametros a cuenta pagar
-const setCuentaPagar = () => {
-  return new Promise((resolve, reject) => {
-    // Lógica de cuentas_pagar
-    $.ajax({
-      //actualizamos la cuenta
-      method: "POST",
-      url: "controladorDetalle2.php",
-      data: {
-        comp_codigo: $("#comp_codigo").val(),
-        tipim_codigo: 0,
-        tipco_codigo: $("#tipco_codigo").val(),
-        nocomdet_cantidad: $("#nocomdet_cantidad").val(),
-        nocomdet_precio: $("#nocomdet_precio").val(),
-        tipco_descripcion: $("#tipco_descripcion").val(),
-        nocom_numeronota: $("#nocom_numeronota").val(),
-        operacion_detalle: $("#operacion_detalle").val(),
-        usu_codigo: $("#usu_codigo").val(),
-        usu_login: $("#usu_login").val(),
-        consulta: "2",
-      },
-    });
-    setTimeout(() => {
-      resolve(); // Llama a resolve cuando se complete
-    }, 1000);
-  });
-};
+// const setCuentaPagar = () => {
+//   return new Promise((resolve, reject) => {
+//     // Lógica de cuentas_pagar
+//     $.ajax({
+//       //actualizamos la cuenta
+//       method: "POST",
+//       url: "controladorDetalle2.php",
+//       data: {
+//         comp_codigo: $("#comp_codigo").val(),
+//         tipim_codigo: 0,
+//         tipco_codigo: $("#tipco_codigo").val(),
+//         nocomdet_cantidad: $("#nocomdet_cantidad").val(),
+//         nocomdet_precio: $("#nocomdet_precio").val(),
+//         tipco_descripcion: $("#tipco_descripcion").val(),
+//         nocom_numeronota: $("#nocom_numeronota").val(),
+//         operacion_detalle: $("#operacion_detalle").val(),
+//         usu_codigo: $("#usu_codigo").val(),
+//         usu_login: $("#usu_login").val(),
+//         consulta: "2",
+//       },
+//     });
+//     setTimeout(() => {
+//       resolve(); // Llama a resolve cuando se complete
+//     }, 1000);
+//   });
+// };
 
 //Consulta y lista los datos en nota compra cabecera
 const listar = () => {
@@ -212,7 +528,13 @@ const listar = () => {
         tabla += objeto.comp_codigo;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.com_numfactura;
+        tabla += objeto.comp_numfactura;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.nocom_timbrado;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.nocom_timbrado_venc;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.usu_login;
@@ -368,7 +690,7 @@ const listarDetalle = () => {
     });
 };
 
-//Habilita botones en cabecera
+// Habilita botones en cabecera
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -379,7 +701,7 @@ const habilitarBotones = (booleano) => {
   }
 };
 
-//Habilita botones en datelle
+// Habilita botones en datelle
 const habilitarBotones2 = (booleano) => {
   if (booleano) {
     $(".botonesExtra3").attr("style", "display: block;");
@@ -390,7 +712,7 @@ const habilitarBotones2 = (booleano) => {
   }
 };
 
-//Saca el disabled de los inputs
+// Saca el disabled de los inputs
 const habilitarCampos = (booleano) => {
   if (booleano) {
     $(".no-disabled").removeAttr("disabled");
@@ -403,11 +725,28 @@ const habilitarCampos = (booleano) => {
 const getDate = () => {
   const date = new Date();
   const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const fecha = `${day}/${month}/${year}`;
-
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const fecha = `${year}-${month}-${day}`;
   return fecha;
+};
+
+// Limpia campos de detalle
+const limpiarCamposDetalle = () => {
+  $("#dep_codigo").val(0);
+  $("#dep_descripcion").val("");
+  $("#it_codigo").val(0);
+  $("#tipit_codigo").val(0);
+  $("#tipim_codigo").val(0);
+  $("#it_descripcion").val("");
+  $("#nocomdet_cantidad").val("");
+  $("#unime_codigo").val(0);
+  $("#unime_descripcion").val("");
+  $("#nocomdet_precio").val("");
+  $(".dep").attr("class", "form-line dep");
+  $(".it").attr("class", "form-line it");
+  $(".foco2").attr("class", "form-line foco2");
+  $(".foco3").attr("class", "form-line foco3");
 };
 
 //Metodo que establece el alta de cabecera
@@ -417,11 +756,14 @@ const nuevo = () => {
   habilitarCampos(true);
   $(".activar").attr("class", "form-line activar");
   getCodigo();
-  $(".fecha").attr("class", "form-line fecha focused");
   $(".tip").attr("class", "form-line tip");
   $(".foco4").attr("class", "form-line foco4");
   $(".comp").attr("class", "form-line comp");
   $(".est").attr("class", "form-line est focused");
+  $(".funex").attr("class", "form-line funex");
+  $(".ch").attr("class", "form-line ch");
+  $(".mar").attr("class", "form-line mar");
+  $(".mod").attr("class", "form-line mod");
   $("#nocom_numeronota").val("");
   $("#nocom_fecha").val(getDate());
   $("#tipco_codigo").val(0);
@@ -432,32 +774,39 @@ const nuevo = () => {
   $("#tipro_descripcion").val("");
   $("#pro_razonsocial").val("");
   $("#comp_codigo").val("");
-  $("#com_numfactura").val("");
+  $("#comp_numfactura").val("");
+  $("#nocom_timbrado").val("");
+  $("#nocom_timbrado_venc").val("");
   $("#nocom_estado").val("ACTIVO");
+  $("#funpro_codigo").val(0);
+  $("#funpro_documento").val("");
+  $("#funpro_nombre").val("");
+  $("#funpro_apellido").val("");
+  $("#chave_codigo").val(0);
+  $("#chave_chapa").val("");
+  $("#marve_codigo").val(0);
+  $("#marve_descripcion").val("");
+  $("#modve_codigo").val(0);
+  $("#modve_descripcion").val("");
   actualizacionCabecera();
   habilitarBotones(false);
   $("#cabecera").attr("style", "display: none");
   $("#detalle").attr("style", "display: none");
+  validacionInputsVacios1();
+  validacionInputsVacios2();
+  validacionInputsVacios3();
+  validacionInputsVacios4();
 };
 
 //Metodo que estbalece el alta del detalle
 const nuevoDetalle = () => {
   $("#operacion_detalle").val(1);
-  $("#dep_codigo").val(0);
-  $("#dep_descripcion").val("");
-  $("#it_codigo").val(0);
-  $("#tipit_codigo").val(0);
-  $("#it_descripcion").val("");
-  $("#nocomdet_cantidad").val("");
-  $("#unime_codigo").val(0);
-  $("#unime_descripcion").val("");
-  $("#nocomdet_precio").val("");
-  $(".dep").attr("class", "form-line dep");
-  $(".it").attr("class", "form-line it");
-  $(".foco2").attr("class", "form-line foco2");
-  $(".foco3").attr("class", "form-line foco3");
+  limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
+  validacionInputsVacios1();
+  validacionInputsVacios4();
+  validacionInputsVacios5();
 };
 
 //Metodo que establece la baja en nota compra cabecera
@@ -499,6 +848,18 @@ const grabar = () => {
       comp_codigo: $("#comp_codigo").val(),
       pro_codigo: $("#pro_codigo").val(),
       tipro_codigo: $("#tipro_codigo").val(),
+      nocom_timbrado: $("#nocom_timbrado").val(),
+      nocom_timbrado_venc: $("#nocom_timbrado_venc").val(),
+      funpro_codigo: $("#funpro_codigo").val(),
+      funpro_documento: $("#funpro_documento").val(),
+      funpro_nombre: $("#funpro_nombre").val(),
+      funpro_apellido: $("#funpro_apellido").val(),
+      chave_codigo: $("#chave_codigo").val(),
+      chave_chapa: $("#chave_chapa").val(),
+      modve_codigo: $("#modve_codigo").val(),
+      modve_descripcion: $("#modve_descripcion").val(),
+      marve_codigo: $("#marve_codigo").val(),
+      marve_descripcion: $("#marve_descripcion").val(),
       operacion_cabecera: $("#operacion_cabecera").val(),
       usu_login: $("#usu_login").val(),
       procedimiento: $("#procedimiento").val(),
@@ -547,70 +908,64 @@ const grabar = () => {
 
 //Pasa parametros en el controlador de detalle para guardarlos en nota compra detalle
 const grabarDetalle = () => {
-  return new Promise((resolve, reject) => {
-    // Lógica de grabarDetalle
-    $.ajax({
-      //Enviamos datos al controlador detalle
-      method: "POST",
-      url: "controladorDetalle.php",
-      data: {
-        nocom_codigo: $("#nocom_codigo").val(),
-        it_codigo: $("#it_codigo").val(),
-        tipit_codigo: $("#tipit_codigo").val(),
-        nocomdet_cantidad: $("#nocomdet_cantidad").val(),
-        nocomdet_precio: $("#nocomdet_precio").val(),
-        dep_codigo: $("#dep_codigo").val(),
-        suc_codigo: $("#suc_codigo").val(),
-        emp_codigo: $("#emp_codigo").val(),
-        tipco_codigo: $("#tipco_codigo").val(),
-        comp_codigo: $("#comp_codigo").val(),
-        usu_codigo: $("#usu_codigo").val(),
-        operacion_detalle: $("#operacion_detalle").val(),
-        usu_login: $("#usu_login").val(),
-      },
-    }) //Establecemos un mensaje segun el contenido de la respuesta
-      .done(function (respuesta) {
-        swal(
-          {
-            title: "RESPUESTA!!",
-            text: respuesta.mensaje,
-            type: respuesta.tipo,
-          },
-          function () {
-            //Si la respuesta devuelve un success recargamos la pagina
-            if (respuesta.tipo == "info") {
-              limpiarCampos();
-            }
+  $.ajax({
+    //Enviamos datos al controlador detalle
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      nocom_codigo: $("#nocom_codigo").val(),
+      it_codigo: $("#it_codigo").val(),
+      tipit_codigo: $("#tipit_codigo").val(),
+      nocomdet_cantidad: $("#nocomdet_cantidad").val(),
+      nocomdet_precio: $("#nocomdet_precio").val(),
+      dep_codigo: $("#dep_codigo").val(),
+      suc_codigo: $("#suc_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
+      tipco_codigo: $("#tipco_codigo").val(),
+      comp_codigo: $("#comp_codigo").val(),
+      usu_codigo: $("#usu_codigo").val(),
+      operacion_detalle: $("#operacion_detalle").val(),
+      usu_login: $("#usu_login").val(),
+    },
+  }) //Establecemos un mensaje segun el contenido de la respuesta
+    .done(function (respuesta) {
+      swal(
+        {
+          title: "RESPUESTA!!",
+          text: respuesta.mensaje,
+          type: respuesta.tipo,
+        },
+        function () {
+          //Si la respuesta devuelve un success recargamos la pagina
+          if (respuesta.tipo == "info") {
+            habilitarBotones2(true);
+            listarDetalle();
           }
-        );
-      })
-      .fail(function (a, b, c) {
-        //obtenemos el error generado y guardamos dentro de una variable
-        let errorTexto = a.responseText;
-        let inicio = errorTexto.indexOf("{");
-        let final = errorTexto.lastIndexOf("}") + 1;
-        let errorJson = errorTexto.substring(inicio, final);
-
-        //convertimos el string generado en un objeto
-        let errorObjeto = JSON.parse(errorJson);
-
-        //condicionamos la respuesta con el objeto
-        if (errorObjeto.tipo == "error") {
-          swal({
-            title: "RESPUESTA!!",
-            text: errorObjeto.mensaje,
-            type: errorObjeto.tipo,
-          });
         }
-      });
-    setTimeout(() => {
-      console.log("Datos grabados");
-      resolve(); // Llama a resolve cuando se complete
-    }, 1000);
-  });
+      );
+    })
+    .fail(function (a, b, c) {
+      //obtenemos el error generado y guardamos dentro de una variable
+      let errorTexto = a.responseText;
+      let inicio = errorTexto.indexOf("{");
+      let final = errorTexto.lastIndexOf("}") + 1;
+      let errorJson = errorTexto.substring(inicio, final);
+
+      //convertimos el string generado en un objeto
+      let errorObjeto = JSON.parse(errorJson);
+
+      //condicionamos la respuesta con el objeto
+      if (errorObjeto.tipo == "error") {
+        swal({
+          title: "RESPUESTA!!",
+          text: errorObjeto.mensaje,
+          type: errorObjeto.tipo,
+        });
+      }
+    });
 };
 
-//Establece los mensajes pára agregar y anular cabecera
+//Establece los mensajes para agregar y anular cabecera
 const confirmar = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_cabecera").val();
@@ -623,8 +978,8 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -645,7 +1000,7 @@ const confirmar = () => {
   );
 };
 
-//Establece los mensajes pára agregar y anular detalle
+//Establece los mensajes para agregar y eliminar detalle
 const confirmar2 = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_detalle").val();
@@ -658,8 +1013,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -671,7 +1026,7 @@ const confirmar2 = () => {
     function (isConfirm) {
       //Si la operacion_cabecera es correcta llamamos al metodo grabar
       if (isConfirm) {
-        validarItem();
+        grabarDetalle();
       } else {
         //Si cancelamos la operacion_cabecera realizamos un reload
         window.location.reload(true);
@@ -682,8 +1037,10 @@ const confirmar2 = () => {
 
 //Controla que todos los inputs de cabecera no se pasen con valores vacios
 const controlVacio = () => {
-  let condicion;
+  let condicion = false;
+  let condicion2 = false;
 
+  // Validamos que los inputs no este vacios
   if ($("#nocom_codigo").val() == "") {
     condicion = true;
   } else if ($("#nocom_numeronota").val() == "") {
@@ -698,7 +1055,7 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#comp_codigo").val() == "") {
     condicion = true;
-  } else if ($("#com_numfactura").val() == "") {
+  } else if ($("#comp_numfactura").val() == "") {
     condicion = true;
   } else if ($("#emp_razonsocial").val() == "") {
     condicion = true;
@@ -708,14 +1065,43 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#nocom_estado").val() == "") {
     condicion = true;
+    // En caso de ser una nota de remision, se verifica tambien el card extra
+  } else if ($("#funpro_nombre").val() == "" && $("#tipco_codigo").val() == 3) {
+    condicion2 = true;
+  } else if (
+    $("#funpro_apellido").val() == "" &&
+    $("#tipco_codigo").val() == 3
+  ) {
+    condicion2 = true;
+  } else if ($("#chave_chapa").val() == "" && $("#tipco_codigo").val() == 3) {
+    condicion2 = true;
+  } else if (
+    $("#marve_descripcion").val() == "" &&
+    $("#tipco_codigo").val() == 3
+  ) {
+    condicion2 = true;
+  } else if (
+    $("#modve_descripcion").val() == "" &&
+    $("#tipco_codigo").val() == 3
+  ) {
+    condicion2 = true;
   }
 
-  if (condicion) {
-    swal({
-      title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
-      type: "error",
-    });
+  // Dependiendo del tipo de nota, enviamos una
+  if (condicion || condicion2) {
+    if (condicion2) {
+      swal({
+        title: "RESPUESTA!!",
+        text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO, NO SE OLVIDE LOS DATOS DEL FUNCIONARIO Y VEHICULO DEL PROVEEDOR",
+        type: "error",
+      });
+    } else {
+      swal({
+        title: "RESPUESTA!!",
+        text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
+        type: "error",
+      });
+    }
   } else {
     confirmar();
   }
@@ -740,22 +1126,11 @@ const controlVacio2 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE DETALLE QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
-    if (
-      $("#tipit_codigo").val() == "3" &&
-      $("#nocomdet_cantidad").val() !== "0"
-    ) {
-      swal({
-        title: "RESPUESTA!!",
-        text: "El servicio no lleva cantidad",
-        type: "error",
-      });
-    } else {
-      confirmar2();
-    }
+    confirmar2();
   }
 };
 
@@ -767,7 +1142,6 @@ const seleccionarFila = (objetoJSON) => {
   });
 
   $(".activar").attr("class", "form-line activar focused");
-  $(".fecha").attr("class", "form-line fecha focused");
   $(".tip").attr("class", "form-line tip focused");
   $(".foco4").attr("class", "form-line foco4 focused");
   $(".comp").attr("class", "form-line comp focused");
@@ -777,6 +1151,7 @@ const seleccionarFila = (objetoJSON) => {
   actualizacionCabecera();
   mostrarInputDeposito();
   listarDetalle();
+  limpiarCamposDetalle();
 };
 
 //Envia a los inputs de detalle lo seleccionado en la tabla de detalle
@@ -801,6 +1176,14 @@ const seleccionTipoComprobante = (datos) => {
   $("#ulTC").html();
   $("#listaTC").attr("style", "display: none;");
   $(".tip").attr("class", "form-line tip focused");
+
+  // En caso de ser una nota de remision, mostramos el card extra
+  if ($("#tipco_codigo").val() == 3) {
+    $("#nota_remision").attr("style", "display: block;");
+  } else {
+    // Sino lo ocultamos
+    $("#nota_remision").attr("style", "display: none;");
+  }
 };
 
 //Busca, filtra y muestra los tipos de comprobante
@@ -831,54 +1214,6 @@ const getTipoComprobante = () => {
       $("#ulTC").html(fila);
       //hacemos visible la lista
       $("#listaTC").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000; width:100%;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
-};
-
-//Envia al input de concepto lo seleccionado en el autocompletado
-const seleccionConcepto = (datos) => {
-  //Enviamos los datos a su respectivo input
-  Object.keys(datos).forEach((key) => {
-    $("#" + key).val(datos[key]);
-  });
-  $("#ulConcepto").html();
-  $("#listaConcepto").attr("style", "display: none;");
-  $(".foco4").attr("class", "form-line foco4 focused");
-};
-
-//Busca y muestra los conceptos
-const getConcepto = () => {
-  $.ajax({
-    //Solicitamos los datos a listaConceptoNotaCompra
-    method: "POST",
-    url: "/sys8DD/others/complements_php/listas/listaConceptoNotaCompra.php",
-    data: {
-      nocom_concepto: $("#nocom_concepto").val(),
-    },
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        if (objeto.dato1 == "NSE") {
-          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
-        } else {
-          fila +=
-            "<li class='list-group-item' onclick='seleccionConcepto(" +
-            JSON.stringify(objeto) +
-            ")'>" +
-            objeto.nocom_concepto +
-            "</li>";
-        }
-      });
-      //cargamos la lista
-      $("#ulConcepto").html(fila);
-      //hacemos visible la lista
-      $("#listaConcepto").attr(
         "style",
         "display: block; position:absolute; z-index: 3000; width:100%;"
       );
@@ -994,32 +1329,37 @@ const seleccionItem = (datos) => {
     $("#" + key).val(datos[key]);
   });
 
+  // Validamos el tipo de comprobante
   if (tipoComprobante == 1) {
+    // Credito
     $("#ulItem").html();
     $("#listaItem").attr("style", "display: none;");
     $(".it").attr("class", "form-line it focused");
     $(".foco2").attr("class", "form-line foco2 focused");
     $(".foco3").attr("class", "form-line foco3 focused");
+    $("#nocomdet_cantidad").prop("disabled", false);
   } else if (tipoComprobante == 3) {
+    // Remison
     $("#ulItem").html();
     $("#listaItem").attr("style", "display: none;");
     $(".it").attr("class", "form-line it focused");
     $(".foco2").attr("class", "form-line foco2 focused");
     $(".foco3").attr("class", "form-line foco3 focused");
-    $("#nocomdet_cantidad").prop("disabled", true);
   } else {
+    // Debito
     $("#ulItem").html();
     $("#listaItem").attr("style", "display: none;");
     $(".it").attr("class", "form-line it focused");
-
-    let tipoItem = $("#tipit_codigo").val();
-    if (tipoItem == 1 || tipoItem == 4) {
-      $(".foco3").attr("class", "form-line foco3 focused");
-    } else {
-      $("#nocomdet_cantidad").prop("disabled", true);
-      controlServicio();
-      $("#nocomdet_precio").prop("disabled", false);
-    }
+    $(".foco3").attr("class", "form-line foco3 focused");
+    $("#nocomdet_cantidad").prop("disabled", false);
+    $("#nocomdet_precio").prop("disabled", false);
+    //  let tipoItem = $("#tipit_codigo").val();
+    //  if (tipoItem == 1 || tipoItem == 4) {
+    //  } else {
+    //    $("#nocomdet_cantidad").prop("disabled", true);
+    //    controlServicio();
+    //    $("#nocomdet_precio").prop("disabled", false);
+    //  }
   }
 };
 
@@ -1065,18 +1405,215 @@ const getItem = () => {
     });
 };
 
+// Envia al input de funcionario proveedor lo seleccionado en el autocompletado
+const seleccionFuncionarioProveedor = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulFuncionarioExterno").html();
+  $("#listaFuncionarioExterno").attr("style", "display: none;");
+  $(".funex").attr("class", "form-line funex focused");
+};
+
+//Busca, filtra y muestra los funcionarios de proveedor
+const getFuncionarioProveedor = () => {
+  $.ajax({
+    //Solicitamos los datos a listaFuncionarioProveedor
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaFuncionarioProveedor.php",
+    data: {
+      funpro_documento: $("#funpro_documento").val(),
+      pro_codigo: $("#pro_codigo").val(),
+      tipro_codigo: $("#tipro_codigo").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionFuncionarioProveedor(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.funcionario_externo +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulFuncionarioExterno").html(fila);
+      //hacemos visible la lista
+      $("#listaFuncionarioExterno").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+// Envia al input de marca vehiculo lo seleccionado en el autocompletado
+const seleccionMarcaVehiculo = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulMarca").html();
+  $("#listaMarca").attr("style", "display: none;");
+  $(".mar").attr("class", "form-line mar focused");
+};
+
+//Busca, filtra y muestra las marcas de vehiculo
+const getMarcaVehiculo = () => {
+  $.ajax({
+    //Solicitamos los datos a listaMarcaVehiculo2
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaMarcaVehiculo2.php",
+    data: {
+      marve_descripcion: $("#marve_descripcion").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionMarcaVehiculo(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.marve_descripcion +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulMarca").html(fila);
+      //hacemos visible la lista
+      $("#listaMarca").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+// Envia al input de modelo vehiculo lo seleccionado en el autocompletado
+const seleccionModeloVehiculo = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulModelo").html();
+  $("#listaModelo").attr("style", "display: none;");
+  $(".mod").attr("class", "form-line mod focused");
+  $(".mar").attr("class", "form-line mar focused");
+};
+
+//Busca, filtra y muestra los modelos de vehiculo
+const getModeloVehiculo = () => {
+  $.ajax({
+    //Solicitamos los datos a listaModeloVehiculo2
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaModeloVehiculo2.php",
+    data: {
+      modve_descripcion: $("#modve_descripcion").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionModeloVehiculo(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.modelo_marca +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulModelo").html(fila);
+      //hacemos visible la lista
+      $("#listaModelo").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+// Envia al input de chapa vehiculo lo seleccionado en el autocompletado
+const seleccionChapaVehiculo = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulChapa").html();
+  $("#listaChapa").attr("style", "display: none;");
+  $(".ch").attr("class", "form-line ch focused");
+  $(".mod").attr("class", "form-line mod focused");
+  $(".mar").attr("class", "form-line mar focused");
+};
+
+// Busca, filtra y muestra los vehiculos por chapa
+const getChapaVehiculo = () => {
+  $.ajax({
+    //Solicitamos los datos a listaChapaVehiculo
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaChapaVehiculo.php",
+    data: {
+      chave_chapa: $("#chave_chapa").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionChapaVehiculo(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.chapa_modelo_marca +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulChapa").html(fila);
+      //hacemos visible la lista
+      $("#listaChapa").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
 //Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
 };
 
 //En caso de ser el item servicio te establece la cantidad en 0
-const controlServicio = () => {
-  let tipoItem = $("#tipit_codigo").val();
-  if (tipoItem == "3") {
-    $("#nocomdet_cantidad").val("0");
-    $(".foco2").attr("class", "form-line foco2 focused");
-  }
-};
+// const controlServicio = () => {
+//   let tipoItem = $("#tipit_codigo").val();
+//   if (tipoItem == "3") {
+//     $("#nocomdet_cantidad").val("0");
+//     $(".foco2").attr("class", "form-line foco2 focused");
+//   }
+// };
 
 listar();
