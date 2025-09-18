@@ -30,7 +30,6 @@ if (isset($_POST['operacion_detalle'])) {
       {$_POST['suc_codigo']}, 
       {$_POST['emp_codigo']}, 
       {$_POST['tipco_codigo']}, 
-      {$_POST['comp_codigo']}, 
       {$_POST['usu_codigo']},  
       {$_POST['operacion_detalle']},
       '$usu_login'

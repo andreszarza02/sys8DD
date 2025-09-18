@@ -78,7 +78,7 @@ if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
                and s.suc_codigo=$suc_codigo
                and s.emp_codigo=$emp_codigo
                and i.it_descripcion ilike '%$it_descripcion%'
-               and i.tipit_codigo not in (2, 3)
+               and i.tipit_codigo not in (2)
                and i.it_estado='ACTIVO'
             order by s.it_codigo;";
 

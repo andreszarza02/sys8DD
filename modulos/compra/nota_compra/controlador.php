@@ -43,7 +43,7 @@ if (isset($_POST['operacion_cabecera'])) {
    $chave_codigo = 0;
 
    // Validamos que la nota sea de remision
-   if (isset($_POST['tipco_codigo']) == 3) {
+   if ($_POST['tipco_codigo'] == 3) {
 
       // Validamos que el codigo de funcionario este definido
       if ($_POST['funpro_codigo'] == 0) {
@@ -169,7 +169,6 @@ if (isset($_POST['operacion_cabecera'])) {
 
    }
 
-
    //Definimos y cargamos las variables
    $numeroNota = $_POST['nocom_numeronota'];
    $numeroNota = preg_replace('/\D/', '', $numeroNota);
@@ -184,8 +183,6 @@ if (isset($_POST['operacion_cabecera'])) {
    $suc_descripcion = pg_escape_string($conexion, $_POST['suc_descripcion']);
 
    $emp_razonsocial = pg_escape_string($conexion, $_POST['emp_razonsocial']);
-
-   $nocom_chapa = pg_escape_string($conexion, $_POST['chave_chapa']);
 
    $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
@@ -204,8 +201,8 @@ if (isset($_POST['operacion_cabecera'])) {
       {$_POST['tipro_codigo']}, 
       '{$_POST['nocom_timbrado']}',
       '{$_POST['nocom_timbrado_venc']}',
-      '$nocom_chapa',
-      {$_POST['funpro_codigo']},
+      $chave_codigo,
+      $funpro_codigo,
       {$_POST['operacion_cabecera']},
       '$usu_login',
       '$procedimiento',
@@ -222,7 +219,7 @@ if (isset($_POST['operacion_cabecera'])) {
 
    if (strpos($error, "nota") !== false) {
       $response = array(
-         "mensaje" => "EL NUMERO DE NOTA YA SE SE ENCUENTRA REGISTRADA",
+         "mensaje" => "EL NUMERO DE NOTA YA SE ENCUENTRA REGISTRADA",
          "tipo" => "error"
       );
    } else {

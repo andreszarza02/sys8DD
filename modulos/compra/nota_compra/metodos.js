@@ -1351,15 +1351,7 @@ const seleccionItem = (datos) => {
     $("#listaItem").attr("style", "display: none;");
     $(".it").attr("class", "form-line it focused");
     $(".foco3").attr("class", "form-line foco3 focused");
-    $("#nocomdet_cantidad").prop("disabled", false);
-    $("#nocomdet_precio").prop("disabled", false);
-    //  let tipoItem = $("#tipit_codigo").val();
-    //  if (tipoItem == 1 || tipoItem == 4) {
-    //  } else {
-    //    $("#nocomdet_cantidad").prop("disabled", true);
-    //    controlServicio();
-    //    $("#nocomdet_precio").prop("disabled", false);
-    //  }
+    controlServicio();
   }
 };
 
@@ -1608,12 +1600,18 @@ const salir = () => {
 };
 
 //En caso de ser el item servicio te establece la cantidad en 0
-// const controlServicio = () => {
-//   let tipoItem = $("#tipit_codigo").val();
-//   if (tipoItem == "3") {
-//     $("#nocomdet_cantidad").val("0");
-//     $(".foco2").attr("class", "form-line foco2 focused");
-//   }
-// };
+const controlServicio = () => {
+  if ($("#tipit_codigo").val() == 3) {
+    $("#nocomdet_cantidad").prop("disabled", true);
+    $("#nocomdet_cantidad").val("0");
+    $(".foco2").attr("class", "form-line foco2 focused");
+    $("#nocomdet_precio").prop("disabled", false);
+  } else {
+    $("#nocomdet_cantidad").prop("disabled", false);
+    $("#nocomdet_cantidad").val("");
+    $(".foco2").attr("class", "form-line foco2 ");
+    $("#nocomdet_precio").prop("disabled", false);
+  }
+};
 
 listar();
