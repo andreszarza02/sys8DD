@@ -725,27 +725,64 @@ AFTER INSERT OR DELETE ON compra_det
 FOR EACH ROW EXECUTE FUNCTION spt_actualizacion_libro_compra_cuenta_pagar();
 
 -- Libro Compra y Cuenta Pagar 2
-CREATE OR REPLACE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar() 
+CREATE OR REPLACE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar()
 RETURNS TRIGGER AS $$
 DECLARE
-    tipoImpuesto       integer;
-    monto5             numeric := 0;
-    monto10            numeric := 0;
-    exenta             numeric := 0;
-    monto              numeric := 0;
-    codigo_comprobante integer;
-    comprobante        varchar;
+    -- montos / tipos
+    tipoNota        integer;
+    tipoImpuesto    integer;
+    monto5          numeric := 0;
+    monto10         numeric := 0;
+    exenta          numeric := 0;
+    monto           numeric := 0;
+
+    -- identificadores y datos de cabecera
+    nocomCodigo     int4;
+    itCodigo        int4;
+    tipitCodigo     int4;
+    cantidad        numeric;
+    precio          numeric;
+    compcodigo      int4;        -- <-- ESTE es el código de compra que necesitamos usar
+    codigoUsuario   integer;
+    usuario         varchar;
+    comprobante     varchar;
     numero_comprobante varchar;
-    codigoUsuario      integer;
-    usuario            varchar;
-    tipoNota           integer;
-    nocomCodigo        int4;
-    itCodigo           int4;
-    tipitCodigo        int4;
-    cantidad           numeric;
-    precio             numeric;
+
+    -- control / auditoría
+    notaMonto       numeric := 0;
+    compraEstado    varchar;
+    compAudit       text;
+
+    -- cursor parametrizado para auditar la cabecera de compra
+    c_compra_cab cursor(comp_id int) is
+        select cc.comp_fecha,
+               cc.comp_numfactura,
+               cc.comp_timbrado,
+               cc.comp_timbrado_venc,
+               cc.comp_tipofactura,
+               cc.comp_cuota,
+               cc.comp_montocuota,
+               cc.comp_interfecha,
+               cc.tipco_codigo,
+               tc.tipco_descripcion,
+               cc.pro_codigo,
+               p.pro_razonsocial,
+               cc.tipro_codigo,
+               tp.tipro_descripcion,
+               cc.emp_codigo,
+               e.emp_razonsocial,
+               cc.suc_codigo,
+               s.suc_descripcion,
+               cc.comp_estado
+        from compra_cab cc
+        join tipo_comprobante tc on tc.tipco_codigo=cc.tipco_codigo
+        join proveedor p on p.pro_codigo=cc.pro_codigo
+        join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo
+        join sucursal s on s.suc_codigo=cc.suc_codigo and s.emp_codigo=cc.emp_codigo
+        join empresa e on e.emp_codigo=s.emp_codigo
+        where cc.comp_codigo = comp_id;
 BEGIN
-    -- Tomamos los valores según si es INSERT o DELETE
+    /* 1) Obtener ids/valores del row (nuevo o viejo según operación) */
     IF TG_OP = 'INSERT' THEN
         nocomCodigo := NEW.nocom_codigo;
         itCodigo    := NEW.it_codigo;
@@ -760,37 +797,46 @@ BEGIN
         precio      := OLD.nocomdet_precio;
     END IF;
 
-    -- Traemos el tipo de nota (crédito o débito)
-    SELECT ncc.tipco_codigo
-    INTO tipoNota
+    /* 2) Obtener datos de la nota (incluye comp_codigo de la compra relacionada) */
+    SELECT ncc.tipco_codigo,
+           tc.tipco_descripcion,
+           ncc.nocom_numeronota,
+           ncc.comp_codigo,
+           ncc.usu_codigo,
+           u.usu_login
+    INTO   tipoNota, comprobante, numero_comprobante, compcodigo, codigoUsuario, usuario
     FROM nota_compra_cab ncc
+    JOIN tipo_comprobante tc ON tc.tipco_codigo = ncc.tipco_codigo
+    JOIN usuario u ON u.usu_codigo = ncc.usu_codigo
     WHERE ncc.nocom_codigo = nocomCodigo;
 
-    -- Solo procesamos notas de tipo 1 (crédito) y 2 (débito)
-    IF tipoNota IN (1, 2) THEN
-        -- Obtenemos tipo de impuesto del item
-        SELECT i.tipim_codigo
-        INTO tipoImpuesto
-        FROM items i
-        WHERE i.it_codigo = itCodigo;
+    -- Si no encontramos la nota (defensivo), salimos
+    IF compcodigo IS NULL THEN
+        RETURN NULL;
+    END IF;
 
-        -- Inicializamos montos
-        monto5 := 0; monto10 := 0; exenta := 0; monto := 0;
+    /* 3) Solo procesar notas crédito(1) o débito(2) */
+    IF tipoNota IN (1,2) THEN
 
-        -- Calculo de montos según impuesto y si es servicio
-        IF tipoImpuesto = 1 THEN -- 5%
+        /* 3.1) Obtener tipo de impuesto del ítem */
+        SELECT i.tipim_codigo INTO tipoImpuesto FROM items i WHERE i.it_codigo = itCodigo;
+
+        /* 3.2) Calcular montos según impuesto y si es servicio (tipit=3) */
+        monto5 := 0; monto10 := 0; exenta := 0;
+
+        IF tipoImpuesto = 1 THEN
             IF tipitCodigo = 3 THEN
                 monto5 := round(precio);
             ELSE
                 monto5 := round(cantidad * precio);
             END IF;
-        ELSIF tipoImpuesto = 2 THEN -- 10%
+        ELSIF tipoImpuesto = 2 THEN
             IF tipitCodigo = 3 THEN
                 monto10 := round(precio);
             ELSE
                 monto10 := round(cantidad * precio);
             END IF;
-        ELSE -- exenta
+        ELSE
             IF tipitCodigo = 3 THEN
                 exenta := round(precio);
             ELSE
@@ -798,46 +844,117 @@ BEGIN
             END IF;
         END IF;
 
-        -- Calculo de monto total (cuenta pagar)
+        /* monto total para cuenta pagar */
         IF tipitCodigo = 3 THEN
             monto := round(precio);
         ELSE
             monto := round(cantidad * precio);
         END IF;
 
-        -- Datos de cabecera de nota
-        SELECT ncc.tipco_codigo,
-               tc.tipco_descripcion,
-               ncc.nocom_numeronota,
-               ncc.usu_codigo,
-               u.usu_login
-        INTO codigo_comprobante, comprobante, numero_comprobante, codigoUsuario, usuario
-        FROM nota_compra_cab ncc
-        JOIN tipo_comprobante tc ON tc.tipco_codigo = ncc.tipco_codigo
-        JOIN usuario u ON u.usu_codigo = ncc.usu_codigo
-        WHERE ncc.nocom_codigo = nocomCodigo;
+        /* 3.3) Si es nota de crédito (1) tratamos montos como negativos */
+        IF tipoNota = 1 THEN
+            monto5 := monto5 * -1;
+            monto10 := monto10 * -1;
+            exenta := exenta * -1;
+            monto := monto * -1;
+        END IF;
 
-		-- En caso de que sea credito, multiplicamos por -1
-		IF tipoNota = 1 THEN
-			monto10 := monto10*(-1);
-			monto5 := monto5*(-1);
-			exenta := exenta*(-1);
-			monto := monto*(-1);
-		END IF;
-
-        -- Ejecutamos según operación
+        /* 4) Actualizar libro_compra y cuenta_pagar usando compcodigo (código de compra) */
         IF TG_OP = 'INSERT' THEN
-            PERFORM sp_libro_compra(nocomCodigo, exenta, monto5, monto10,
-                                    codigo_comprobante, comprobante, numero_comprobante,
+            PERFORM sp_libro_compra(compcodigo, exenta, monto5, monto10,
+                                    tipoNota, comprobante, numero_comprobante,
                                     1, codigoUsuario, usuario);
-            PERFORM sp_cuenta_pagar(nocomCodigo, monto, monto,
+            PERFORM sp_cuenta_pagar(compcodigo, monto, monto,
                                     1, codigoUsuario, usuario);
         ELSIF TG_OP = 'DELETE' THEN
-            PERFORM sp_libro_compra(nocomCodigo, exenta, monto5, monto10,
-                                    codigo_comprobante, comprobante, numero_comprobante,
+            PERFORM sp_libro_compra(compcodigo, exenta, monto5, monto10,
+                                    tipoNota, comprobante, numero_comprobante,
                                     2, codigoUsuario, usuario);
-            PERFORM sp_cuenta_pagar(nocomCodigo, monto, monto,
+            PERFORM sp_cuenta_pagar(compcodigo, monto, monto,
                                     2, codigoUsuario, usuario);
+        END IF;
+
+        /* 5) Recalcular monto total y decidir anular/reactivar (USAR compcodigo) */
+        SELECT cuenpa_monto INTO notaMonto FROM cuenta_pagar WHERE comp_codigo = compcodigo;
+        SELECT comp_estado INTO compraEstado FROM compra_cab WHERE comp_codigo = compcodigo;
+
+        -- Si ya quedó en cero → ANULA cuenta_pagar y compra_cab (y audita)
+        IF notaMonto = 0 THEN
+            UPDATE cuenta_pagar SET cuenpa_estado = 'ANULADO' WHERE comp_codigo = compcodigo;
+            PERFORM sp_cuenta_pagar(compcodigo, 0, 0, 3, codigoUsuario, usuario); -- operación 3 solo para auditar
+
+            UPDATE compra_cab SET comp_estado = 'ANULADO', usu_codigo = codigoUsuario WHERE comp_codigo = compcodigo;
+
+            FOR compra IN c_compra_cab(compcodigo) LOOP
+                SELECT coalesce(comp_audit, '') INTO compAudit FROM compra_cab WHERE comp_codigo = compcodigo;
+
+                UPDATE compra_cab
+                SET comp_audit = compAudit || '' || json_build_object(
+                    'usu_codigo', codigoUsuario,
+                    'usu_login',  usuario,
+                    'fecha',      to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+                    'procedimiento', 'MODIFICACION',
+                    'comp_fecha', compra.comp_fecha,
+                    'comp_numfactura', compra.comp_numfactura,
+                    'comp_timbrado', compra.comp_timbrado,
+                    'comp_timbrado_venc', compra.comp_timbrado_venc,
+                    'comp_tipofactura', compra.comp_tipofactura,
+                    'comp_cuota', compra.comp_cuota,
+                    'comp_montocuota', compra.comp_montocuota,
+                    'comp_interfecha', compra.comp_interfecha,
+                    'tipco_codigo', compra.tipco_codigo,
+                    'tipco_descripcion', compra.tipco_descripcion,
+                    'pro_codigo', compra.pro_codigo,
+                    'pro_razonsocial', compra.pro_razonsocial,
+                    'tipro_codigo', compra.tipro_codigo,
+                    'tipro_descripcion', compra.tipro_descripcion,
+                    'emp_codigo', compra.emp_codigo,
+                    'emp_razonsocial', compra.emp_razonsocial,
+                    'suc_codigo', compra.suc_codigo,
+                    'suc_descripcion', compra.suc_descripcion,
+                    'comp_estado', compra.comp_estado
+                ) || ','
+                WHERE comp_codigo = compcodigo;
+            END LOOP;
+
+        -- Si hay monto y la compra estaba anulada → reactivar (y auditar)
+        ELSIF notaMonto > 0 AND compraEstado = 'ANULADO' THEN
+            UPDATE cuenta_pagar SET cuenpa_estado = 'ACTIVO' WHERE comp_codigo = compcodigo;
+            PERFORM sp_cuenta_pagar(compcodigo, 0, 0, 3, codigoUsuario, usuario); -- solo auditoría
+
+            UPDATE compra_cab SET comp_estado = 'ACTIVO', usu_codigo = codigoUsuario WHERE comp_codigo = compcodigo;
+
+            FOR compra IN c_compra_cab(compcodigo) LOOP
+                SELECT coalesce(comp_audit, '') INTO compAudit FROM compra_cab WHERE comp_codigo = compcodigo;
+
+                UPDATE compra_cab
+                SET comp_audit = compAudit || '' || json_build_object(
+                    'usu_codigo', codigoUsuario,
+                    'usu_login',  usuario,
+                    'fecha',      to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+                    'procedimiento', 'MODIFICACION',
+                    'comp_fecha', compra.comp_fecha,
+                    'comp_numfactura', compra.comp_numfactura,
+                    'comp_timbrado', compra.comp_timbrado,
+                    'comp_timbrado_venc', compra.comp_timbrado_venc,
+                    'comp_tipofactura', compra.comp_tipofactura,
+                    'comp_cuota', compra.comp_cuota,
+                    'comp_montocuota', compra.comp_montocuota,
+                    'comp_interfecha', compra.comp_interfecha,
+                    'tipco_codigo', compra.tipco_codigo,
+                    'tipco_descripcion', compra.tipco_descripcion,
+                    'pro_codigo', compra.pro_codigo,
+                    'pro_razonsocial', compra.pro_razonsocial,
+                    'tipro_codigo', compra.tipro_codigo,
+                    'tipro_descripcion', compra.tipro_descripcion,
+                    'emp_codigo', compra.emp_codigo,
+                    'emp_razonsocial', compra.emp_razonsocial,
+                    'suc_codigo', compra.suc_codigo,
+                    'suc_descripcion', compra.suc_descripcion,
+                    'comp_estado', compra.comp_estado
+                ) || ','
+                WHERE comp_codigo = compcodigo;
+            END LOOP;
         END IF;
     END IF;
 
@@ -845,9 +962,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
---Creamos el trigger que ejecutara la funcion spt_actualizacion2_libro_compra_cuenta_pagar()
+-- Reemplaza el trigger anterior por este (AFTER)
 CREATE TRIGGER t_actualizacion2_libro_compra_cuenta_pagar
-BEFORE INSERT OR DELETE ON nota_compra_det
+AFTER INSERT OR DELETE ON nota_compra_det
 FOR EACH ROW EXECUTE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar();
 
 

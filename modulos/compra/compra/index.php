@@ -245,7 +245,7 @@ foreach ($permisos as $permiso) {
                            </button>
                         </div>
                         <div class="botonesExtra2" style="display: none;">
-                           <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="controlVacio()">
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
@@ -348,7 +348,7 @@ foreach ($permisos as $permiso) {
                                  <i class="material-icons">save</i>
                                  <span>CONFIRMAR</span>
                               </button>
-                              <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                              <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                                  <i class="material-icons">lock</i>
                                  <span>CANCELAR</span>
                               </button>

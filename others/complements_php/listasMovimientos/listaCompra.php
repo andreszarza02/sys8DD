@@ -18,6 +18,8 @@ $sql = "select
          cc.comp_codigo,
          'COMPRA N°'||cc.comp_codigo||' '||to_char(cc.comp_fecha, 'DD-MM-YYYY') as compra,
          cc.pro_codigo,
+         cc.comp_tipofactura,
+         cc.comp_cuota,
          p.pro_razonsocial,
          cc.tipro_codigo,
          tp.tipro_descripcion,

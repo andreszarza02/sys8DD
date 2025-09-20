@@ -140,6 +140,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-1">
                            <div class="form-group form-float">
                               <div class="form-line comp">
+                                 <input type="hidden" id="comp_tipofactura" value="0">
                                  <input type="text" class="form-control" id="comp_codigo" disabled>
                                  <label class="form-label">N° Compra</label>
                               </div>
@@ -153,7 +154,15 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-1" id="cantidadCuota" style="display: none;">
+                           <div class="form-group form-float">
+                              <div class="form-line foco5">
+                                 <input type="text" class="form-control solo-numeros" id="comp_cuota" disabled>
+                                 <label class="form-label">Cantidad Cuota</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2" id="proveedorTimbrado">
                            <div class="form-group form-float">
                               <div class="form-line foco4">
                                  <input type="text" class="form-control no-disabled solo-numeros" id="nocom_timbrado"
@@ -226,6 +235,12 @@ foreach ($permisos as $permiso) {
                               <button type="button" class="btn btn-primary waves-effect" onclick="anular()">
                                  <i class="material-icons">cancel</i>
                                  <span>ANULAR</span>
+                              </button>
+                           <?php } ?>
+                           <?php if ($btnNuevo === true) { ?>
+                              <button type="button" class="btn btn-primary waves-effect" onclick="controlVacio3()">
+                                 <i class="material-icons">attach_money</i>
+                                 <span>ACTUALIZAR CUOTA</span>
                               </button>
                            <?php } ?>
                            <button type="button" class="btn btn-primary waves-effect" onclick="salir()">

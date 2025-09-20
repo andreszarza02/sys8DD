@@ -324,6 +324,46 @@ const actualizacionCabecera = () => {
   });
 };
 
+// Se encarga de preparar la interfaz de nota compras, para actualizar cuota y montocuota de compra_cab
+const actualizarMontoCuota = () => {
+  if ($("#comp_tipofactura").val() == "CONTADO") {
+    $("#comp_cuota").val("1");
+  } else {
+    $("#comp_cuota").val("");
+    $(".foco5").attr("class", "form-line foco5");
+    $("#comp_cuota").prop("disabled", false);
+    validacionInputsVacios1();
+  }
+  $("#operacion_cabecera").val(3);
+  actualizacionCabecera();
+  habilitarBotones(false);
+  $("#cantidadCuota").attr("class", "col-sm-1");
+  $("#cantidadCuota").attr("style", "display: block;");
+  $("#proveedorTimbrado").attr("class", "col-sm-1");
+};
+
+// Se encarga de verificar que la nota tenga detalle, para poder modificar los datos de compra_cab
+const verificarNotaDetalle = () => {
+  $.ajax({
+    method: "POST",
+    url: "controlador.php",
+    data: {
+      nocom_codigo: $("#nocom_codigo").val(),
+      consulta2: 1,
+    },
+  }).done(function (respuesta) {
+    if (respuesta.calculo_cuota == "si") {
+      actualizarMontoCuota();
+    } else {
+      swal({
+        title: "RESPUESTA!!",
+        text: respuesta.mensaje,
+        type: "info",
+      });
+    }
+  });
+};
+
 //Metodo encargado de ejecutar las funciones de detalle
 // async function ejecutarFunciones() {
 //   await setLibroCompra();
@@ -860,6 +900,7 @@ const grabar = () => {
       modve_descripcion: $("#modve_descripcion").val(),
       marve_codigo: $("#marve_codigo").val(),
       marve_descripcion: $("#marve_descripcion").val(),
+      comp_cuota: $("#comp_cuota").val(),
       operacion_cabecera: $("#operacion_cabecera").val(),
       usu_login: $("#usu_login").val(),
       procedimiento: $("#procedimiento").val(),
@@ -976,6 +1017,10 @@ const confirmar = () => {
     preg = "¿Desea anular el registro?";
   }
 
+  if (oper == 3) {
+    preg = "¿Desea actualizar la cuota de compras?";
+  }
+
   swal(
     {
       title: "ATENCIÓN!!!",
@@ -1065,6 +1110,11 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#nocom_estado").val() == "") {
     condicion = true;
+  } else if (
+    $("#operacion_cabecera").val() == 3 &&
+    $("#comp_cuota").val() == ""
+  ) {
+    condicion = true;
     // En caso de ser una nota de remision, se verifica tambien el card extra
   } else if ($("#funpro_nombre").val() == "" && $("#tipco_codigo").val() == 3) {
     condicion2 = true;
@@ -1134,6 +1184,25 @@ const controlVacio2 = () => {
   }
 };
 
+//Controla que el tipo de comprobante credito o debito este definido para poder modificar datos de pago
+const controlVacio3 = () => {
+  let condicion;
+
+  if ($("#tipco_codigo").val() == 0 || $("#tipco_codigo").val() == 3) {
+    condicion = true;
+  }
+
+  if (condicion) {
+    swal({
+      title: "RESPUESTA!!",
+      text: "LA OPCION SOLO SE ENCUENTRA HABILITADA PARA NOTAS DE CREDITO O DEBITO",
+      type: "info",
+    });
+  } else {
+    verificarNotaDetalle();
+  }
+};
+
 //Envia a los inputs de cabecera los seleccionado en la tabla de cabecera
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
@@ -1145,6 +1214,7 @@ const seleccionarFila = (objetoJSON) => {
   $(".tip").attr("class", "form-line tip focused");
   $(".foco4").attr("class", "form-line foco4 focused");
   $(".comp").attr("class", "form-line comp focused");
+  $(".foco5").attr("class", "form-line foco5 focused");
   $(".foco").attr("class", "form-line foco focused");
   $(".est").attr("class", "form-line est focused");
   $("#detalle").attr("style", "display: block;");
@@ -1232,6 +1302,7 @@ const seleccionCompra = (datos) => {
   $("#ulCompra").html();
   $("#listaCompra").attr("style", "display: none;");
   $(".comp").attr("class", "form-line comp focused");
+  $(".foco5").attr("class", "form-line foco5 focused");
 };
 
 //Busca, filtra y muestra las compras

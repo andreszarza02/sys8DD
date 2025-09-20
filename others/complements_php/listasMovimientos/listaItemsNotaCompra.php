@@ -19,9 +19,9 @@ $it_descripcion = pg_escape_string($conexion, $_POST['it_descripcion']);
 $tipco_codigo = $_POST['tipco_codigo'];
 
 //Validamos el tipo de comprobante
-if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
+if ($tipco_codigo == 1) {
 
-   //Si es credito o remision filtramos el item por compra det
+   //Si es credito filtramos el item por compra det
    //Establecemos y mostramos la consulta
    $sql = "select 
             cd.dep_codigo,
@@ -51,6 +51,43 @@ if (($tipco_codigo == 1 or $tipco_codigo == 3)) {
             and i.it_descripcion ilike '%$it_descripcion%'
             and i.it_estado = 'ACTIVO'
             and i.tipit_codigo not in (2, 3)
+         order by cd.comp_codigo;";
+
+   $resultado = pg_query($conexion, $sql);
+   $datos = pg_fetch_all($resultado);
+
+} else if ($tipco_codigo == 3) {
+
+   //Si es remision filtramos el item por compra det
+   //Establecemos y mostramos la consulta
+   $sql = "select 
+            cd.dep_codigo,
+            d.dep_descripcion,
+            cd.it_codigo,
+            cd.tipit_codigo,
+            i.tipim_codigo,
+            i.it_descripcion||' '||d.dep_descripcion as it_descripcion,
+            cd.compdet_cantidad as nocomdet_cantidad,
+            i.unime_codigo,
+            um.unime_descripcion,
+            cd.compdet_precio as nocomdet_precio
+         from compra_det cd
+            join stock s on s.it_codigo=cd.it_codigo
+            and s.tipit_codigo=cd.tipit_codigo
+            and s.dep_codigo=cd.dep_codigo 
+            and s.suc_codigo=cd.suc_codigo
+            and s.emp_codigo=cd.emp_codigo
+            join items i on i.it_codigo=s.it_codigo
+            and i.tipit_codigo=s.tipit_codigo
+            join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
+            join deposito d on d.dep_codigo=s.dep_codigo
+            and d.suc_codigo=s.suc_codigo
+            and d.emp_codigo=s.emp_codigo 
+            join unidad_medida um on um.unime_codigo=i.unime_codigo
+         where cd.comp_codigo=$comp_codigo
+            and i.it_descripcion ilike '%$it_descripcion%'
+            and i.it_estado = 'ACTIVO'
+            and i.tipit_codigo not in (2)
          order by cd.comp_codigo;";
 
    $resultado = pg_query($conexion, $sql);

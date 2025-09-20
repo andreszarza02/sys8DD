@@ -269,8 +269,11 @@ select
 	u.usu_login,
 	cc.comp_numfactura,
 	p.pro_razonsocial,
-	tp.tipro_descripcion
+	tp.tipro_descripcion,
+	cc2.comp_tipofactura,
+	cc.comp_cuota
 from nota_compra_cab ncc
+	join compra_cab cc2 on cc2.comp_codigo=ncc.comp_codigo 
 	join tipo_comprobante tc on tc.tipco_codigo=ncc.tipco_codigo
 	join sucursal s on s.suc_codigo=ncc.suc_codigo
 	and s.emp_codigo=ncc.emp_codigo

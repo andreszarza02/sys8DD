@@ -203,6 +203,7 @@ if (isset($_POST['operacion_cabecera'])) {
       '{$_POST['nocom_timbrado_venc']}',
       $chave_codigo,
       $funpro_codigo,
+      {$_POST['comp_cuota']},
       {$_POST['operacion_cabecera']},
       '$usu_login',
       '$procedimiento',
@@ -238,6 +239,32 @@ if (isset($_POST['operacion_cabecera'])) {
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_assoc($resultado);
    echo json_encode($datos);
+
+} else if (isset($_POST['consulta2'])) {
+
+   //Consultamos y validamos si la nota de credito o debito contiene detalle
+   $sql = "select 1
+            from v_nota_compra_det vncd 
+            where vncd.nocom_codigo={$_POST['nocom_codigo']};";
+
+   $resultado = pg_query($conexion, $sql);
+
+   // Validamos si cabecera tiene detalles asociados
+   if (pg_num_rows($resultado) > 0) {
+      // Al menos un registro encontrado
+      $response = array(
+         "calculo_cuota" => "si",
+         "mensaje" => "NADA"
+      );
+   } else {
+      // Si no, especificamos un mensaje de no calculo
+      $response = array(
+         "calculo_cuota" => "no",
+         "mensaje" => "LA NOTA NO TIENE DETALLE, NO SE PUEDE ACTUALIZAR DATOS DE COMPRA"
+      );
+   }
+
+   echo json_encode($response);
 
 } else {
 

@@ -2344,8 +2344,9 @@ create or replace function sp_nota_compra_cab(
     tiprocodigo integer,
     nocomtimbrado varchar,
     nocomtimbradovenc date,
-    nocomchapa varchar,
+    nocomchapa integer,
     nocomfuncionario integer,
+    compcuota integer,
     operacion integer,
     usulogin varchar,
     procedimiento varchar,
@@ -2366,6 +2367,7 @@ declare
     ultCodLibroCompra integer;
     totalSuma numeric := 0;
 	cantidadStockAuditoria numeric := 0;
+	montoCuota numeric := 0;
 
     -- Cursor para recorrer detalles de la nota
     c_nota_det record;
@@ -2485,17 +2487,11 @@ begin
 		from nota_compra_det ncd 
 		where ncd.nocom_codigo = nocomcodigo;
 
-        -- Si hay monto, actualizamos cuentas por pagar
-        if totalSuma > 0 then
-            perform sp_cuenta_pagar(
-                compcodigo, totalSuma, totalSuma,
-                tipcocodigo, usucodigo, usulogin
-            );
-        end if;
-
         -- Si fue nota crédito, también reactivamos la compra asociada
         if tipcocodigo = 1 and totalSuma > 0 then
             update cuenta_pagar set cuenpa_estado='ACTIVO' where comp_codigo=compcodigo;
+	        perform sp_cuenta_pagar(compcodigo, totalSuma, totalSuma, tipcocodigo, usucodigo, usulogin);
+
             update compra_cab set comp_estado='ACTIVO', usu_codigo=usucodigo where comp_codigo=compcodigo;
 
             -- Auditamos la compra asociada
@@ -2513,7 +2509,7 @@ begin
                 select coalesce(comp_audit,'') into compAudit from compra_cab where comp_codigo=compcodigo;
 
                 update compra_cab
-                set comp_audit = compAudit || '' || json_build_object(
+                set comp_audit = compAudit||''|| json_build_object(
                     'usu_codigo', usucodigo,
                     'usu_login', usulogin,
                     'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
@@ -2537,82 +2533,189 @@ begin
                     'suc_codigo', c_compra.suc_codigo,
                     'suc_descripcion', c_compra.suc_descripcion,
                     'comp_estado', c_compra.comp_estado
-                ) || ','
+                )||','
                 where comp_codigo = compcodigo;
             end loop;
+		elsif tipcocodigo = 2 and totalSuma > 0 then
+			-- Si a nota es de debito, lo que se sumo a cuenta pagr lo restamos
+			perform sp_cuenta_pagar(compcodigo, totalSuma, totalSuma, tipcocodigo, usucodigo, usulogin);
         end if;
+
+		-- Actualizamos MontoCuota y Cuota de compra_cab
+		if tipcocodigo in(1,2) then -- Credito y Debito
+			-- Calculamos
+			select round(cp.cuenpa_monto/compcuota) into montoCuota from cuenta_pagar cp where cp.comp_codigo=compcodigo;
+			-- Actualizamos compra_cab
+			update compra_cab set comp_montocuota=montoCuota, comp_cuota=compcuota, usu_codigo=usucodigo where comp_codigo=compcodigo;
+			-- Auditamos la compra asociada
+            for c_compra in
+                select cc.*, tc.tipco_descripcion, p.pro_razonsocial,
+                       tp.tipro_descripcion, e.emp_razonsocial, s.suc_descripcion
+                from compra_cab cc
+                join tipo_comprobante tc on tc.tipco_codigo = cc.tipco_codigo
+                join proveedor p on p.pro_codigo = cc.pro_codigo
+                join tipo_proveedor tp on tp.tipro_codigo = p.tipro_codigo
+                join sucursal s on s.suc_codigo = cc.suc_codigo and s.emp_codigo = cc.emp_codigo
+                join empresa e on e.emp_codigo = s.emp_codigo
+                where cc.comp_codigo = compcodigo
+            loop
+                select coalesce(comp_audit,'') into compAudit from compra_cab where comp_codigo=compcodigo;
+
+                update compra_cab
+                set comp_audit = compAudit||''|| json_build_object(
+                    'usu_codigo', usucodigo,
+                    'usu_login', usulogin,
+                    'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+                    'procedimiento', 'MODIFICACION',
+                    'comp_fecha', c_compra.comp_fecha,
+                    'comp_numfactura', c_compra.comp_numfactura,
+                    'comp_timbrado', c_compra.comp_timbrado,
+					'comp_timbrado_venc', c_compra.comp_timbrado_venc,
+                    'comp_tipofactura', c_compra.comp_tipofactura,
+                    'comp_cuota', c_compra.comp_cuota,
+                    'comp_montocuota', c_compra.comp_montocuota,
+                    'comp_interfecha', c_compra.comp_interfecha,
+                    'tipco_codigo', c_compra.tipco_codigo,
+                    'tipco_descripcion', c_compra.tipco_descripcion,
+                    'pro_codigo', c_compra.pro_codigo,
+                    'pro_razonsocial', c_compra.pro_razonsocial,
+                    'tipro_codigo', c_compra.tipro_codigo,
+                    'tipro_descripcion', c_compra.tipro_descripcion,
+                    'emp_codigo', c_compra.emp_codigo,
+                    'emp_razonsocial', c_compra.emp_razonsocial,
+                    'suc_codigo', c_compra.suc_codigo,
+                    'suc_descripcion', c_compra.suc_descripcion,
+                    'comp_estado', c_compra.comp_estado
+                )||','
+                where comp_codigo = compcodigo;
+			end loop;
+		end if;
 
         raise notice 'LA NOTA DE COMPRA FUE ANULADA CON EXITO';
     end if;
 
-    -- 3. Auditoría de Nota Compra
-    select coalesce(nocom_audit,'') into nocomAudit
-    from nota_compra_cab
-    where nocom_codigo = nocomcodigo;
+	-- 3. Operación: Actualizar MontoCuota y Cuota de compra_cab
+	if operacion = 3 then
+		-- Calculamos
+		select round(cp.cuenpa_monto/compcuota) into montoCuota from cuenta_pagar cp where cp.comp_codigo=compcodigo;
+		-- Actualizamos compra_cab
+		update compra_cab set comp_montocuota=montoCuota, comp_cuota=compcuota, usu_codigo=usucodigo where comp_codigo=compcodigo;
+			-- Auditamos la compra asociada
+            for c_compra in
+                select cc.*, tc.tipco_descripcion, p.pro_razonsocial,
+                       tp.tipro_descripcion, e.emp_razonsocial, s.suc_descripcion
+                from compra_cab cc
+                join tipo_comprobante tc on tc.tipco_codigo = cc.tipco_codigo
+                join proveedor p on p.pro_codigo = cc.pro_codigo
+                join tipo_proveedor tp on tp.tipro_codigo = p.tipro_codigo
+                join sucursal s on s.suc_codigo = cc.suc_codigo and s.emp_codigo = cc.emp_codigo
+                join empresa e on e.emp_codigo = s.emp_codigo
+                where cc.comp_codigo = compcodigo
+            loop
+                select coalesce(comp_audit,'') into compAudit from compra_cab where comp_codigo=compcodigo;
 
-    update nota_compra_cab
-    set nocom_audit = nocomAudit || '' || json_build_object(
-        'usu_codigo', usucodigo,
-        'usu_login', usulogin,
-        'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
-        'procedimiento', upper(procedimiento),
-        'nocom_fecha', nocomfecha,
-        'nocom_numeronota', nocomnumeronota,
-		'nocom_timbrado', nocomtimbrado,
-		'nocom_timbrado_venc', nocomtimbradovenc,
-        'nocom_concepto', nocomconcepto,
-        'comp_codigo', compcodigo,
-        'tipco_codigo', tipcocodigo,
-        'tipco_descripcion', upper(tipcodescripcion),
-        'pro_codigo', procodigo,
-        'pro_razonsocial', upper(prorazonsocial),
-        'tipro_codigo', tiprocodigo,
-        'tipro_descripcion', upper(tiprodescripcion),
-        'emp_codigo', empcodigo,
-        'emp_razonsocial', upper(emprazonsocial),
-        'suc_codigo', succodigo,
-        'suc_descripcion', upper(sucdescripcion),
-		'nocom_chapa', nocomchapa,
-		'nocom_funcionario', nocomfuncionario,
-        'nocom_estado', upper(nocomestado)
-    ) || ','
-    where nocom_codigo = nocomcodigo;
+                update compra_cab
+                set comp_audit = compAudit||''|| json_build_object(
+                    'usu_codigo', usucodigo,
+                    'usu_login', usulogin,
+                    'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+                    'procedimiento', 'MODIFICACION',
+                    'comp_fecha', c_compra.comp_fecha,
+                    'comp_numfactura', c_compra.comp_numfactura,
+                    'comp_timbrado', c_compra.comp_timbrado,
+					'comp_timbrado_venc', c_compra.comp_timbrado_venc,
+                    'comp_tipofactura', c_compra.comp_tipofactura,
+                    'comp_cuota', c_compra.comp_cuota,
+                    'comp_montocuota', c_compra.comp_montocuota,
+                    'comp_interfecha', c_compra.comp_interfecha,
+                    'tipco_codigo', c_compra.tipco_codigo,
+                    'tipco_descripcion', c_compra.tipco_descripcion,
+                    'pro_codigo', c_compra.pro_codigo,
+                    'pro_razonsocial', c_compra.pro_razonsocial,
+                    'tipro_codigo', c_compra.tipro_codigo,
+                    'tipro_descripcion', c_compra.tipro_descripcion,
+                    'emp_codigo', c_compra.emp_codigo,
+                    'emp_razonsocial', c_compra.emp_razonsocial,
+                    'suc_codigo', c_compra.suc_codigo,
+                    'suc_descripcion', c_compra.suc_descripcion,
+                    'comp_estado', c_compra.comp_estado
+                )||','
+                where comp_codigo = compcodigo;
+			end loop;
+		raise notice 'EL MONTO DE LA CUOTA SE ESTABLECIO EN %',montoCuota||'Gs. EN PLAZO DE '||compcuota||' CUOTAS';
+	end if;
 
-    -- 4. Auditoría de Libro Compra
-    select coalesce(licom_audit,'') into licomAudit
-    from libro_compra
-    where comp_codigo=compcodigo
-      and licom_numcomprobante=nocomnumeronota
-      and tipco_codigo=tipcocodigo;
-
-    for c_libro in
-        select comp_codigo, licom_exenta, licom_iva5, licom_iva10,
-               licom_fecha, tipco_codigo, licom_numcomprobante, licom_estado
-        from libro_compra
-        where comp_codigo=compcodigo
-          and licom_numcomprobante=nocomnumeronota
-          and tipco_codigo=tipcocodigo
-    loop
-        update libro_compra
-        set licom_audit = licomAudit || '' || json_build_object(
-            'usu_codigo', usucodigo,
-            'usu_login', usulogin,
-            'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
-            'procedimiento', upper(procedimiento),
-            'comp_codigo', c_libro.comp_codigo,
-            'licom_exenta', c_libro.licom_exenta,
-            'licom_iva5', c_libro.licom_iva5,
-            'licom_iva10', c_libro.licom_iva10,
-            'licom_fecha', c_libro.licom_fecha,
-            'tipco_codigo', c_libro.tipco_codigo,
-            'tipco_descripcion', upper(tipcodescripcion),
-            'licom_numcomprobante', c_libro.licom_numcomprobante,
-            'licom_estado', c_libro.licom_estado
-        ) || ','
-        where comp_codigo=compcodigo
-          and licom_numcomprobante=nocomnumeronota
-          and tipco_codigo=tipcocodigo;
-    end loop;
+	-- Solo auditamos al insertar y anular
+	if operacion in(1,2) then
+		-- 3. Auditoría de Nota Compra
+	    select coalesce(nocom_audit,'') into nocomAudit
+	    from nota_compra_cab
+	    where nocom_codigo = nocomcodigo;
+	
+	    update nota_compra_cab
+	    set nocom_audit = nocomAudit||''|| json_build_object(
+	        'usu_codigo', usucodigo,
+	        'usu_login', usulogin,
+	        'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+	        'procedimiento', upper(procedimiento),
+	        'nocom_fecha', nocomfecha,
+	        'nocom_numeronota', nocomnumeronota,
+			'nocom_timbrado', nocomtimbrado,
+			'nocom_timbrado_venc', nocomtimbradovenc,
+	        'nocom_concepto', nocomconcepto,
+	        'comp_codigo', compcodigo,
+	        'tipco_codigo', tipcocodigo,
+	        'tipco_descripcion', upper(tipcodescripcion),
+	        'pro_codigo', procodigo,
+	        'pro_razonsocial', upper(prorazonsocial),
+	        'tipro_codigo', tiprocodigo,
+	        'tipro_descripcion', upper(tiprodescripcion),
+	        'emp_codigo', empcodigo,
+	        'emp_razonsocial', upper(emprazonsocial),
+	        'suc_codigo', succodigo,
+	        'suc_descripcion', upper(sucdescripcion),
+			'nocom_chapa', nocomchapa,
+			'nocom_funcionario', nocomfuncionario,
+	        'nocom_estado', upper(nocomestado)
+	    )||','
+	    where nocom_codigo = nocomcodigo;
+	
+	    -- 4. Auditoría de Libro Compra
+	    select coalesce(licom_audit,'') into licomAudit
+	    from libro_compra
+	    where comp_codigo=compcodigo
+	      and licom_numcomprobante=nocomnumeronota
+	      and tipco_codigo=tipcocodigo;
+	
+	    for c_libro in
+	        select comp_codigo, licom_exenta, licom_iva5, licom_iva10,
+	               licom_fecha, tipco_codigo, licom_numcomprobante, licom_estado
+	        from libro_compra
+	        where comp_codigo=compcodigo
+	          and licom_numcomprobante=nocomnumeronota
+	          and tipco_codigo=tipcocodigo
+	    loop
+	        update libro_compra
+	        set licom_audit = licomAudit||''|| json_build_object(
+	            'usu_codigo', usucodigo,
+	            'usu_login', usulogin,
+	            'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+	            'procedimiento', upper(procedimiento),
+	            'comp_codigo', c_libro.comp_codigo,
+	            'licom_exenta', c_libro.licom_exenta,
+	            'licom_iva5', c_libro.licom_iva5,
+	            'licom_iva10', c_libro.licom_iva10,
+	            'licom_fecha', c_libro.licom_fecha,
+	            'tipco_codigo', c_libro.tipco_codigo,
+	            'tipco_descripcion', upper(tipcodescripcion),
+	            'licom_numcomprobante', c_libro.licom_numcomprobante,
+	            'licom_estado', c_libro.licom_estado
+	        )||','
+	        where comp_codigo=compcodigo
+	          and licom_numcomprobante=nocomnumeronota
+	          and tipco_codigo=tipcocodigo;
+	    end loop;
+	end if;
 
 end
 $function$
@@ -2629,249 +2732,80 @@ create or replace function sp_nota_compra_det(
     succodigo integer,
     empcodigo integer,
     tipcocodigo integer,
-    compcodigo integer,
     usucodigo integer, 
     operacion integer,
     usulogin varchar
 ) returns void as
-$function$ 
+$$
 declare 
-    -- Variables de trabajo
-    notaMonto numeric;          -- monto actual de la cuenta por pagar
-    compraEstado varchar;       -- estado actual de la cabecera de compra
-    compAudit text;             -- texto acumulado para auditoría
-	cantidadStockAuditoria numeric := 0;  --cantidad de stock actualizado para auditoria
-
-    -- Cursor para traer datos de la cabecera de compra (para auditoría)
-    c_compra_cab cursor is
-        select 
-            cc.comp_fecha,
-            cc.comp_numfactura,
-            cc.comp_timbrado,
-			cc.comp_timbrado_venc,
-            cc.comp_tipofactura,
-            cc.comp_cuota,
-            cc.comp_montocuota,
-            cc.comp_interfecha,
-            cc.tipco_codigo,
-            tc.tipco_descripcion,
-            cc.pro_codigo,
-            p.pro_razonsocial,
-            cc.tipro_codigo,
-            tp.tipro_descripcion,
-            cc.emp_codigo,
-            e.emp_razonsocial,
-            cc.suc_codigo,
-            s.suc_descripcion,
-            cc.comp_estado
-        from compra_cab cc
-        join tipo_comprobante tc on tc.tipco_codigo=cc.tipco_codigo
-        join proveedor p on p.pro_codigo=cc.pro_codigo
-        join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo
-        join sucursal s on s.suc_codigo=cc.suc_codigo and s.emp_codigo=cc.emp_codigo
-        join empresa e on e.emp_codigo=s.emp_codigo
-        where cc.comp_codigo=compcodigo;
+    cantidadStockAuditoria numeric := 0;
 begin 
-    -- Consultamos el monto y estado de la compra asociada
-    select cp.cuenpa_monto into notaMonto from cuenta_pagar cp where cp.comp_codigo=compcodigo;
-    select cc.comp_estado into compraEstado from compra_cab cc where cc.comp_codigo=compcodigo;	
-
-    -- OPERACIÓN INSERT
+    -- INSERT detalle
     if operacion = 1 then
-        -- Validamos si ya existe un detalle con los mismos datos
         perform 1 from nota_compra_det
         where it_codigo=itcodigo and tipit_codigo=tipitcodigo 
           and dep_codigo=depcodigo and suc_codigo=succodigo 
           and emp_codigo=empcodigo and nocom_codigo=nocomcodigo;
         if found then
-            raise exception 'item'; -- ya existe, lanzamos error
+            raise exception 'item';
         end if;
 
-        -- Insertamos nuevo detalle
-        insert into nota_compra_det(nocom_codigo, it_codigo, tipit_codigo, nocomdet_cantidad, 
-									nocomdet_precio, dep_codigo, suc_codigo, emp_codigo)
-        values(nocomcodigo, itcodigo, tipitcodigo, nocomdetcantidad, nocomdetprecio, depcodigo, succodigo, empcodigo);
+        insert into nota_compra_det(nocom_codigo, it_codigo, tipit_codigo,
+                                    nocomdet_cantidad, nocomdet_precio,
+                                    dep_codigo, suc_codigo, emp_codigo)
+        values(nocomcodigo, itcodigo, tipitcodigo,
+               nocomdetcantidad, nocomdetprecio,
+               depcodigo, succodigo, empcodigo);
 
-        -- Ajustamos el stock según el tipo de comprobante
-        if tipcocodigo = 1 then -- Nota de crédito: se descuenta del stock
-            update stock set st_cantidad=st_cantidad-nocomdetcantidad 
-            where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-              and suc_codigo=succodigo and emp_codigo=empcodigo;
-			-- Auditamos nueva cantidad de stock
-			select s.st_cantidad into cantidadStockAuditoria from stock s 
-			where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
-			 and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
-			-- Procedemos con el audit del registro modificado
-			perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
-
-            -- Si el monto de la cuenta es 0, anulamos compra y cuenta pagar
-            if notaMonto = 0 then 
-                update cuenta_pagar set cuenpa_estado='ANULADO' where comp_codigo=compcodigo;
-				-- Pasamos operacion 3 solo para auditar
-                perform sp_cuenta_pagar(compcodigo, 0, 0, 3, usucodigo, usulogin);
-
-                update compra_cab set comp_estado='ANULADO', usu_codigo=usucodigo where comp_codigo=compcodigo;
-                -- Auditoría de compra cabecera
-                for compra in c_compra_cab loop
-                    select coalesce(comp_audit, '') into compAudit from compra_cab where comp_codigo=compcodigo;
-                    update compra_cab
-                    set comp_audit = compAudit || '' || json_build_object(
-                        'usu_codigo', usucodigo,
-                        'usu_login', usulogin,
-                        'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
-                        'procedimiento', 'MODIFICACION',
-                        'comp_fecha', compra.comp_fecha,
-                        'comp_numfactura', compra.comp_numfactura,
-                        'comp_timbrado', compra.comp_timbrado,
-						'comp_timbrado_venc', compra.comp_timbrado_venc,
-                        'comp_tipofactura', compra.comp_tipofactura,
-                        'comp_cuota', compra.comp_cuota,
-                        'comp_montocuota', compra.comp_montocuota,
-                        'comp_interfecha', compra.comp_interfecha,
-                        'tipco_codigo', compra.tipco_codigo,
-                        'tipco_descripcion', compra.tipco_descripcion,
-                        'pro_codigo', compra.pro_codigo,
-                        'pro_razonsocial', compra.pro_razonsocial,
-                        'tipro_codigo', compra.tipro_codigo,
-                        'tipro_descripcion', compra.tipro_descripcion,
-                        'emp_codigo', compra.emp_codigo,
-                        'emp_razonsocial', compra.emp_razonsocial,
-                        'suc_codigo', compra.suc_codigo,
-                        'suc_descripcion', compra.suc_descripcion,
-                        'comp_estado', compra.comp_estado
-                    ) || ','
-                    where comp_codigo = compcodigo;
-                end loop;
-            end if;
-
-        elseif tipcocodigo = 2 then -- Nota de débito: se suma al stock
-            update stock set st_cantidad=st_cantidad+nocomdetcantidad 
-            where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-              and suc_codigo=succodigo and emp_codigo=empcodigo;
-			-- Auditamos nueva cantidad de stock
-			select s.st_cantidad into cantidadStockAuditoria from stock s 
-			where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
-			 and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
-			-- Procedemos con el audit del registro modificado
-			perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
-
-            -- Si la compra estaba anulada pero hay monto, se reactivan registros
-            if notaMonto > 0 and compraEstado = 'ANULADO' then
-                update cuenta_pagar set cuenpa_estado='ACTIVO' where comp_codigo=compcodigo;
-				-- Pasamos operacion 3 solo para auditar
-                perform sp_cuenta_pagar(compcodigo, 0, 0, 3, usucodigo, usulogin);
-
-                update compra_cab set comp_estado='ACTIVO', usu_codigo=usucodigo where comp_codigo=compcodigo;
-
-                for compra in c_compra_cab loop
-                    select coalesce(comp_audit, '') into compAudit from compra_cab where comp_codigo=compcodigo;
-                    update compra_cab
-                    set comp_audit = compAudit || '' || json_build_object(
-                        'usu_codigo', usucodigo,
-                        'usu_login', usulogin,
-                        'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
-                        'procedimiento', 'MODIFICACION',
-                        'comp_fecha', compra.comp_fecha,
-                        'comp_numfactura', compra.comp_numfactura,
-                        'comp_timbrado', compra.comp_timbrado,
-						'comp_timbrado_venc', compra.comp_timbrado_venc,
-                        'comp_tipofactura', compra.comp_tipofactura,
-                        'comp_cuota', compra.comp_cuota,
-                        'comp_montocuota', compra.comp_montocuota,
-                        'comp_interfecha', compra.comp_interfecha,
-                        'tipco_codigo', compra.tipco_codigo,
-                        'tipco_descripcion', compra.tipco_descripcion,
-                        'pro_codigo', compra.pro_codigo,
-                        'pro_razonsocial', compra.pro_razonsocial,
-                        'tipro_codigo', compra.tipro_codigo,
-                        'tipro_descripcion', compra.tipro_descripcion,
-                        'emp_codigo', compra.emp_codigo,
-                        'emp_razonsocial', compra.emp_razonsocial,
-                        'suc_codigo', compra.suc_codigo,
-                        'suc_descripcion', compra.suc_descripcion,
-                        'comp_estado', compra.comp_estado
-                    ) || ','
-                    where comp_codigo = compcodigo;
-                end loop;
-            end if;
+        -- Ajuste de stock
+        if tipcocodigo = 1 then
+            update stock set st_cantidad=st_cantidad-nocomdetcantidad
+             where it_codigo=itcodigo and tipit_codigo=tipitcodigo
+               and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
+        elseif tipcocodigo = 2 then
+            update stock set st_cantidad=st_cantidad+nocomdetcantidad
+             where it_codigo=itcodigo and tipit_codigo=tipitcodigo
+               and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
         end if;
+
+        -- Auditamos stock
+        select s.st_cantidad into cantidadStockAuditoria from stock s
+         where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+           and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+        perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo,
+                         cantidadStockAuditoria, 2, usucodigo, usulogin);
 
         raise notice 'LA NOTA DE COMPRA DETALLE FUE REGISTRADA CON EXITO';
     end if;
 
-    -- OPERACIÓN DELETE
-    if operacion = 2 then 
-        -- Eliminamos el detalle
-        delete from nota_compra_det 
-        where nocom_codigo=nocomcodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo
-          and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
+    -- DELETE detalle
+    if operacion = 2 then
+        delete from nota_compra_det
+         where nocom_codigo=nocomcodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo
+           and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
 
-        -- Ajustamos stock según comprobante
-        if tipcocodigo = 1 then -- Crédito: devolvemos al stock
-            update stock set st_cantidad=st_cantidad+nocomdetcantidad 
-            where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-              and suc_codigo=succodigo and emp_codigo=empcodigo;
-			-- Auditamos nueva cantidad de stock
-			select s.st_cantidad into cantidadStockAuditoria from stock s 
-			where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
-			 and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
-			-- Procedemos con el audit del registro modificado
-			perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
-
-            if notaMonto > 0 and compraEstado = 'ANULADO' then	
-                update cuenta_pagar set cuenpa_estado='ACTIVO' where comp_codigo=compcodigo;
-                perform sp_cuenta_pagar(compcodigo, 0, 0, 3, usucodigo, usulogin);
-
-                update compra_cab set comp_estado='ACTIVO', usu_codigo=usucodigo where comp_codigo=compcodigo;
-
-                for compra in c_compra_cab loop
-                    select coalesce(comp_audit, '') into compAudit from compra_cab where comp_codigo=compcodigo;
-                    update compra_cab
-                    set comp_audit = compAudit || '' || json_build_object(
-                        'usu_codigo', usucodigo,
-                        'usu_login', usulogin,
-                        'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
-                        'procedimiento', 'MODIFICACION',
-                        'comp_fecha', compra.comp_fecha,
-                        'comp_numfactura', compra.comp_numfactura,
-                        'comp_timbrado', compra.comp_timbrado,
-						'comp_timbrado_venc', compra.comp_timbrado_venc,
-                        'comp_tipofactura', compra.comp_tipofactura,
-                        'comp_cuota', compra.comp_cuota,
-                        'comp_montocuota', compra.comp_montocuota,
-                        'comp_interfecha', compra.comp_interfecha,
-                        'tipco_codigo', compra.tipco_codigo,
-                        'tipco_descripcion', compra.tipco_descripcion,
-                        'pro_codigo', compra.pro_codigo,
-                        'pro_razonsocial', compra.pro_razonsocial,
-                        'tipro_codigo', compra.tipro_codigo,
-                        'tipro_descripcion', compra.tipro_descripcion,
-                        'emp_codigo', compra.emp_codigo,
-                        'emp_razonsocial', compra.emp_razonsocial,
-                        'suc_codigo', compra.suc_codigo,
-                        'suc_descripcion', compra.suc_descripcion,
-                        'comp_estado', compra.comp_estado
-                    ) || ','
-                    where comp_codigo = compcodigo;
-                end loop;
-            end if;
-
-        elseif tipcocodigo = 2 then -- Débito: quitamos del stock
-            update stock set st_cantidad=st_cantidad-nocomdetcantidad 
-            where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-              and suc_codigo=succodigo and emp_codigo=empcodigo;
-			-- Auditamos nueva cantidad de stock
-			select s.st_cantidad into cantidadStockAuditoria from stock s 
-			where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
-			 and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
-			-- Procedemos con el audit del registro modificado
-			perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usulogin);
+        -- Ajuste de stock
+        if tipcocodigo = 1 then
+            update stock set st_cantidad=st_cantidad+nocomdetcantidad
+             where it_codigo=itcodigo and tipit_codigo=tipitcodigo
+               and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
+        elseif tipcocodigo = 2 then
+            update stock set st_cantidad=st_cantidad-nocomdetcantidad
+             where it_codigo=itcodigo and tipit_codigo=tipitcodigo
+               and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
         end if;
+
+        -- Auditamos stock
+        select s.st_cantidad into cantidadStockAuditoria from stock s
+         where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+           and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+        perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo,
+                         cantidadStockAuditoria, 2, usucodigo, usulogin);
 
         raise notice 'LA NOTA DE COMPRA DETALLE FUE ELIMINADA CON EXITO';
     end if;
 end
-$function$ 
+$$ 
 language plpgsql;
 
 
