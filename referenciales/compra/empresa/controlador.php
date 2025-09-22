@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -18,8 +20,6 @@ if (isset($_POST['operacion'])) {
 
    $emp_ruc = pg_escape_string($conexion, $_POST['emp_ruc']);
 
-   $emp_timbrado = pg_escape_string($conexion, $_POST['emp_timbrado']);
-
    $emp_email = pg_escape_string($conexion, $_POST['emp_email']);
 
    $emp_actividad = pg_escape_string($conexion, $_POST['emp_actividad']);
@@ -35,16 +35,14 @@ if (isset($_POST['operacion'])) {
    '$emp_telefono', 
    '$emp_razonsocial', 
    '$emp_ruc', 
-   '$emp_timbrado', 
-   '{$_POST['emp_timbrado_fec_inic']}', 
-   '{$_POST['emp_timbrado_fec_venc']}', 
    '$emp_email', 
    '$emp_actividad', 
    '$emp_estado',
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento')";
+   '$procedimiento'
+   )";
 
    //Validamos la consulta
    $result = pg_query($conexion, $sql);
@@ -86,9 +84,6 @@ if (isset($_POST['operacion'])) {
                e.emp_telefono,
                e.emp_razonsocial,
                e.emp_ruc,
-               e.emp_timbrado,
-               e.emp_timbrado_fec_inic,
-               e.emp_timbrado_fec_venc,
                e.emp_email,
                e.emp_actividad,
                e.emp_estado 

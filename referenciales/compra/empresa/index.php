@@ -72,18 +72,20 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-1">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="emp_telefono" disabled>
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="emp_telefono"
+                                    disabled>
                                  <label class="form-label">Telefono</label>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="emp_razonsocial" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros-algunos-simbolos"
+                                    id="emp_razonsocial" disabled>
                                  <label class="form-label">Razon Social</label>
                               </div>
                            </div>
@@ -91,41 +93,17 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="emp_ruc" disabled>
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="emp_ruc" disabled>
                                  <label class="form-label">RUC</label>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
-                           <div class="form-group form-float">
-                              <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="emp_timbrado" disabled>
-                                 <label class="form-label">Timbrado</label>
-                              </div>
-                           </div>
-                        </div>
                         <div class="col-sm-2">
                            <div class="form-group form-float">
-                              <div class="form-line focused">
-                                 <input type="date" class="form-control no-disabled" id="emp_timbrado_fec_inic"
-                                    disabled>
-                                 <label class="form-label">Fecha Inicio Timbrado</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-2">
-                           <div class="form-group form-float">
-                              <div class="form-line focused">
-                                 <input type="date" class="form-control no-disabled" id="emp_timbrado_fec_venc"
-                                    disabled>
-                                 <label class="form-label">Fecha Vencimiento Timbrado</label>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-3">
-                           <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="emp_email" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros-simbolos"
+                                    id="emp_email" disabled>
                                  <label class="form-label">Correo</label>
                               </div>
                            </div>
@@ -133,12 +111,13 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="emp_actividad" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="emp_actividad"
+                                    disabled>
                                  <label class="form-label">Actividad</label>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-1">
                            <div class="form-group form-float">
                               <div class="form-line est">
                                  <input type="text" class="form-control" id="emp_estado" disabled>
@@ -210,9 +189,6 @@ $permisos = pg_fetch_all($resultado);
                                     <th>TELEFONO</th>
                                     <th>RAZON SOCIAL</th>
                                     <th>RUC</th>
-                                    <th>TIMBRADO</th>
-                                    <th>FECHA INICIO TIMBRADO</th>
-                                    <th>FECHA VENICIMIENTO TIMBRADO</th>
                                     <th>CORREO</th>
                                     <th>ACTIVIDAD</th>
                                     <th>ESTADO</th>

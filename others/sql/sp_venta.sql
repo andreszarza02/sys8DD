@@ -306,32 +306,82 @@ end
 $function$ 
 language plpgsql;
 
---Factura Venta
-create or replace function sp_factura_venta(
+--Timbrados
+create or replace function sp_timbrados(
+    timbcodigo integer,
     succodigo integer,
     empcodigo integer,
     cajcodigo integer,
-    facvennumero varchar,
+    tipcocodigo integer,
+    timbnumero integer,
+    timbnumerofechainic date,
+    timbnumerofechavenc date,
+    timbnumerocomp varchar,
+    timbnumerocompinic integer,
+    timbnumerocomplim integer,
+    timbestado varchar,
+    usucodigo integer,
     operacion integer
 ) returns void as
 $function$
 begin 
-	 --Validamos la operacion en este caso la insercion
-     if operacion = 1 then
-		--Validamos si ya se encuentra el registro
-	 	perform * from factura_venta 
-		where suc_codigo=succodigo
-		and emp_codigo=empcodigo 
-		and caj_codigo=cajcodigo;
-     	if found then
-			 --En caso de que si, generamos una excepcion
-     		 raise exception 'punto_venta';
-     	elseif operacion = 1 then
-			 --En caso de que no procedemos con la insercion del nuevo registro
-			 insert into factura_venta(suc_codigo, emp_codigo, caj_codigo, facven_numero)
-		     values(succodigo, empcodigo, cajcodigo, facvennumero);
+	-- Validamos la operacion de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos que la fecha de vencimiento no sea menor a la fecha de inicio
+		if timbnumerofechavenc < timbnumerofechainic then
+		  -- En caso de ser asi, generamos una excepcion
+		  raise exception 'fecha_venc';
 		end if;
-		 raise notice 'EL REGISTRO DE FACTURA VENTA SE INSERTO CON EXITO';
+		-- Validamos que el número limite no sea menor al numero de inicio
+		if timbnumerocomplim < timbnumerocompinic then
+		  -- En caso de ser asi, generamos una excepcion
+		  raise exception 'numero_limite';
+		end if;
+		-- Validamos que no se repita el numero de timbrado
+		perform * from timbrados
+        where timb_numero=timbnumero and timb_codigo != timbcodigo;
+		if found then
+	       -- En caso de ser asi, generamos una excepcion
+            raise exception 'timbrado';
+		end if;
+		-- Validamos que no se repita la sucursal, empresa, caja y tipo comprobante
+        perform * from timbrados
+        where suc_codigo=succodigo and emp_codigo=empcodigo
+		and caj_codigo=cajcodigo and tipco_codigo=tipcocodigo
+        and timb_codigo != timbcodigo;
+        if found then
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'descripcion';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+    	elseif operacion = 1 then
+	        	insert into timbrados(timb_codigo, suc_codigo, emp_codigo, 
+									  caj_codigo, tipco_codigo, timb_numero,
+	        						  timb_numero_fecha_inic, timb_numero_fecha_venc, timb_numero_comp,
+									  timb_numero_comp_inic, timb_numero_comp_lim, timb_estado, usu_codigo)
+				values(timbcodigo, succodigo, empcodigo, 
+					   cajcodigo, tipcocodigo, timbnumero,
+	        		   timbnumerofechainic, timbnumerofechavenc, timbnumerocomp,
+					   timbnumerocompinic, timbnumerocomplim, 'ACTIVO', usucodigo);
+				-- Enviamos un mensaje de confirmacion
+				raise notice 'EL TIMBRADO FUE REGISTRADO CON EXITO';
+        elseif operacion = 2 then
+        		update timbrados
+				set suc_codigo=succodigo, emp_codigo=empcodigo, caj_codigo=cajcodigo,
+				tipco_codigo=tipcocodigo, timb_numero=timbnumero, timb_numero_fecha_inic=timbnumerofechainic,
+				timb_numero_fecha_venc=timbnumerofechavenc, timb_numero_comp=timbnumerocomp, timb_numero_comp_inic=timbnumerocompinic,
+				timb_numero_comp_lim=timbnumerocomplim, timb_estado='ACTIVO', usu_codigo=usucodigo
+				where timb_codigo=timbcodigo;
+				-- Enviamos un mensaje de confirmacion
+				raise notice 'EL TIMBRADO FUE MODIFICADO CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de elimianacion (borrado logíco)
+    if operacion = 3 then 
+    	update timbrados 
+		set timb_estado='INACTIVO', usu_codigo=usucodigo
+		where timb_codigo=timbcodigo;
+		-- Enviamos un mensaje de confirmacion
+		raise notice 'EL TIMBRADO FUE BORRADO CON EXITO';
     end if;
 end
 $function$ 

@@ -364,13 +364,6 @@ const verificarNotaDetalle = () => {
   });
 };
 
-//Metodo encargado de ejecutar las funciones de detalle
-// async function ejecutarFunciones() {
-//   await setLibroCompra();
-//   await setCuentaPagar();
-//   await grabarDetalle();
-// }
-
 //Perimte aplicar un formato de tabla a la lista de nota compra cabecera
 function formatoTabla() {
   //Exportable table
@@ -411,37 +404,6 @@ const mostrarInputDeposito = () => {
   }
 };
 
-//Valida que no se repita el item y deposito en el detalle
-// const validarItem = () => {
-//   //Establecemos una varibale que nos guarde la operacion
-//   let operacionDetalle = $("#operacion_detalle").val();
-//   $.ajax({
-//     //Enviamos datos al controlador detalle
-//     method: "POST",
-//     url: "controladorDetalle.php",
-//     data: {
-//       nocom_codigo: $("#nocom_codigo").val(),
-//       it_codigo: $("#it_codigo").val(),
-//       tipit_codigo: $("#tipit_codigo").val(),
-//       dep_codigo: $("#dep_codigo").val(),
-//       suc_codigo: $("#suc_codigo").val(),
-//       emp_codigo: $("#emp_codigo").val(),
-//       consulta0: 1,
-//     },
-//   }) //Establecemos un mensaje segun el contenido de la respuesta
-//     .done(function (respuesta) {
-//       if (respuesta.existe_item == "1" && operacionDetalle == 1) {
-//         swal({
-//           title: "RESPUESTA!",
-//           text: "El item con el deposito ya se encuentra registrado en el detalle",
-//           type: "info",
-//         });
-//       } else {
-//         ejecutarFunciones();
-//       }
-//     });
-// };
-
 //Valida que no se devuelva una cantidad mayor de lo que se compro
 const validarCantidadItemCredito = () => {
   if ($("#tipco_codigo").val() == 1) {
@@ -474,62 +436,6 @@ const validarCantidadItemCredito = () => {
       });
   }
 };
-
-//Pasa parametros a libro compra
-// const setLibroCompra = () => {
-//   return new Promise((resolve, reject) => {
-//     // Lógica de libro_compras
-//     $.ajax({
-//       //actualizamos el libro
-//       method: "POST",
-//       url: "controladorDetalle2.php",
-//       data: {
-//         comp_codigo: $("#comp_codigo").val(),
-//         tipim_codigo: $("#tipim_codigo").val(),
-//         tipco_codigo: $("#tipco_codigo").val(),
-//         nocomdet_cantidad: $("#nocomdet_cantidad").val(),
-//         nocomdet_precio: $("#nocomdet_precio").val(),
-//         tipco_descripcion: $("#tipco_descripcion").val(),
-//         nocom_numeronota: $("#nocom_numeronota").val(),
-//         operacion_detalle: $("#operacion_detalle").val(),
-//         usu_codigo: $("#usu_codigo").val(),
-//         usu_login: $("#usu_login").val(),
-//         consulta: "1",
-//       },
-//     });
-//     setTimeout(() => {
-//       resolve(); // Llama a resolve cuando se complete
-//     }, 1000);
-//   });
-// };
-
-//Pasa parametros a cuenta pagar
-// const setCuentaPagar = () => {
-//   return new Promise((resolve, reject) => {
-//     // Lógica de cuentas_pagar
-//     $.ajax({
-//       //actualizamos la cuenta
-//       method: "POST",
-//       url: "controladorDetalle2.php",
-//       data: {
-//         comp_codigo: $("#comp_codigo").val(),
-//         tipim_codigo: 0,
-//         tipco_codigo: $("#tipco_codigo").val(),
-//         nocomdet_cantidad: $("#nocomdet_cantidad").val(),
-//         nocomdet_precio: $("#nocomdet_precio").val(),
-//         tipco_descripcion: $("#tipco_descripcion").val(),
-//         nocom_numeronota: $("#nocom_numeronota").val(),
-//         operacion_detalle: $("#operacion_detalle").val(),
-//         usu_codigo: $("#usu_codigo").val(),
-//         usu_login: $("#usu_login").val(),
-//         consulta: "2",
-//       },
-//     });
-//     setTimeout(() => {
-//       resolve(); // Llama a resolve cuando se complete
-//     }, 1000);
-//   });
-// };
 
 //Consulta y lista los datos en nota compra cabecera
 const listar = () => {

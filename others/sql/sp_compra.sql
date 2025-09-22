@@ -121,9 +121,6 @@ create or replace function sp_empresa(
     emptelefono varchar,
     emprazonsocial varchar,
     empruc varchar,
-    emptimbrado varchar,
-    emptimbradofecinic date,
-    emptimbradofecvenc date,
     empemail varchar,
     empactividad varchar,
     empestado varchar,
@@ -138,29 +135,21 @@ declare empAudit text;
 begin 
 	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
-		-- Validamos que la fecha de vencimiento del timbrado no sea menor a la fecha de inicio
-		if emptimbradofecvenc <= emptimbradofecinic then
-			-- En caso de ser asi, generamos una excepcion
-     	 	raise exception 'fecha';
-     	 end if;
 		-- Validamos que no se repita el ruc de la empresa
         perform * from empresa
         where emp_ruc = empruc and emp_codigo != empcodigo;
         if found then
 			-- En caso de ser asi, generamos una excepcion
             raise exception 'ruc';
-		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+		-- Si los paramtros pasaron la validacion procedmos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
-	        	insert into empresa(emp_codigo, emp_telefono, emp_razonsocial, emp_ruc, emp_email, emp_actividad, emp_estado, emp_timbrado, 
-				emp_timbrado_fec_inic, emp_timbrado_fec_venc)
-				values(empcodigo, emptelefono, upper(emprazonsocial), empruc, empemail, upper(empactividad), 'ACTIVO', emptimbrado, 
-				emptimbradofecinic, emptimbradofecvenc);
+	        	insert into empresa(emp_codigo, emp_telefono, emp_razonsocial, emp_ruc, emp_email, emp_actividad, emp_estado)
+				values(empcodigo, emptelefono, upper(emprazonsocial), empruc, empemail, upper(empactividad), 'ACTIVO');
 				raise notice 'LA EMPRESA FUE REGISTRADA CON EXITO';
         elseif operacion = 2 then
         		update empresa
 				set emp_telefono=emptelefono, emp_razonsocial=upper(emprazonsocial), emp_ruc=empruc,
-				emp_email=empemail, emp_actividad=upper(empactividad), emp_estado='ACTIVO', emp_timbrado=emptimbrado,
-				emp_timbrado_fec_inic=emptimbradofecinic, emp_timbrado_fec_venc=emptimbradofecvenc 
+				emp_email=empemail, emp_actividad=upper(empactividad), emp_estado='ACTIVO' 
 				where emp_codigo=empcodigo;
 				raise notice 'LA EMPRESA FUE MODIFICADA CON EXITO';
         end if;
@@ -184,9 +173,6 @@ begin
 		'emp_telefono', emptelefono,
 		'emp_razonsocial', upper(emprazonsocial),
 		'emp_ruc', empruc,
-		'emp_timbrado', emptimbrado,
-		'emp_timbrado_fec_inic', emptimbradofecinic,
-		'emp_timbrado_fec_venc', emptimbradofecvenc,
 		'emp_email', empemail,
 		'emp_actividad', upper(empactividad),
 		'emp_estado', upper(empestado)

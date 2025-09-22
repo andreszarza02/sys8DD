@@ -53,15 +53,25 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Timbrados-->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE TIMBRADOS<small>Mantener referencial de timbrados</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE TIMBRADOS<small style="color: white; font-weight: bold;">Mantener referencial de
+                           timbrados</small>
                      </h2>
                   </div>
                   <div class="body">
                      <input type="hidden" id="operacion" value="0">
+                     <input type="hidden" id="usu_codigo" value="<?php echo $_SESSION['usuario']['usu_codigo']; ?>">
                      <div class="row clearfix">
-                        <div class="col-sm-3">
+                        <div class="col-sm-1">
+                           <div class="form-group form-float">
+                              <div class="form-line activar">
+                                 <input type="number" class="form-control" id="timb_codigo" disabled>
+                                 <label class="form-label">Codigo</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line emp">
                                  <input type="hidden" id="emp_codigo"
@@ -72,12 +82,12 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line suc">
                                  <input type="hidden" id="suc_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="suc_descripcion" disabled
-                                    onkeyup="getSucursal()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="suc_descripcion"
+                                    disabled onkeyup="getSucursal()">
                                  <label class="form-label">Sucursal</label>
                                  <div id="listaSucursal" style="display: none;">
                                     <ul class="list-group" id="ulSucursal" Style="height: 100px; overflow: auto"></ul>
@@ -85,12 +95,12 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line caj">
                                  <input type="hidden" id="caj_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="caj_descripcion" disabled
-                                    onkeyup="getCaja()">
+                                 <input type="text" class="form-control no-disabled letras-numeros" id="caj_descripcion"
+                                    disabled onkeyup="getCaja()">
                                  <label class="form-label">Caja</label>
                                  <div id="listaCaja" style="display: none;">
                                     <ul class="list-group" id="ulCaja" Style="height: 100px; overflow: auto"></ul>
@@ -98,11 +108,74 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line tip">
+                                 <input type="hidden" id="tipco_codigo" value="0">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="tipco_descripcion"
+                                    disabled onkeyup="getTipoComprobante()">
+                                 <label class="form-label">Tipo Comprobante</label>
+                                 <div id="listaTC" style="display: none;">
+                                    <ul class="list-group" id="ulTC" Style="height: 100px; overflow: auto"></ul>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control" id="facven_numero" value="0000000" readonly>
-                                 <label class="form-label">Numero Factura</label>
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="timb_numero">
+                                 <label class="form-label">Numero Timbrado</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="date" class="form-control no-disabled" id="timb_numero_fecha_inic">
+                                 <label class="form-label">Fecha Inicio Timbrado</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line focused">
+                                 <input type="date" class="form-control no-disabled" id="timb_numero_fecha_venc">
+                                 <label class="form-label">Fecha Vencimiento Timbrado</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line foco2">
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="timb_numero_comp">
+                                 <label class="form-label">Numero Comprobante</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line foco">
+                                 <input type="text" class="form-control no-disabled solo-numeros"
+                                    id="timb_numero_comp_inic">
+                                 <label class="form-label">Inicio Numero Comprobante</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line foco">
+                                 <input type="text" class="form-control no-disabled solo-numeros"
+                                    id="timb_numero_comp_lim">
+                                 <label class="form-label">Limite Numero Comprobante</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-2">
+                           <div class="form-group form-float">
+                              <div class="form-line est">
+                                 <input type="text" class="form-control" id="timb_estado" disabled>
+                                 <label class="form-label">Estado</label>
                               </div>
                            </div>
                         </div>
@@ -118,6 +191,18 @@ $permisos = pg_fetch_all($resultado);
                                     <span>AGREGAR</span>
                                  </button>
                               <?php } ?>
+                              <?php if (($permiso['perm_descripcion'] === 'MODIFICAR') && ($permiso['asigperm_estado'] === 'ACTIVO')) { ?>
+                                 <button type="button" class="btn btn-primary waves-effect" onclick="modificar()">
+                                    <i class="material-icons">extension</i>
+                                    <span>MODIFICAR</span>
+                                 </button>
+                              <?php } ?>
+                              <?php if (($permiso['perm_descripcion'] === 'BORRAR') && ($permiso['asigperm_estado'] === 'ACTIVO')) { ?>
+                                 <button type="button" class="btn btn-primary waves-effect" onclick="borrar()">
+                                    <i class="material-icons">report_problem</i>
+                                    <span>BORRAR</span>
+                                 </button>
+                              <?php } ?>
                            <?php } ?>
                            <button type="button" class="btn btn-primary waves-effect" onclick="salir()">
                               <i class="material-icons">exit_to_app</i>
@@ -129,7 +214,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>GRABAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -140,12 +225,13 @@ $permisos = pg_fetch_all($resultado);
             </div>
 
             <!-- Grilla Timbrados -->
-            <div id="facturas" style="display: block;">
+            <div id="comprobantes" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           TIMBRADOS <small>Lista de timbrados registradas</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           TIMBRADOS <small style="color: white; font-weight: bold;">Lista de timbrados
+                              registrados</small>
                         </h2>
                      </div>
                      <div class="body">
@@ -153,10 +239,18 @@ $permisos = pg_fetch_all($resultado);
                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
                               <thead>
                                  <tr>
+                                    <th>CODIGO</th>
                                     <th>EMPRESA</th>
                                     <th>SUCURSAL</th>
                                     <th>CAJA</th>
-                                    <th>NUMERO FACTURA</th>
+                                    <th>TIPO COMPROBANTE</th>
+                                    <th>NUMERO TIMBRADO</th>
+                                    <th>INICIO TIMBRADO</th>
+                                    <th>VENCIMIENTO TIMBRADO</th>
+                                    <th>COMPROBANTE</th>
+                                    <th>INICIO COMPROBANTE</th>
+                                    <th>LIMITE COMPROBANTE</th>
+                                    <th>ESTADO</th>
                                  </tr>
                               </thead>
                               <tbody id="tabla_cuerpo">
