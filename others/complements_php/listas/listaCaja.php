@@ -8,7 +8,7 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$caja = $_POST['caj_descripcion'];
+$caja = pg_escape_string($conexion, $_POST['caj_descripcion']);
 
 //Establecemos y mostramos la consulta
 $sql = "select 

@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -140,8 +141,8 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line caj">
                                  <input type="hidden" id="caj_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="caj_descripcion" disabled
-                                    onkeyup="getCaja()">
+                                 <input type="text" class="form-control no-disabled letras-numeros" id="caj_descripcion"
+                                    disabled onkeyup="getCaja()">
                                  <label class="form-label">Caja</label>
                                  <div id="listaCaja" style="display: none;">
                                     <ul class="list-group" id="ulCaja" Style="height: 100px; overflow: auto"></ul>
@@ -170,8 +171,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-6">
                               <div class="form-group form-float">
                                  <div class="form-line fechaAper">
-                                    <input type="text" class="form-control no-disabled" id="apercie_fechahoraapertura"
-                                       disabled>
+                                    <input type="text" class="form-control" id="apercie_fechahoraapertura" disabled>
                                     <label class="form-label">Fecha Apertura</label>
                                  </div>
                               </div>
@@ -179,8 +179,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-6">
                               <div class="form-group form-float">
                                  <div class="form-line montoAper">
-                                    <input type="number" class="form-control no-disabled" id="apercie_montoapertura"
-                                       disabled>
+                                    <input type="number" class="form-control no-disabled solo-numeros"
+                                       id="apercie_montoapertura" disabled>
                                     <label class="form-label">Monto Apertura</label>
                                  </div>
                               </div>
@@ -199,8 +199,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-6">
                               <div class="form-group form-float">
                                  <div class="form-line fechaCie">
-                                    <input type="text" class="form-control no-disabled" id="apercie_fechahoracierre"
-                                       disabled>
+                                    <input type="text" class="form-control" id="apercie_fechahoracierre" disabled>
                                     <label class="form-label">Fecha Cierre</label>
                                  </div>
                               </div>
@@ -208,8 +207,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-6">
                               <div class="form-group form-float">
                                  <div class="form-line montoCie">
-                                    <input type="text" class="form-control no-disabled" id="apercie_montocierre"
-                                       disabled>
+                                    <input type="text" class="form-control" id="apercie_montocierre" disabled>
                                     <label class="form-label">Monto Cierre</label>
                                  </div>
                               </div>
@@ -271,7 +269,7 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line aper">
                                  <input type="hidden" id="apercie_codigo2" value="0">
-                                 <input type="text" class="form-control no-disabled" id="usuario"
+                                 <input type="text" class="form-control no-disabled solo-letras" id="usuario"
                                     onkeyup="getApertura()">
                                  <label class="form-label">Usuario</label>
                                  <div id="listaApertura" style="display: none;">
@@ -284,7 +282,7 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line aper">
                                  <input type="hidden" id="caj_codigo2" value="0">
-                                 <input type="text" class="form-control no-disabled" id="caj_descripcion2" disabled>
+                                 <input type="text" class="form-control" id="caj_descripcion2" disabled>
                                  <label class="form-label">Caja</label>
                               </div>
                            </div>
@@ -292,7 +290,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line aper">
-                                 <input type="text" class="form-control no-disabled" id="emp_razonsocial2" disabled>
+                                 <input type="text" class="form-control" id="emp_razonsocial2" disabled>
                                  <label class="form-label">Empresa</label>
                               </div>
                            </div>
@@ -300,7 +298,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line aper">
-                                 <input type="text" class="form-control no-disabled" id="suc_descripcion2" disabled>
+                                 <input type="text" class="form-control" id="suc_descripcion2" disabled>
                                  <label class="form-label">Sucursal</label>
                               </div>
                            </div>
@@ -308,7 +306,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line aper">
-                                 <input type="text" class="form-control no-disabled" id="apercie_estado2" disabled>
+                                 <input type="text" class="form-control" id="apercie_estado2" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -350,7 +348,7 @@ foreach ($permisos as $permiso) {
                            <div class="form-group">
                               <div class="form-line">
                                  <input type="hidden" id="func_codigo" value="0">
-                                 <input type="text" id="funcionario" class="form-control"
+                                 <input type="text" id="funcionario" class="form-control solo-numeros"
                                     placeholder="Ingresa el CI del funcionario" onkeyup="getFuncionario()" />
                                  <div id="listaFuncionario" style="display: none;">
                                     <ul class="list-group" id="ulFuncionario" Style="height: 100px; overflow: auto">
@@ -364,7 +362,7 @@ foreach ($permisos as $permiso) {
                               style="color: white; font-weight: bold; background-color:#4DC18B;">Observacion</h2>
                            <div class="form-group">
                               <div class="form-line">
-                                 <input type="text" id="observacion" class="form-control"
+                                 <input type="text" id="observacion" class="form-control solo-letras"
                                     placeholder="Ingresa el motivo del arqueo" />
                               </div>
                            </div>

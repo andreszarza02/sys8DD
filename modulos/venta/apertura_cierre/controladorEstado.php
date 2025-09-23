@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -24,13 +26,16 @@ $result3 = pg_query($conexion, $sql3);
 
 $dato3 = pg_fetch_assoc($result3);
 
+// Validamos si el dato existe
 if (empty($dato3['apercie_codigo'])) {
+   // Si no existe el dato enviamos respuesta 0
    $dato3 = [];
    $dato3 = ["respuesta" => "0"];
 } else if ($dato3['apercie_estado'] == "CERRADO") {
+   // Si la caja se encuentra cerrada enviamos respuesta 0
    $dato3 = [];
    $dato3 = ["respuesta" => "0"];
-}
+}// Si esta abierta, enviamos los datos de la apertura
 
 echo json_encode($dato3);
 

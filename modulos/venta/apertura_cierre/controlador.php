@@ -1,8 +1,10 @@
 <?php
 
 session_start();
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -13,11 +15,16 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   //Definimos las variables a pasar al sp 
+   // Definimos y cargamos las variables
    $apercie_estado = pg_escape_string($conexion, $_POST['apercie_estado']);
+
+   $apercie_montoapertura = str_replace(",", ".", $_POST['apercie_montoapertura']);
+
+   $apercie_montocierre = str_replace(",", ".", $_POST['apercie_montocierre']);
 
    //Validamos por operación para diferenciar si es una inserción o una actualización de registro
    if ($_POST['operacion'] == 1) {
+
       //insertamos nuevo registro
       $sql = "select sp_apertura_cierre(
          {$_POST['apercie_codigo']}, 
@@ -27,12 +34,14 @@ if (isset($_POST['operacion'])) {
          {$_POST['usu_codigo']}, 
          '{$_POST['apercie_fechahoraapertura']}', 
          '{$_POST['apercie_fechahoraapertura']}', 
-         {$_POST['apercie_montoapertura']}, 
+         $apercie_montoapertura, 
          0, 
          '$apercie_estado', 
          {$_POST['operacion']}
          )";
+
    } else {
+
       //Actualizamos registro existente
       $sql = "select sp_apertura_cierre(
          {$_POST['apercie_codigo']}, 
@@ -43,12 +52,12 @@ if (isset($_POST['operacion'])) {
          '{$_POST['apercie_fechahoracierre']}', 
          '{$_POST['apercie_fechahoracierre']}', 
          0, 
-         {$_POST['apercie_montocierre']}, 
+         $apercie_montocierre, 
          '$apercie_estado', 
          {$_POST['operacion']}
          )";
-   }
 
+   }
 
    //Validamos la consulta
    $result = pg_query($conexion, $sql);

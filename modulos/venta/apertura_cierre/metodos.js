@@ -5,6 +5,191 @@ let checkboxes = contenedorPadre.querySelectorAll('input[type="checkbox"]');
 //Almacena checkboxs activos
 let valoresCheckboxesActivos = [];
 
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras y numeros
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase sletras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value) ||
+            tieneSimbolo.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-letras realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-letras")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneNumero = /[0-9]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene números o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneNumero.test(input.value) && tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números y símbolos`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          } else if (tieneNumero.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 //Actualiza datos como empresa, sucursal y usuario en el formulario
 const actualizacionCabecera = () => {
   $.ajax({
@@ -224,6 +409,7 @@ const reapertura = () => {
   $(".foco").attr("class", "form-line foco");
   $(".est").attr("class", "form-line est");
   $(".fechaAper").attr("class", "form-line fechaAper");
+  validacionInputsVacios3();
 };
 
 //Se encarga de abrir la caja
@@ -238,6 +424,8 @@ const abrir = () => {
   habilitarBotones(3);
   $("#apercie_fechahoraapertura").val(getTimestamp());
   $("#operacion").val(1);
+  validacionInputsVacios1();
+  validacionInputsVacios2();
 };
 
 //Se encarga de cerrar la caja
@@ -310,7 +498,6 @@ const grabar = () => {
           if (respuesta.tipo == "info") {
             if ($("#operacion").val() == "2") {
               setRecaudacion();
-              console.log("Dentro del if de setRecaudacion");
             }
             limpiarCampos();
           }
@@ -354,7 +541,7 @@ const confirmar = () => {
   swal(
     {
       title: "Atención!!!",
-      text: preg,
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -391,8 +578,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -454,7 +641,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: mensaje,
+      text: mensaje.toUpperCase(),
       type: "error",
     });
   } else {
@@ -495,7 +682,7 @@ const controlVacio3 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos del arqueo control",
+      text: "CARGUE TODOS LOS CAMPOS DEL ARQUEO CONTROL",
       type: "error",
     });
   } else {
@@ -524,7 +711,7 @@ const controlVacio4 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en la reapertura",
+      text: "CARGUE TODOS LOS CAMPOS EN LA REAPERTURA",
       type: "error",
     });
   } else {
@@ -709,6 +896,8 @@ checkboxes.forEach(function (checkbox) {
 //En caso de estar abierto la caja, muestra el formulario de arqueo
 if ($("#estadoApertura").val() == "ABIERTO") {
   $("#contenedorArqueo").attr("style", "display: block;");
+  validacionInputsVacios2();
+  validacionInputsVacios3();
 }
 
 //En caso de estar abierto la caja, oculta los botones de reapertura

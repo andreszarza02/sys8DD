@@ -1,7 +1,10 @@
 <?php
+
 session_start();
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -130,7 +133,7 @@ if ($consulta == '4') {
       'caja' => "{$_POST['caj_descripcion']}"
    ];
 
-   //Cargamos las variable de sesion pra que la caja se mantenga abierta
+   //Cargamos las variable de sesion para que la caja se mantenga abierta
    $_SESSION['apertura'] = $apertura;
 
 }

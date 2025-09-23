@@ -21,7 +21,6 @@ $sql = "select
 	su.suc_codigo,
 	e.emp_codigo,
 	e.emp_razonsocial,
-   e.emp_timbrado,
 	m.modu_descripcion
 from usuario u 
 	join funcionario f on f.func_codigo = u.func_codigo
