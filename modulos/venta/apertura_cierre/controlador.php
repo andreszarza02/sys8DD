@@ -71,28 +71,37 @@ if (isset($_POST['operacion'])) {
       );
    } else {
 
-      //En caso de que no realizamos una consulta para mantener abierto la caja
-      $sql2 = "select 
-                  ac.apercie_codigo, 
-                  ac.apercie_estado, 
-                  ac.caj_codigo, 
-                  c.caj_descripcion 
-               from apertura_cierre ac 
-               join caja c on c.caj_codigo=ac.caj_codigo 
-               where ac.apercie_codigo = {$_POST['apercie_codigo']}";
+      if ($_POST['operacion'] == 1) {
 
-      $result2 = pg_query($conexion, $sql2);
+         //En caso de que no realizamos una consulta para mantener abierto la caja
+         $sql2 = "select 
+                     ac.apercie_codigo, 
+                     ac.apercie_estado, 
+                     ac.caj_codigo, 
+                     c.caj_descripcion 
+                  from apertura_cierre ac 
+                  join caja c on c.caj_codigo=ac.caj_codigo 
+                  where ac.apercie_codigo = {$_POST['apercie_codigo']}";
 
-      $dato2 = pg_fetch_assoc($result2);
+         $result2 = pg_query($conexion, $sql2);
 
-      $apertura = [
-         "numero" => "{$dato2['apercie_codigo']}",
-         "habilitado" => "{$dato2['apercie_estado']}",
-         'numero_caja' => "{$dato2['caj_codigo']}",
-         'caja' => "{$dato2['caj_descripcion']}"
-      ];
+         $dato2 = pg_fetch_assoc($result2);
 
-      $_SESSION['apertura'] = $apertura;
+         $apertura = [
+            "numero" => "{$dato2['apercie_codigo']}",
+            "habilitado" => "{$dato2['apercie_estado']}",
+            'numero_caja' => "{$dato2['caj_codigo']}",
+            'caja' => "{$dato2['caj_descripcion']}"
+         ];
+
+         $_SESSION['apertura'] = $apertura;
+
+      } else if ($_POST['operacion'] == 2) {
+
+         //Borramos la varible de sesion apertura
+         unset($_SESSION['apertura']);
+      }
+
 
       $response = array(
          "mensaje" => pg_last_notice($conexion),

@@ -120,6 +120,11 @@ if ($consulta == '3') {
 
    $result4 = pg_query($conexion, $sql4);
 
+   // Si se inserto de forma correcta devolvemos ok
+   $response = ['insertado' => 'ok'];
+
+   echo json_encode($response);
+
 }
 
 //Permite definir la variable de apertura cuando se reabre la caja

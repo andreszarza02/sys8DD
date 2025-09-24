@@ -125,7 +125,7 @@ const listar = () => {
     });
 };
 
-//Habilita botones de la referencial
+// Habilita botones de la referencial
 const habilitarBotones = (booleano) => {
   if (booleano) {
     $(".botonesExtra1").attr("style", "display: block;");
@@ -169,7 +169,7 @@ const modificar = () => {
   validacionInputsVacios();
 };
 
-//Metodo que establece la baja, en esta caso de manera logica
+// Metodo que establece la baja, en esta caso de manera logica
 const borrar = () => {
   $("#operacion").val(3);
   $("#procedimiento").val("BAJA");
@@ -178,12 +178,12 @@ const borrar = () => {
   habilitarBotones(false);
 };
 
-//Limpia los campos del formulario
+// Limpia los campos del formulario
 const limpiarCampos = () => {
   window.location.reload();
 };
 
-//Pasa parametros en el controlador para persistir los mismos
+// Pasa parametros en el controlador para persistir los mismos
 const abm = () => {
   $.ajax({
     //Enviamos datos al controlador

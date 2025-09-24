@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -46,9 +47,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Maquinaria-->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE MAQUINARIA<small>Mantener referencial maquinaria</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE MAQUINARIA<small style="color: white; font-weight: bold;">Mantener referencial
+                           maquinaria</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -68,7 +70,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="maq_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="maq_descripcion"
+                                    disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
@@ -76,7 +79,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="maq_estado" disabled>
+                                 <input type="text" class="form-control" id="maq_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -116,7 +119,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>GRABAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -130,9 +133,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="maquinarias" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           MAQUINARIAS REGISTRADAS <small>Lista de maquinarias registradas</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           MAQUINARIAS REGISTRADAS <small style="color: white; font-weight: bold;">Lista de maquinarias
+                              registradas</small>
                         </h2>
                      </div>
                      <div class="body">

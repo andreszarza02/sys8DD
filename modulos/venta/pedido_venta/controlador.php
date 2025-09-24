@@ -2,6 +2,7 @@
 
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -12,8 +13,7 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   //Definimos las variables a pasar al sp de cabecera
-
+   // Definimos y cargamos las variables
    $peven_estado = pg_escape_string($conexion, $_POST['peven_estado']);
 
    $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
@@ -59,16 +59,25 @@ if (isset($_POST['operacion_cabecera'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(peven_codigo),0)+1 as peven_codigo from pedido_venta_cab;";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_assoc($resultado);
+
    echo json_encode($datos);
 
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_pedido_venta_cab vpvc where vpvc.peven_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+           from v_pedido_venta_cab vpvc 
+            where vpvc.peven_estado <> 'ANULADO';";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
 }
 

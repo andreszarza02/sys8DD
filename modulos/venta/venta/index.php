@@ -135,7 +135,7 @@ foreach ($permisos as $permiso) {
                                     <input type="hidden" id="caj_codigo" value="<?php if (isset($_SESSION['apertura']['numero_caja'])) {
                                        print_r($_SESSION['apertura']['numero_caja']);
                                     } else {
-                                       print_r("0");
+                                       print_r(value: "0");
                                     } ?>">
                                     <input type="text" class="form-control" id="peven_codigo" disabled>
                                     <label class="form-label">N° Pedido</label>
@@ -151,16 +151,16 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-1">
+                           <!-- <div class="col-sm-1">
                               <div class="form-group form-float">
                                  <div class="form-line foco">
                                     <input type="text" class="form-control" id="emp_timbrado" disabled
-                                       value="<?php echo $_SESSION['usuario']['emp_timbrado']; ?>">
+                                       value="<?php //echo $_SESSION['usuario']['emp_timbrado']; ?>">
                                     <label class="form-label">Timbrado</label>
                                  </div>
                               </div>
-                           </div>
-                           <div class="col-sm-2">
+                           </div> -->
+                           <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line tp">
                                     <input type="text" class="form-control no-disabled" id="ven_tipofactura" disabled

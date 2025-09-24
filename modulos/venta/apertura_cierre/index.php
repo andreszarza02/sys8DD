@@ -238,7 +238,7 @@ foreach ($permisos as $permiso) {
                         <i class="material-icons">save</i>
                         <span>CONFIRMAR</span>
                      </button>
-                     <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                     <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                         <i class="material-icons">lock</i>
                         <span>CANCELAR</span>
                      </button>

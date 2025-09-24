@@ -344,6 +344,22 @@ const setArqueo = () => {
       func_codigo: $("#func_codigo").val(),
       consulta: "3",
     },
+  }).done(function (respuesta) {
+    //Validamos si se ejecuto de forma correcta la insercion en arqueo control si es asi generamos el reporte
+    if (respuesta.insertado == "ok") {
+      let cabeceraArqueoControl = [
+        $("#apercie_codigo").val(),
+        $("#emp_razonsocial").val(),
+        $("#suc_descripcion").val(),
+        $("#usu_login").val(),
+        $("#funcionario").val(),
+        $("#observacion").val(),
+        $("#caj_descripcion").val(),
+      ];
+
+      reporteArqueoControl(valoresCheckboxesActivos, cabeceraArqueoControl);
+      limpiarArqueo();
+    }
   });
 };
 
@@ -540,7 +556,7 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
+      title: "ATENCIÓN!!!",
       text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
@@ -566,16 +582,6 @@ const confirmar = () => {
 const confirmar2 = () => {
   let preg = "¿Desea generar el arqueo control?";
 
-  let cabeceraArqueoControl = [
-    $("#apercie_codigo").val(),
-    $("#emp_razonsocial").val(),
-    $("#suc_descripcion").val(),
-    $("#usu_login").val(),
-    $("#funcionario").val(),
-    $("#observacion").val(),
-    $("#caj_descripcion").val(),
-  ];
-
   swal(
     {
       title: "ATENCIÓN!!!",
@@ -592,8 +598,6 @@ const confirmar2 = () => {
       //Si la operacion es correcta generamos y registramos el arqueo
       if (isConfirm) {
         setArqueo();
-        reporteArqueoControl(valoresCheckboxesActivos, cabeceraArqueoControl);
-        limpiarArqueo();
       } else {
         //Si cancelamos la operacion realizamos un reload
         window.location.reload(true);
