@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,8 +13,7 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion detalle
 if (isset($_POST['operacion_detalle'])) {
 
-   //Definimos las variables a pasar al sp de detalle
-
+   // Definimos y cargamos las variables
    $pevendet_cantidad = str_replace(",", ".", $_POST['pevendet_cantidad']);
 
    $pevendet_precio = str_replace(",", ".", $_POST['pevendet_precio']);
@@ -39,6 +40,29 @@ if (isset($_POST['operacion_detalle'])) {
       $response = array(
          "mensaje" => pg_last_notice($conexion),
          "tipo" => "info"
+      );
+   }
+
+   echo json_encode($response);
+
+} else if (isset($_POST['consulta1'])) {
+
+   //Consultamos y enviamos el ultimo codigo
+   $sql = "select 1 from presupuesto_cab pc 
+		     where pc.peven_codigo={$_POST['peven_codigo']} and pc.pres_estado <> 'ANULADO';";
+
+   $resultado = pg_query($conexion, $sql);
+
+   // Si devuelve alguna fila generamos una respuesta con "asociado"
+   if (pg_num_rows($resultado) > 0) {
+      // Al menos un registro encontrado
+      $response = array(
+         "validacion" => "asociado",
+      );
+   } else {
+      // Si no, generamos una respuesta con "no_asociado"
+      $response = array(
+         "validacion" => "no_asociado",
       );
    }
 

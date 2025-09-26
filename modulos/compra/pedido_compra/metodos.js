@@ -1267,7 +1267,6 @@ const grabarDetalle = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            //limpiarCampos();
             habilitarBotones2(true);
             listarDetalle();
           }

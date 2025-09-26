@@ -947,26 +947,35 @@ create or replace function sp_apertura_cierre(
     operacion integer 
 ) returns void as	
 $function$
+-- Definimos las variables
 declare ultcod integer;
 begin 
+	 -- Validamos que la oepracion sea de insercion
      if operacion = 1 then
+		-- Validamos que no se repita la caja abierta por sucursal
      	perform * from apertura_cierre
-     	where (caj_codigo=cajcodigo and apercie_estado='ABIERTO' and apercie_codigo<>aperciecodigo);
+     	where (caj_codigo=cajcodigo and suc_codigo=succodigo and emp_codigo=empcodigo and apercie_estado='ABIERTO' and apercie_codigo<>aperciecodigo);
      	if found then
+			 -- En caso de ser asi, generamos una excepcion
      		 raise exception 'caja';
      	elseif operacion = 1 then
-	     insert into apertura_cierre(apercie_codigo, suc_codigo, emp_codigo, caj_codigo, usu_codigo,
-	     apercie_fechahoraapertura, apercie_fechahoracierre, apercie_montoapertura, apercie_montocierre, apercie_estado)
-		 values(aperciecodigo, succodigo, empcodigo, cajcodigo, usucodigo, aperciefechahoraapertura, aperciefechahoracierre,
-		 aperciemontoapertura, aperciemontocierre, 'ABIERTO');
+		 -- Si los parametros pasan la validacion, procedemos con su insercion
+	     insert into apertura_cierre(apercie_codigo, suc_codigo, emp_codigo, 
+									 caj_codigo, usu_codigo, apercie_fechahoraapertura, apercie_fechahoracierre, 
+									 apercie_montoapertura, apercie_montocierre, apercie_estado)
+		 values(aperciecodigo, succodigo, empcodigo, 
+				cajcodigo, usucodigo, aperciefechahoraapertura, aperciefechahoracierre,
+				aperciemontoapertura, aperciemontocierre, 'ABIERTO');
+		 -- Enviamos mensaje de confirmacion
 		 raise notice 'CAJA ABIERTA EXITOSAMENTE';
 		end if;
     end if;
+	-- Validamos que la operacion sea de modificacion
     if operacion = 2 then 
     	update apertura_cierre 
-		set apercie_fechahoracierre=aperciefechahoracierre, apercie_montocierre=aperciemontocierre,
-		apercie_estado='CERRADO', usu_codigo=usucodigo
+		set apercie_fechahoracierre=aperciefechahoracierre, apercie_montocierre=aperciemontocierre, apercie_estado='CERRADO', usu_codigo=usucodigo
 		where apercie_codigo=aperciecodigo;
+		-- Enviamos mensaje de confirmacion
 		raise notice 'CAJA CERRADA EXITOSAMENTE';
     end if;
 end

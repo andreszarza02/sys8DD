@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,17 +13,14 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $descripcion = $_POST['tipet_descripcion'];
-   $tipet_descripcion = str_replace("'", "''", $descripcion);
+   // Definimos y cargamos las variables
+   $tipet_descripcion = pg_escape_string($conexion, $_POST['tipet_descripcion']);
 
-   $estado = $_POST['tipet_estado'];
-   $tipet_estado = str_replace("'", "''", $estado);
+   $tipet_estado = pg_escape_string($conexion, $_POST['tipet_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
    $sql = "select sp_tipo_etapa_produccion(
    {$_POST['tipet_codigo']}, 
@@ -30,7 +29,7 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2'
+   '$procedimiento'
    )";
 
    //Validamos la consulta
@@ -56,8 +55,11 @@ if (isset($_POST['operacion'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(tipet_codigo),0)+1 as tipet_codigo from tipo_etapa_produccion;";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_assoc($resultado);
+
    echo json_encode($datos);
 
 } else {
@@ -71,7 +73,9 @@ if (isset($_POST['operacion'])) {
          order by tep.tipet_codigo;";
 
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
 }
 

@@ -114,37 +114,6 @@ BEGIN
         );
     -- Validamos si la operacion es de actualizacion
 	ELSEIF TG_OP = 'UPDATE' THEN
-    -- Registramos el valor anterior a que se actualice
-    INSERT INTO apertura_cierre_auditoria(
-            apercieaud_codigo,
-            apercieaud_fecha,
-            apercieaud_procedimiento,
-            apercie_codigo,
-            suc_codigo,
-            emp_codigo,
-			caj_codigo,
-			usu_codigo,
-			apercie_fechahoraapertura,
-			apercie_fechahoracierre,
-			apercie_montoapertura,
-			apercie_montocierre,
-			apercie_estado
-    )
-    VALUES (
-            (SELECT COALESCE(MAX(apercieaud_codigo), 0) + 1 FROM apertura_cierre_auditoria),   
-            current_timestamp,
-            'MODIFICACION_ANTERIOR',   
-            OLD.apercie_codigo,
-            OLD.suc_codigo,
-            OLD.emp_codigo,
-			OLD.caj_codigo,
-			OLD.usu_codigo,
-			OLD.apercie_fechahoraapertura,
-			OLD.apercie_fechahoracierre,
-			OLD.apercie_montoapertura,
-			OLD.apercie_montocierre,
-			OLD.apercie_estado
-      );
     -- Registramos el nuevo valor actualizado
     INSERT INTO apertura_cierre_auditoria(
             apercieaud_codigo,
@@ -164,7 +133,7 @@ BEGIN
         VALUES (
             (SELECT COALESCE(MAX(apercieaud_codigo), 0) + 1 FROM apertura_cierre_auditoria),   
             current_timestamp,
-            'MODIFICACION_NUEVO',   
+            'MODIFICACION',   
             NEW.apercie_codigo,
             NEW.suc_codigo,
             NEW.emp_codigo,

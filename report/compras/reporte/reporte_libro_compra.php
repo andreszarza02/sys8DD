@@ -1,6 +1,9 @@
 <?php
+
 //Iniciamos sesion
 session_start();
+
+// Definimos datos generales a utilizar en el encabezado
 $usuario = $_SESSION['usuario']['usu_login'];
 $perfil = $_SESSION['usuario']['perf_descripcion'];
 $modulo = $_SESSION['usuario']['modu_descripcion'];
@@ -9,25 +12,32 @@ $fechaActual = date('d-m-Y');
 
 //Requerimos conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
+
+// Creamos una instanca de la clase Conexion
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$desde = $_GET['desde'];
-$hasta = $_GET['hasta'];
+// Definimos y cargamos las variables
+$desde = $_GET['desde'] ?? null;
+$hasta = $_GET['hasta'] ?? null;
+$proveedor = $_GET['proveedor'] ?? null;
+$tipo = $_GET['tipo'] ?? null;
 
-$sql = "select 
-            lc.*,
-            p.pro_razonsocial,
-            p.pro_ruc 
-         from libro_compra lc 
-            join compra_cab cc on cc.comp_codigo=lc.comp_codigo
-            join proveedor p on p.pro_codigo=cc.pro_codigo
-            and p.tipro_codigo=cc.tipro_codigo
-            join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo
-            where lc.licom_fecha between '$desde' and '$hasta'
-         order by lc.licom_codigo;";
+// Definimos la consulta principal
+$sql = "SELECT * FROM v_reporte_libro_compra vrlc 
+         WHERE vrlc.licom_fecha BETWEEN '$desde' AND '$hasta';";
+
+// Agregamos los filtros opcionales solo si vienen con datos
+if (!empty($proveedor)) {
+   $sql .= " AND vrlc.pro_codigo = '$proveedor'";
+}
+
+if (!empty($tipo)) {
+   $sql .= " AND vrlc.tipco_codigo = '$tipo'";
+}
 
 $resultado = pg_query($conexion, $sql);
+
 $datos = pg_fetch_all($resultado);
 
 ?>
@@ -35,127 +45,109 @@ $datos = pg_fetch_all($resultado);
 <?php ob_start(); ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
    <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Reporte Libro Compra</title>
+   <title>Libro de Compras</title>
    <style>
-      .tabla {
-         border-collapse: collapse;
-         width: 100%;
-         font-size: 10px;
+      body {
+         font-family: Arial, sans-serif;
+         font-size: 12px;
+         margin: 40px;
+         color: #000;
       }
 
-      th,
-      .celda {
-         border: 1px solid black;
-         padding: 5px;
-      }
-
-      th {
-         background-color: #009688;
-      }
-
-      h1 {
-         color: #333;
-         font-size: 20px;
+      h2 {
          text-align: center;
-         text-transform: uppercase;
-         letter-spacing: -1px;
-         font-family: 'Times New Roman', Times, serif;
+         margin-bottom: 5px;
       }
 
-      h4 {
-         font-weight: bold;
-         font-size: 15px;
-         text-align: center;
-      }
-
-      .usuarioCelda {
-         width: 300px;
+      .header-info {
+         display: flex;
+         justify-content: space-between;
+         margin-bottom: 10px;
          font-size: 12px;
       }
 
-      .usuario {
-         margin-bottom: 10px;
+      .header-info div {
+         width: 48%;
+      }
+
+      table {
+         width: 100%;
+         border-collapse: collapse;
+         margin-bottom: 15px;
+      }
+
+      table th,
+      table td {
+         border: 1px solid #000;
+         padding: 5px;
+         text-align: right;
+         font-size: 11px;
+      }
+
+      table th {
+         background-color: #f0f0f0;
+         text-align: center;
+      }
+
+      .footer-total td {
+         font-weight: bold;
+         background-color: #f9f9f9;
+      }
+
+      .left {
+         text-align: left !important;
       }
    </style>
 </head>
 
 <body>
-   <h1>8 DE DICIEMBRE CONFECCIONES</h1>
+   <p>8 DE DICIEMBRE</p>
 
-   <h4>LIBRO COMPRA</h4>
+   <h2>LIBRO DE COMPRAS</h2>
 
-   <table class="usuario">
-      <tbody>
-         <tr class="usuarioFila">
-            <td class="usuarioCelda">
-               <b>USUARIO:</b>
-               <?php echo $usuario; ?>
-            </td>
-            <td class="usuarioCelda">
-               <b>PERFIL:</b>
-               <?php echo $perfil; ?>
-            </td>
-            <td class="usuarioCelda">
-               <b>MÓDULO:</b>
-               <?php echo $modulo ?>
-            </td>
-            <td class="usuarioCelda">
-               <b>FECHA:</b>
-               <?php echo $fechaActual; ?>
-            </td>
-         </tr>
-      </tbody>
-   </table>
+   <div class="header-info">
+      <div>
+         <p><strong>USUARIO:</strong> 1 ADMINISTRADOR</p>
+         <p><strong>FECHA:</strong> 23-10-2005</p>
+      </div>
+      <div style="text-align: right;">
+         <p><strong>PÁG.:</strong> 1</p>
+         <p><strong>DESDE:</strong> 01-01-2005 &nbsp;&nbsp; <strong>HASTA:</strong> 23-10-2005</p>
+      </div>
+   </div>
 
-   <table class="tabla">
+   <table>
       <thead>
          <tr>
-            <th>N° COMPRA</th>
-            <th>PROVEEDOR</th>
-            <th>RUC</th>
-            <th>N° FACTURA</th>
-            <th>FECHA</th>
-            <th>EXENTA</th>
-            <th>IVA 5</th>
-            <th>IVA 10</th>
+            <th rowspan="2">N°</th>
+            <th rowspan="2">FECHA</th>
+            <th rowspan="2">RUC</th>
+            <th rowspan="2">PROVEEDOR</th>
+            <th colspan="2">DOCUMENTO</th>
+            <th rowspan="2">TOTAL CON IVA</th>
+            <th colspan="2">IVA 10%</th>
+            <th colspan="2">IVA 5%</th>
+            <th rowspan="2">OTROS</th>
+         </tr>
+         <tr>
+            <th>TIPO</th>
+            <th>N° COMPROBANTE</th>
+            <th>IMPORTE SIN IVA</th>
+            <th>CREDITO FISCAL</th>
+            <th>IMPORTE SIN IVA</th>
+            <th>CREDITO FISCAL</th>
          </tr>
       </thead>
       <tbody>
-         <?php foreach($datos as $fila) { ?>
-            <tr class="fila">
-               <td class="celda">
-                  <?php echo $fila['comp_codigo'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['pro_razonsocial'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['pro_ruc'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['licom_numerofactura'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['licom_fecha'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['licom_exenta'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['licom_iva5'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['licom_iva10'] ?>
-               </td>
-            </tr>
-         <?php } ?>
       </tbody>
+      <tfoot>
+      </tfoot>
    </table>
+
 </body>
 
 </html>

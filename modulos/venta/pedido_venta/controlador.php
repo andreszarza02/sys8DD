@@ -47,15 +47,23 @@ if (isset($_POST['operacion_cabecera'])) {
 
    //ejecutamos la consulta
    $result = pg_query($conexion, $sql);
+   $error = pg_last_error($conexion);
 
-   $response = array(
-      "mensaje" => pg_last_notice($conexion),
-      "tipo" => "info"
-   );
+   if (strpos($error, "asociado") !== false) {
+      $response = array(
+         "mensaje" => "YA SE ENCUENTRA ASOCIADO EL PEDIDO DE VENTA A UN PRESUPUESTO DE PRODUCCION",
+         "tipo" => "error"
+      );
+   } else {
+      $response = array(
+         "mensaje" => pg_last_notice($conexion),
+         "tipo" => "info"
+      );
+   }
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(peven_codigo),0)+1 as peven_codigo from pedido_venta_cab;";

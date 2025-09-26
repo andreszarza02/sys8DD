@@ -1,6 +1,9 @@
 <?php
+
+// Llamamos a la variable de sesión
 session_start();
 
+// Establecemos datos de
 $empresa = $_SESSION['usuario']['emp_razonsocial'];
 $empresaCodigo = $_SESSION['usuario']['emp_codigo'];
 
@@ -66,7 +69,9 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line t focused">
-                                 <input type="text" class="form-control" id="tablas" onclick="getTablas()">
+                                 <input type="hidden" id="codigo_informe" value="0">
+                                 <input type="text" class="form-control solo-letras" id="tablas" onclick="getTablas()"
+                                    onkeyup="getTablas()">
                                  <label class="form-label">Informe Solicitado</label>
                                  <div id="listaTablas" style="display: none;">
                                     <ul class="list-group" id="ulTablas"
@@ -84,7 +89,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                   </div>
                   <div class="body">
                      <div class="row clearfix">
-                        <div class="presupuesto_compra">
+                        <div class="presupuesto_compra" style="display: none;">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
                                  Informe Presupuesto de Proveedor
@@ -93,7 +98,8 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-6">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="text" class="form-control" placeholder="Este campo es obligatorio">
+                                    <input type="text" id="pedco_codigo" class="form-control solo-numeros"
+                                       placeholder="Este campo es obligatorio">
                                     <label class="form-label">Numero Pedido</label>
                                  </div>
                               </div>
@@ -107,7 +113,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                               </div>
                            </div>
                         </div>
-                        <div class="libro_compra">
+                        <div class="libro_compra" style="display: none;">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
                                  Informe Libro de Compras
@@ -116,7 +122,8 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="text" class="form-control">
+                                    <input type="hidden" id="pro_codigo" value="0">
+                                    <input type="text" id="pro_descripcion" class="form-control">
                                     <label class="form-label">Proveedor (Opcional)</label>
                                  </div>
                               </div>
@@ -124,7 +131,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="desdeLibro" class="form-control">
                                     <label class="form-label">Desde</label>
                                  </div>
                               </div>
@@ -132,7 +139,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="hastaLibro" class="form-control">
                                     <label class="form-label">Hasta</label>
                                  </div>
                               </div>
@@ -140,13 +147,14 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="text" class="form-control">
+                                    <input type="hidden" id="tipco_codigo" value="0">
+                                    <input type="text" id="tipco_descripcion" class="form-control">
                                     <label class="form-label">Tipo Comprobante (Opcional)</label>
                                  </div>
                               </div>
                            </div>
                         </div>
-                        <div class="cuentas_pagar">
+                        <div class="cuentas_pagar" style="display: none;">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
                                  Informe Cuentas a Pagar
@@ -163,7 +171,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="desdeCuenta" class="form-control">
                                     <label class="form-label">Desde</label>
                                  </div>
                               </div>
@@ -171,7 +179,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="hastaCuenta" class="form-control">
                                     <label class="form-label">Hasta</label>
                                  </div>
                               </div>
@@ -187,7 +195,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                         </div>
                      </div>
                      <!-- Botones -->
-                     <div class="icon-and-text-button-demo">
+                     <div class="icon-and-text-button-demo" id="botones" style="display: none;">
                         <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                            <i class="material-icons">content_paste</i>
                            <span>GENERAR</span>
