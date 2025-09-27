@@ -21,7 +21,7 @@ $conexion = $objConexion->getConexion();
 // Definimos y cargamos las variables
 $desde = $_GET['desde'] ?? null;
 $hasta = $_GET['hasta'] ?? null;
-$proveedor = $_GET['proveedor'] ?? null;
+$cliente = $_GET['cliente'] ?? null;
 $tipo = $_GET['tipo'] ?? null;
 $total = 0;
 $sin_iva_10 = 0;
@@ -31,16 +31,16 @@ $credito_fiscal_5 = 0;
 $otros = 0;
 
 // Definimos la consulta principal
-$sql = "SELECT * FROM v_reporte_libro_compra vrlc 
-         WHERE vrlc.licom_fecha BETWEEN '$desde' AND '$hasta'";
+$sql = "SELECT * FROM v_reporte_libro_venta vrlv 
+         WHERE vrlv.libven_fecha BETWEEN '$desde' AND '$hasta'";
 
 // Agregamos los filtros opcionales solo si vienen con datos
-if (!empty($proveedor)) {
-   $sql .= " AND vrlc.pro_codigo = '$proveedor'";
+if (!empty($cliente)) {
+   $sql .= " AND vrlv.cli_codigo = '$cliente'";
 }
 
 if (!empty($tipo)) {
-   $sql .= " AND vrlc.tipco_codigo = '$tipo'";
+   $sql .= " AND vrlv.tipco_codigo = '$tipo'";
 }
 
 $resultado = pg_query($conexion, $sql);
@@ -100,20 +100,20 @@ $hasta = date('d-m-Y', strtotime($hasta));
          margin-bottom: 13px;
       }
 
-      .libro_compra {
+      .libro_venta {
          border-collapse: collapse;
          width: 100%;
          margin-top: 20px;
       }
 
-      .libro_compra th,
-      .libro_compra td {
+      .libro_venta th,
+      .libro_venta td {
          border: 1px solid #000;
          padding: 2px;
          font-size: 8px;
       }
 
-      .libro_compra th {
+      .libro_venta th {
          background-color: #f0f0f0;
          text-align: center;
       }
@@ -126,7 +126,7 @@ $hasta = date('d-m-Y', strtotime($hasta));
    <p class="sucursal"><strong>Contacto:</strong>
       <?php echo $datosSucursal['suc_telefono']; ?></p>
 
-   <h2>LIBRO DE COMPRAS</h2>
+   <h2>LIBRO DE VENTAS</h2>
 
    <hr>
 
@@ -168,13 +168,13 @@ $hasta = date('d-m-Y', strtotime($hasta));
 
    <hr>
 
-   <table class="libro_compra">
+   <table class="libro_venta">
       <thead>
          <tr>
             <th rowspan="2">N°</th>
             <th rowspan="2">FECHA</th>
-            <th rowspan="2">RUC</th>
-            <th rowspan="2">PROVEEDOR</th>
+            <th rowspan="2">DOCUMENTO</th>
+            <th rowspan="2">CLIENTE</th>
             <th colspan="2">COMPROBANTE</th>
             <th rowspan="2">TOTAL CON IVA</th>
             <th colspan="2">IVA 10%</th>
@@ -202,9 +202,9 @@ $hasta = date('d-m-Y', strtotime($hasta));
                ?>
                <tr>
                   <td><?php echo $cantidad_fila + 1 ?></td>
-                  <td><?php echo date('d-m-Y', strtotime($fila['licom_fecha'])) ?></td>
-                  <td><?php echo $fila['pro_ruc'] ?></td>
-                  <td><?php echo $fila['pro_razonsocial'] ?></td>
+                  <td><?php echo date('d-m-Y', strtotime($fila['libven_fecha'])) ?></td>
+                  <td><?php echo $fila['per_numerodocumento'] ?></td>
+                  <td><?php echo $fila['cliente'] ?></td>
                   <td><?php echo $fila['tipo_comprobante'] ?></td>
                   <td><?php echo $fila['nro_comprobante'] ?></td>
                   <td><?php echo number_format($fila['importe_total'], 0, ',', '.'); ?></td>
@@ -258,6 +258,6 @@ $dompdf->setPaper('A4', 'portrait'); //portrait -> vertical landscape -> horizon
 
 $dompdf->render();
 
-$dompdf->stream("reporte_libro_compra.pdf", array('Attachment' => false));
+$dompdf->stream("reporte_libro_venta.pdf", array('Attachment' => false));
 
 ?>

@@ -141,9 +141,6 @@ const imprimir = () => {
   } else if ($("#codigo_informe").val() == 3) {
     cuentaPagar(desde, hasta);
   }
-
-  $("#desde").val("");
-  $("#hasta").val("");
 };
 
 // Controla que los inputs se completen con todos los datos necesarios
@@ -156,7 +153,7 @@ const controlVacio = () => {
     if ($("#pedco_codigo").val() == "") {
       condicion = true;
       mensaje =
-        "El parametro numero pedido, en el informe de presupuesto proveedor es obligatorio";
+        "El parametro numero pedido en el informe de presupuesto proveedor es obligatorio";
     }
   }
 
@@ -165,11 +162,11 @@ const controlVacio = () => {
     if ($("#desdeLibro").val() == "") {
       condicion = true;
       mensaje =
-        "Los parametros desde y hasta, en el informe de libro de compras son obligatorios";
+        "Los parametros desde y hasta en el informe de libro de compras son obligatorios";
     } else if ($("#hastaLibro").val() == "") {
       condicion = true;
       mensaje =
-        "Los parametros desde y hasta, en el informe de libro de compras son obligatorios";
+        "Los parametros desde y hasta en el informe de libro de compras son obligatorios";
     }
   }
 
@@ -178,11 +175,11 @@ const controlVacio = () => {
     if ($("#desdeCuenta").val() == "") {
       condicion = true;
       mensaje =
-        "Los parametros desde y hasta, en el informe de cuenta a pagar son obligatorios";
+        "Los parametros desde y hasta en el informe de cuenta a pagar son obligatorios";
     } else if ($("#hastaCuenta").val() == "") {
       condicion = true;
       mensaje =
-        "Los parametros desde y hasta, en el informe de cuenta a pagar son obligatorios";
+        "Los parametros desde y hasta en el informe de cuenta a pagar son obligatorios";
     }
   }
 
@@ -235,7 +232,104 @@ const getTablas = () => {
       //hacemos visible la lista
       $("#listaTablas").attr(
         "style",
-        "display: block; position:absolute; z-index: 3000;"
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+//Envia a los input de proveedor lo seleccionado en el autocompletado de proveedor
+const seleccionProveedor = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulProveedor").html();
+  $("#listaProvedor").attr("style", "display: none;");
+  $(".pro").attr("class", "form-line pro focused");
+};
+
+//Busca, filtra y muestra los proveedores
+const getProveedor = () => {
+  $.ajax({
+    //Solicitamos los datos a listaProveedor
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaProveedor.php",
+    data: {
+      pro_razonsocial: $("#pro_razonsocial").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionProveedor(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.pro_razonsocial +
+            "</li>";
+        }
+      });
+
+      //cargamos la lista
+      $("#ulProveedor").html(fila);
+      //hacemos visible la lista
+      $("#listaProvedor").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+//Envia a los input de tipo comprobante lo seleccionado en el autocompletado
+const seleccionTipoComprobante = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulTC").html();
+  $("#listaTC").attr("style", "display: none;");
+  $(".tip").attr("class", "form-line tip focused");
+};
+
+//Busca, filtra y muestra los tipos de comprobante
+const getTipoComprobante = () => {
+  $.ajax({
+    //Solicitamos los datos a listaTipoComprobante
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaTipoComprobante3.php",
+    data: {
+      tipco_descripcion: $("#tipco_descripcion").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionTipoComprobante(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.tipco_descripcion +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulTC").html(fila);
+      //hacemos visible la lista
+      $("#listaTC").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width:100%;"
       );
     })
     .fail(function (a, b, c) {

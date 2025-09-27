@@ -1,6 +1,9 @@
 <?php
+
+// Llamamos a la variable de sesión
 session_start();
 
+// Establecemos datos de empresa y sucursal
 $empresa = $_SESSION['usuario']['emp_razonsocial'];
 $empresaCodigo = $_SESSION['usuario']['emp_codigo'];
 
@@ -66,11 +69,11 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line t focused">
+                                 <input type="hidden" id="codigo_informe" value="0">
                                  <input type="text" class="form-control" id="tablas" onclick="getTablas()">
                                  <label class="form-label">Informe Solicitado</label>
                                  <div id="listaTablas" style="display: none;">
-                                    <ul class="list-group" id="ulTablas"
-                                       style="height: 200px; width:340px; overflow: scroll"></ul>
+                                    <ul class="list-group" id="ulTablas" style="height: 100px; overflow: auto"></ul>
                                  </div>
                               </div>
                            </div>
@@ -84,7 +87,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                   </div>
                   <div class="body">
                      <div class="row clearfix">
-                        <div class="caja_recaudaciones">
+                        <div class="caja_recaudaciones" style="display: none;">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
                                  Informe Caja y Recaudaciones
@@ -93,7 +96,9 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="text" class="form-control" placeholder="Este campo es obligatorio">
+                                    <input type="hidden" id="suc_codigo" value="0">
+                                    <input type="text" class="form-control" id="suc_descripcion"
+                                       placeholder="Este campo es obligatorio">
                                     <label class="form-label">Sucursal</label>
                                  </div>
                               </div>
@@ -101,7 +106,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="desdeCaja" class="form-control">
                                     <label class="form-label">Desde</label>
                                  </div>
                               </div>
@@ -109,7 +114,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="hastaCaja" class="form-control">
                                     <label class="form-label">Hasta</label>
                                  </div>
                               </div>
@@ -117,13 +122,14 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="text" class="form-control">
+                                    <input type="hidden" id="func_codigo" value="0">
+                                    <input type="text" id="funcionario" class="form-control">
                                     <label class="form-label">Cajero (Opcional)</label>
                                  </div>
                               </div>
                            </div>
                         </div>
-                        <div class="libro_ventas">
+                        <div class="libro_ventas" style="display: none;">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
                                  Informe Libro de Ventas
@@ -131,16 +137,22 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            </div>
                            <div class="col-sm-3">
                               <div class="form-group form-float">
-                                 <div class="form-line focused">
-                                    <input type="text" class="form-control">
+                                 <div class="form-line cli1 focused">
+                                    <input type="hidden" id="cli_codigo1" value="0">
+                                    <input type="text" id="cliente1" class="form-control"
+                                       placeholder="Ingrese el numero de documento" onkeyup="getCliente()">
                                     <label class="form-label">Cliente (Opcional)</label>
+                                    <div id="listaCliente1" style="display: none;">
+                                       <ul class="list-group" id="ulCliente1" Style="height: 100px; overflow: auto">
+                                       </ul>
+                                    </div>
                                  </div>
                               </div>
                            </div>
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="desdeLibro" class="form-control">
                                     <label class="form-label">Desde</label>
                                  </div>
                               </div>
@@ -148,21 +160,26 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="hastaLibro" class="form-control">
                                     <label class="form-label">Hasta</label>
                                  </div>
                               </div>
                            </div>
                            <div class="col-sm-3">
                               <div class="form-group form-float">
-                                 <div class="form-line focused">
-                                    <input type="text" class="form-control">
+                                 <div class="form-line tip focused">
+                                    <input type="hidden" id="tipco_codigo" value="0">
+                                    <input type="text" id="tipco_descripcion" class="form-control"
+                                       onkeyup="getTipoComprobante()">
                                     <label class="form-label">Tipo Comprobante (Opcional)</label>
+                                    <div id="listaTC" style="display: none;">
+                                       <ul class="list-group" id="ulTC" Style="height: 100px; overflow: auto"></ul>
+                                    </div>
                                  </div>
                               </div>
                            </div>
                         </div>
-                        <div class="cuentas_cobrar">
+                        <div class="cuentas_cobrar" style="display: none;">
                            <div class="col-sm-12" style="color: #b9b9b9;">
                               <p>
                                  Informe Cuentas a Cobrar
@@ -171,7 +188,8 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="text" class="form-control">
+                                    <input type="hidden" id="cli_codigo2" value="0">
+                                    <input type="text" id="cliente2" class="form-control">
                                     <label class="form-label">Cliente (Opcional)</label>
                                  </div>
                               </div>
@@ -179,7 +197,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="desdeCuenta" class="form-control">
                                     <label class="form-label">Desde</label>
                                  </div>
                               </div>
@@ -187,7 +205,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="date" class="form-control">
+                                    <input type="date" id="hastaCuenta" class="form-control">
                                     <label class="form-label">Hasta</label>
                                  </div>
                               </div>
@@ -195,7 +213,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line focused">
-                                    <input type="text" class="form-control">
+                                    <input type="text" id="estado" class="form-control">
                                     <label class="form-label">Estado (Opcional)</label>
                                  </div>
                               </div>
@@ -203,12 +221,12 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                         </div>
                      </div>
                      <!-- Botones -->
-                     <div class="icon-and-text-button-demo">
+                     <div class="icon-and-text-button-demo" id="botones" style="display: none;">
                         <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
                            <i class="material-icons">content_paste</i>
                            <span>GENERAR</span>
                         </button>
-                        <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                        <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                            <i class="material-icons">lock</i>
                            <span>CANCELAR</span>
                         </button>

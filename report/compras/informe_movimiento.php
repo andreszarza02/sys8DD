@@ -3,7 +3,7 @@
 // Llamamos a la variable de sesión
 session_start();
 
-// Establecemos datos de
+// Establecemos datos de empresa y sucursal
 $empresa = $_SESSION['usuario']['emp_razonsocial'];
 $empresaCodigo = $_SESSION['usuario']['emp_codigo'];
 
@@ -70,12 +70,10 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <div class="form-group form-float">
                               <div class="form-line t focused">
                                  <input type="hidden" id="codigo_informe" value="0">
-                                 <input type="text" class="form-control solo-letras" id="tablas" onclick="getTablas()"
-                                    onkeyup="getTablas()">
+                                 <input type="text" class="form-control" id="tablas" onclick="getTablas()">
                                  <label class="form-label">Informe Solicitado</label>
                                  <div id="listaTablas" style="display: none;">
-                                    <ul class="list-group" id="ulTablas"
-                                       style="height: 200px; width:340px; overflow: scroll"></ul>
+                                    <ul class="list-group" id="ulTablas" style="height: 100px; overflow: auto"></ul>
                                  </div>
                               </div>
                            </div>
@@ -121,10 +119,15 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            </div>
                            <div class="col-sm-3">
                               <div class="form-group form-float">
-                                 <div class="form-line focused">
+                                 <div class="form-line pro focused">
                                     <input type="hidden" id="pro_codigo" value="0">
-                                    <input type="text" id="pro_descripcion" class="form-control">
+                                    <input type="text" id="pro_razonsocial" class="form-control"
+                                       placeholder="RUC o Razón Social Proveedor" onkeyup="getProveedor()">
                                     <label class="form-label">Proveedor (Opcional)</label>
+                                    <div id="listaProvedor" style="display: none;">
+                                       <ul class="list-group" id="ulProveedor" Style="height: 100px; overflow: auto">
+                                       </ul>
+                                    </div>
                                  </div>
                               </div>
                            </div>
@@ -146,49 +149,53 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            </div>
                            <div class="col-sm-3">
                               <div class="form-group form-float">
-                                 <div class="form-line focused">
+                                 <div class="form-line tip focused">
                                     <input type="hidden" id="tipco_codigo" value="0">
-                                    <input type="text" id="tipco_descripcion" class="form-control">
+                                    <input type="text" id="tipco_descripcion" class="form-control"
+                                       onkeyup="getTipoComprobante()">
                                     <label class="form-label">Tipo Comprobante (Opcional)</label>
+                                    <div id="listaTC" style="display: none;">
+                                       <ul class="list-group" id="ulTC" Style="height: 100px; overflow: auto"></ul>
+                                    </div>
                                  </div>
                               </div>
                            </div>
-                        </div>
-                        <div class="cuentas_pagar" style="display: none;">
-                           <div class="col-sm-12" style="color: #b9b9b9;">
-                              <p>
-                                 Informe Cuentas a Pagar
-                              </p>
-                           </div>
-                           <div class="col-sm-3">
-                              <div class="form-group form-float">
-                                 <div class="form-line focused">
-                                    <input type="text" class="form-control">
-                                    <label class="form-label">Proveedor (Opcional)</label>
+                           <div class="cuentas_pagar" style="display: none;">
+                              <div class="col-sm-12" style="color: #b9b9b9;">
+                                 <p>
+                                    Informe Cuentas a Pagar
+                                 </p>
+                              </div>
+                              <div class="col-sm-3">
+                                 <div class="form-group form-float">
+                                    <div class="form-line focused">
+                                       <input type="text" class="form-control">
+                                       <label class="form-label">Proveedor (Opcional)</label>
+                                    </div>
                                  </div>
                               </div>
-                           </div>
-                           <div class="col-sm-3">
-                              <div class="form-group form-float">
-                                 <div class="form-line focused">
-                                    <input type="date" id="desdeCuenta" class="form-control">
-                                    <label class="form-label">Desde</label>
+                              <div class="col-sm-3">
+                                 <div class="form-group form-float">
+                                    <div class="form-line focused">
+                                       <input type="date" id="desdeCuenta" class="form-control">
+                                       <label class="form-label">Desde</label>
+                                    </div>
                                  </div>
                               </div>
-                           </div>
-                           <div class="col-sm-3">
-                              <div class="form-group form-float">
-                                 <div class="form-line focused">
-                                    <input type="date" id="hastaCuenta" class="form-control">
-                                    <label class="form-label">Hasta</label>
+                              <div class="col-sm-3">
+                                 <div class="form-group form-float">
+                                    <div class="form-line focused">
+                                       <input type="date" id="hastaCuenta" class="form-control">
+                                       <label class="form-label">Hasta</label>
+                                    </div>
                                  </div>
                               </div>
-                           </div>
-                           <div class="col-sm-3">
-                              <div class="form-group form-float">
-                                 <div class="form-line focused">
-                                    <input type="text" class="form-control">
-                                    <label class="form-label">Estado (Opcional)</label>
+                              <div class="col-sm-3">
+                                 <div class="form-group form-float">
+                                    <div class="form-line focused">
+                                       <input type="text" class="form-control">
+                                       <label class="form-label">Estado (Opcional)</label>
+                                    </div>
                                  </div>
                               </div>
                            </div>
@@ -200,7 +207,7 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                            <i class="material-icons">content_paste</i>
                            <span>GENERAR</span>
                         </button>
-                        <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                        <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                            <i class="material-icons">lock</i>
                            <span>CANCELAR</span>
                         </button>
@@ -213,7 +220,6 @@ $sucursalCodigo = $_SESSION['usuario']['suc_codigo'];
                </div>
             </div>
          </div>
-      </div>
    </section>
 
    <!-- referenciamos las librerias a utilizar -->
