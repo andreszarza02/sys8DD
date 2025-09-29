@@ -33,7 +33,7 @@ $sql = "select
          where pvd.peven_codigo=$pedido
          and i.it_descripcion ilike '%$descripcion%'
          and i.it_estado='ACTIVO'
-         and i.tipit_codigo=2
+         and i.tipit_codigo in(2,3)
       order by i.it_codigo;";
 
 $resultado = pg_query($conexion, $sql);

@@ -271,7 +271,6 @@ foreach ($permisos as $permiso) {
                                     <th>CANTIDAD</th>
                                     <th>UNIDAD MEDIDA</th>
                                     <th>PRECIO</th>
-                                    <th>SUBTOTAL</th>
                                  </tr>
                               </thead>
                               <tbody id="tabla_detalle">

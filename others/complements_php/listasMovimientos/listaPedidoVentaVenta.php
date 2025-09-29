@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -16,7 +18,7 @@ $emp_codigo = $_POST['emp_codigo'];
 //Establecemos y mostramos la consulta
 $sql = "select 
          pvc.peven_codigo,
-         'Pedido Venta N°'||pvc.peven_codigo||' '||to_char(pvc.peven_fecha , 'DD-MM-YYYY') as pedido,
+         'PEDIDO VENTA N°'||pvc.peven_codigo||' '||to_char(pvc.peven_fecha , 'DD-MM-YYYY') as pedido,
          pvc.cli_codigo,
          p.per_nombre||' '||p.per_apellido as cliente,
          p.per_numerodocumento 

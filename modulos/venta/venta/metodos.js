@@ -1,3 +1,32 @@
+// Valida si la venta esta asociado a una nota de venta
+const consultaAsociacion = (escenario, mensaje) => {
+  $.ajax({
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      ven_codigo: $("#ven_codigo").val(),
+      consulta1: 1,
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (respuesta) {
+      if (respuesta.validacion == "asociado") {
+        swal(
+          {
+            title: "VALIDACION " + escenario.toUpperCase(),
+            text: mensaje.toUpperCase(),
+            type: "error",
+            confirmButtonText: "OK",
+          },
+          function (isConfirm) {
+            if (isConfirm) {
+              window.location.reload(true);
+            }
+          }
+        );
+      }
+    });
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -16,7 +45,7 @@ const getCodigo = () => {
     method: "POST",
     url: "controlador.php",
     data: {
-      consulta: 1,
+      consulta1: 1,
     },
   }).done(function (respuesta) {
     $("#ven_codigo").val(respuesta.ven_codigo);
@@ -32,12 +61,15 @@ const getNumeroFactura = () => {
       suc_codigo: $("#suc_codigo").val(),
       emp_codigo: $("#emp_codigo").val(),
       caj_codigo: $("#caj_codigo").val(),
-      consulta: 2,
+      consulta2: 1,
     },
   }).done(function (respuesta) {
     //Establecemos lo que nos devuelve la consulta
     $("#ven_numfactura").val(respuesta.ven_numfactura);
-    //Activamos el input de factura
+    $("#ven_timbrado").val(respuesta.ven_timbrado);
+    $("#ven_timbrado_venc").val(respuesta.ven_timbrado_venc);
+
+    //Activamos el input de  y timbrado
     $(".foco3").attr("class", "form-line foco3 focused");
   });
 };
@@ -73,7 +105,7 @@ const setLibroVenta = () => {
       ven_numfactura: $("#ven_numfactura").val(),
       tipco_codigo: $("#tipco_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
-      consulta: "1",
+      consulta: 1,
     },
   });
 };
@@ -91,7 +123,7 @@ const setCuentaCobrar = () => {
       tipit_codigo: $("#tipit_codigo").val(),
       tipco_codigo: $("#tipco_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
-      consulta: "2",
+      consulta: 2,
     },
   });
 };
@@ -122,6 +154,9 @@ const listar = () => {
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.ven_timbrado;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.ven_timbrado_venc;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.ven_tipofactura;
@@ -242,13 +277,13 @@ const listarDetalle = () => {
     lineafoot += "SUBTOTALES";
     lineafoot += "</th>";
     lineafoot += "<th>";
-    lineafoot += new Intl.NumberFormat("us-US").format(totalExe.toFixed(2));
+    lineafoot += new Intl.NumberFormat("us-US").format(totalExe.toFixed(0));
     lineafoot += "</th>";
     lineafoot += "<th>";
-    lineafoot += new Intl.NumberFormat("us-US").format(totalG5.toFixed(2));
+    lineafoot += new Intl.NumberFormat("us-US").format(totalG5.toFixed(0));
     lineafoot += "</th>";
     lineafoot += "<th>";
-    lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(2));
+    lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(0));
     lineafoot += "</th>";
     lineafoot += "</tr>";
 
@@ -260,7 +295,7 @@ const listarDetalle = () => {
     lineafoot += new Intl.NumberFormat("us-US").format(iva5.toFixed(2));
     lineafoot += "</th>";
     lineafoot += "<th>";
-    lineafoot += new Intl.NumberFormat("us-US").format(iva10.toFixed(2));
+    lineafoot += new Intl.NumberFormat("us-US").format(iva10.toFixed(0));
     lineafoot += "</th>";
     lineafoot += "</tr>";
 
@@ -269,7 +304,7 @@ const listarDetalle = () => {
     lineafoot += "TOTAL IVA";
     lineafoot += "</th>";
     lineafoot += "<th>";
-    lineafoot += new Intl.NumberFormat("us-US").format(totalIva.toFixed(2));
+    lineafoot += new Intl.NumberFormat("us-US").format(totalIva.toFixed(0));
     lineafoot += "</th>";
     lineafoot += "</tr>";
 
@@ -278,7 +313,7 @@ const listarDetalle = () => {
     lineafoot += "TOTAL GENERAL";
     lineafoot += "</th>";
     lineafoot += "<th>";
-    lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(2));
+    lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(0));
     lineafoot += "</th>";
     lineafoot += "</tr>";
 
@@ -323,11 +358,27 @@ const habilitarCampos = (booleano) => {
 const getDate = () => {
   const date = new Date();
   const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const fecha = `${day}/${month}/${year}`;
-
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const fecha = `${year}-${month}-${day}`;
   return fecha;
+};
+
+// Limpia campos de detalle
+const limpiarCamposDetalle = () => {
+  $("#dep_codigo").val(0);
+  $("#dep_descripcion").val("");
+  $("#it_codigo").val(0);
+  $("#tipit_codigo").val(0);
+  $("#tipim_codigo").val(0);
+  $("#item").val("");
+  $("#tall_descripcion").val("");
+  $("#vendet_cantidad").val("");
+  $("#unime_codigo").val(0);
+  $("#unime_descripcion").val("");
+  $("#vendet_precio").val("");
+  $(".dep").attr("class", "form-line dep");
+  $(".it").attr("class", "form-line it");
 };
 
 //Metodo que establece el alta de cabecera
@@ -363,11 +414,11 @@ const nuevo = () => {
     $(".foco2").attr("class", "form-line foco2");
     $(".foco3").attr("class", "form-line foco3");
     $("#tipco_codigo").val(4);
-    $("#vent_montocuota").val("");
     $(".tp").attr("class", "form-line tp");
     $("#ven_tipofactura").val("");
     $(".foco4").attr("class", "form-line foco4");
     $("#ven_cuota").val("");
+    $("#vent_montocuota").val("");
     $("#ven_interfecha").val("");
     $(".est").attr("class", "form-line est focused");
     $("#ven_estado").val("ACTIVO");
@@ -382,21 +433,13 @@ const nuevo = () => {
 //Metodo que establece el alta del detalle
 const nuevoDetalle = () => {
   $("#operacion_detalle").val(1);
-  $("#dep_codigo").val(0);
-  $("#dep_descripcion").val("");
-  $("#it_codigo").val(0);
-  $("#tipit_codigo").val(0);
-  $("#tipim_codigo").val(0);
-  $("#item").val("");
-  $("#tall_descripcion").val("");
-  $("#vendet_cantidad").val("");
-  $("#unime_codigo").val(0);
-  $("#unime_descripcion").val("");
-  $("#vendet_precio").val("");
-  $(".dep").attr("class", "form-line dep");
-  $(".it").attr("class", "form-line it");
+  limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
+  consultaAsociacion(
+    "Nuevo",
+    "Esta venta ya está asociada a una nota de venta; no se pueden añadir más ítems."
+  );
 };
 
 //Metodo que establece la baja en venta cabecera
@@ -405,6 +448,10 @@ const anular = () => {
   $("#ven_estado").val("ANULADO");
   $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
+  consultaAsociacion(
+    "Eliminar",
+    "Esta venta ya está asociada a una nota de venta; no se pueden eliminar más ítems."
+  );
 };
 
 //Metodo que establece la baja en venta detalle
@@ -428,7 +475,8 @@ const grabar = () => {
       ven_codigo: $("#ven_codigo").val(),
       ven_fecha: $("#ven_fecha").val(),
       ven_numfactura: $("#ven_numfactura").val(),
-      ven_timbrado: $("#emp_timbrado").val(),
+      ven_timbrado: $("#ven_timbrado").val(),
+      ven_timbrado_venc: $("#ven_timbrado_venc").val(),
       ven_tipofactura: $("#ven_tipofactura").val(),
       ven_cuota: $("#ven_cuota").val(),
       ven_montocuota: $("#ven_montocuota").val(),
@@ -508,7 +556,8 @@ const grabarDetalle = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            limpiarCampos();
+            habilitarBotones2(true);
+            listarDetalle();
           }
         }
       );
@@ -547,8 +596,8 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -582,8 +631,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -616,17 +665,15 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#per_numerodocumento").val() == "") {
     condicion = true;
-  } else if ($("#cli_codigo").val() == "") {
-    condicion = true;
   } else if ($("#cliente").val() == "") {
     condicion = true;
   } else if ($("#peven_codigo").val() == "") {
     condicion = true;
-  } else if ($("#emp_timbrado").val() == "") {
-    condicion = true;
-  } else if ($("#tipco_codigo").val() == "") {
-    condicion = true;
   } else if ($("#ven_numfactura").val() == "") {
+    condicion = true;
+  } else if ($("#ven_timbrado").val() == "") {
+    condicion = true;
+  } else if ($("#ven_timbrado_venc").val() == "") {
     condicion = true;
   } else if ($("#ven_tipofactura").val() == "") {
     condicion = true;
@@ -649,7 +696,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -661,9 +708,7 @@ const controlVacio = () => {
 const controlVacio2 = () => {
   let condicion;
 
-  if ($("#dep_codigo").val() == "") {
-    condicion = true;
-  } else if ($("#dep_descripcion").val() == "") {
+  if ($("#dep_descripcion").val() == "") {
     condicion = true;
   } else if ($("#it_codigo").val() == "") {
     condicion = true;
@@ -688,11 +733,22 @@ const controlVacio2 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE DETALLE QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
-    confirmar2();
+    if (
+      $("#tipit_codigo").val() == "3" &&
+      $("#vendet_cantidad").val() !== "0"
+    ) {
+      swal({
+        title: "RESPUESTA!!",
+        text: "LA CANTIDAD, EN CASO DE REGISTRAR UN SERVICIO, ES CERO(0)",
+        type: "error",
+      });
+    } else {
+      confirmar2();
+    }
   }
 };
 
@@ -704,7 +760,6 @@ const seleccionarFila = (objetoJSON) => {
   });
 
   $(".activar").attr("class", "form-line activar focused");
-  $(".fecha").attr("class", "form-line fecha focused");
   $(".ped").attr("class", "form-line ped focused");
   $(".foco3").attr("class", "form-line foco3 focused");
   $(".tp").attr("class", "form-line tp focused");
@@ -712,9 +767,10 @@ const seleccionarFila = (objetoJSON) => {
   $(".foco2").attr("class", "form-line foco2 focused");
   $(".foco").attr("class", "form-line foco focused");
   $(".est").attr("class", "form-line est focused");
-
   $("#detalle").attr("style", "display: block;");
+  actualizacionCabecera();
   listarDetalle();
+  limpiarCamposDetalle();
 };
 
 //Envia a los inputs de detalle lo seleccionado en la tabla de detalle
@@ -923,11 +979,14 @@ const getItem = () => {
 
 //Valida el tipo de factura, en caso de ser contado carga valores por defecto
 const controlTipoFactura = () => {
-  let tipoFactura = $("#ven_tipofactura").val();
-  if (tipoFactura == "CONTADO") {
+  if ($("#ven_tipofactura").val() == "CONTADO") {
     $("#ven_cuota").val("1");
     $("#ven_interfecha").val("S/I");
     $(".foco4").attr("class", "form-line foco4 focused");
+  } else {
+    $("#ven_cuota").val("");
+    $("#ven_interfecha").val("");
+    $(".foco4").attr("class", "form-line foco4");
   }
 };
 

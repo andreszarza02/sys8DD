@@ -1050,9 +1050,6 @@ const listarDetalle = () => {
         tabla += "<td>";
         tabla += new Intl.NumberFormat("us-US").format(objeto.pedcodet_precio);
         tabla += "</td>";
-        tabla += "<td>";
-        tabla += new Intl.NumberFormat("us-US").format(objeto.subtotal);
-        tabla += "</td>";
         tabla += "</tr>";
       }
 
@@ -1067,8 +1064,7 @@ const listarDetalle = () => {
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
-      //establecemos el body y el foot
-      $("#pie_detalle").html(lineafoot);
+      //establecemos el body
       $("#tabla_detalle").html(tabla);
     })
     .fail(function (a, b, c) {

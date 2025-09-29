@@ -79,7 +79,7 @@ if (isset($_POST['operacion_cabecera'])) {
       );
    } else if (strpos($error, "asociado") !== false) {
       $response = array(
-         "mensaje" => "YA SE ENCUENTRA ASOCIADO LA COMPRA A UNA NOTA DE COMPRA DE COMPRA",
+         "mensaje" => "YA SE ENCUENTRA ASOCIADO LA COMPRA A UNA NOTA DE COMPRA",
          "tipo" => "error"
       );
    } else {
