@@ -184,7 +184,7 @@ foreach ($permisos as $permiso) {
                               <div class="form-group form-float">
                                  <div class="form-line foco4">
                                     <input type="text" class="form-control no-disabled solo-numeros" id="ven_cuota"
-                                       disabled>
+                                       disabled onkeyup="calculoCuota()">
                                     <label class="form-label">Cuota</label>
                                  </div>
                               </div>

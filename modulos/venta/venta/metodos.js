@@ -27,6 +27,36 @@ const consultaAsociacion = (escenario, mensaje) => {
     });
 };
 
+// Se encarga de definir el monto de la cuota
+const calculoCuota = () => {
+  // Definimos variables
+  let monto = 0;
+  let montoCuota = 0;
+  if ($("#ven_cuota").val() > 0) {
+    $.ajax({
+      method: "POST",
+      url: "controlador.php",
+      data: {
+        peven_codigo: $("#peven_codigo").val(),
+        consulta3: 1,
+      },
+    }).done(function (respuesta) {
+      // Dependiendo del tipo de factura, se define el monto de la cuota
+      if ($("#ven_tipofactura").val() == "CONTADO") {
+        monto = parseInt(respuesta.detallepresupuesto);
+        montoCuota = monto / 1;
+        $("#ven_montocuota").val(montoCuota.toFixed(0));
+      } else {
+        monto = parseInt(respuesta.detallepresupuesto);
+        montoCuota = monto / parseInt($("#ven_cuota").val());
+        $("#ven_montocuota").val(parseInt(montoCuota.toFixed(0)));
+      }
+      //Activamos el input de monto cuota
+      $(".foco2").attr("class", "form-line foco2 focused");
+    });
+  }
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -54,6 +84,25 @@ const getCodigo = () => {
 
 //Se encarga de generar el numero de factura de venta
 const getNumeroFactura = () => {
+  //   $.ajax({
+  //     method: "POST",
+  //     url: "controlador.php",
+  //     data: {
+  //       suc_codigo: $("#suc_codigo").val(),
+  //       emp_codigo: $("#emp_codigo").val(),
+  //       caj_codigo: $("#caj_codigo").val(),
+  //       consulta2: 1,
+  //     },
+  //   }).done(function (respuesta) {
+  //     //Establecemos lo que nos devuelve la consulta
+  //     $("#ven_numfactura").val(respuesta.ven_numfactura);
+  //     $("#ven_timbrado").val(respuesta.ven_timbrado);
+  //     $("#ven_timbrado_venc").val(respuesta.ven_timbrado_venc);
+
+  //     //Activamos el input de  y timbrado
+  //     $(".foco3").attr("class", "form-line foco3 focused");
+  //   });
+
   $.ajax({
     method: "POST",
     url: "controlador.php",
@@ -64,13 +113,21 @@ const getNumeroFactura = () => {
       consulta2: 1,
     },
   }).done(function (respuesta) {
-    //Establecemos lo que nos devuelve la consulta
-    $("#ven_numfactura").val(respuesta.ven_numfactura);
-    $("#ven_timbrado").val(respuesta.ven_timbrado);
-    $("#ven_timbrado_venc").val(respuesta.ven_timbrado_venc);
-
-    //Activamos el input de  y timbrado
-    $(".foco3").attr("class", "form-line foco3 focused");
+    if (respuesta.error) {
+      swal({
+        title: "RESPUESTA!!",
+        text: respuesta.mensaje.toUpperCase(),
+        type: "error",
+      });
+      $("#ven_numfactura").val("");
+      $("#ven_timbrado").val("");
+      $("#ven_timbrado_venc").val("");
+    } else {
+      $("#ven_numfactura").val(respuesta.ven_numfactura);
+      $("#ven_timbrado").val(respuesta.ven_timbrado);
+      $("#ven_timbrado_venc").val(respuesta.ven_timbrado_venc);
+      $(".foco3").attr("class", "form-line foco3 focused");
+    }
   });
 };
 
@@ -844,6 +901,7 @@ const seleccionTipoFactura = (datos) => {
   $("#listaTipoFactura").attr("style", "display: none;");
   $(".tp").attr("class", "form-line tp focused");
   controlTipoFactura();
+  calculoCuota();
 };
 
 //Busca, filtra y muestra los tipos de factura

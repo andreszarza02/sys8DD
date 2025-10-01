@@ -1610,7 +1610,64 @@ CREATE TABLE solicitud_presupuesto_det (
                 CONSTRAINT solicitud_presupuesto_det_pk PRIMARY KEY (solpre_codigo, pedco_codigo, pro_codigo, tipro_codigo, it_codigo, tipit_codigo)
 );
 
+CREATE TABLE timbrados (
+                timb_codigo INTEGER NOT NULL,
+                suc_codigo INTEGER NOT NULL,
+                emp_codigo INTEGER NOT NULL,
+                caj_codigo INTEGER NOT NULL,
+                tipco_codigo INTEGER NOT NULL,
+                timb_numero INTEGER NOT NULL,
+                timb_numero_fecha_inic DATE NOT NULL,
+                timb_numero_fecha_venc DATE NOT NULL,
+                timb_numero_comp VARCHAR NOT NULL,
+                timb_numero_comp_inic INTEGER NOT NULL,
+                timb_numero_comp_lim INTEGER NOT NULL,
+                timb_estado VARCHAR NOT NULL,
+                usu_codigo INTEGER NOT NULL,
+                CONSTRAINT timbrados_pk PRIMARY KEY (timb_codigo, suc_codigo, emp_codigo, caj_codigo, tipco_codigo)
+);
+
+CREATE TABLE timbrados_auditoria (
+				timbaud_codigo INTEGER NOT NULL,
+                timbaud_fecha TIMESTAMP NOT NULL,
+                timbaud_procedimiento VARCHAR NOT NULL,
+                timb_codigo INTEGER NOT NULL,
+                suc_codigo INTEGER NOT NULL,
+                emp_codigo INTEGER NOT NULL,
+                caj_codigo INTEGER NOT NULL,
+                tipco_codigo INTEGER NOT NULL,
+                timb_numero INTEGER NOT NULL,
+                timb_numero_fecha_inic DATE NOT NULL,
+                timb_numero_fecha_venc DATE NOT NULL,
+                timb_numero_comp VARCHAR NOT NULL,
+                timb_numero_comp_inic INTEGER NOT NULL,
+                timb_numero_comp_lim INTEGER NOT NULL,
+                timb_estado VARCHAR NOT NULL,
+                usu_codigo INTEGER NOT NULL,
+                CONSTRAINT timbrados_auditoria_pk PRIMARY KEY (timbaud_codigo)
+);
+
 --Alteracion de tablas
+ALTER TABLE timbrados ADD constraint caja_timbrados_fk
+FOREIGN KEY (caj_codigo)
+REFERENCES caja (caj_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+ALTER TABLE timbrados ADD CONSTRAINT sucursal_timbrados_fk
+FOREIGN KEY (suc_codigo, emp_codigo)
+REFERENCES sucursal (suc_codigo, emp_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+ALTER TABLE timbrados ADD CONSTRAINT tipo_comprobante_timbrados_fk
+FOREIGN KEY (tipco_codigo)
+REFERENCES tipo_comprobante (tipco_codigo)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+select tc.tipco_codigo from tipo_comprobante tc;
+
 ALTER TABLE solicitud_presupuesto_det ADD constraint items_solicitud_presupuesto_det_fk
 FOREIGN KEY (it_codigo, tipit_codigo)
 REFERENCES items (it_codigo, tipit_codigo)
@@ -3617,9 +3674,6 @@ create or replace function sp_empresa(
     emptelefono varchar,
     emprazonsocial varchar,
     empruc varchar,
-    emptimbrado varchar,
-    emptimbradofecinic date,
-    emptimbradofecvenc date,
     empemail varchar,
     empactividad varchar,
     empestado varchar,
@@ -3634,11 +3688,6 @@ declare empAudit text;
 begin 
 	-- Validamos la operacion de insercion o modificacion
     if operacion in(1,2) then
-		-- Validamos que la fecha de vencimiento del timbrado no sea menor a la fecha de inicio
-		if emptimbradofecvenc <= emptimbradofecinic then
-			-- En caso de ser asi, generamos una excepcion
-     	 	raise exception 'fecha';
-     	 end if;
 		-- Validamos que no se repita el ruc de la empresa
         perform * from empresa
         where emp_ruc = empruc and emp_codigo != empcodigo;
@@ -3647,16 +3696,13 @@ begin
             raise exception 'ruc';
 		-- Si los paramtros pasaron la validacion procedmos con la persistencia de un nuevo registro o modificacion
     	elseif operacion = 1 then
-	        	insert into empresa(emp_codigo, emp_telefono, emp_razonsocial, emp_ruc, emp_email, emp_actividad, emp_estado, emp_timbrado, 
-				emp_timbrado_fec_inic, emp_timbrado_fec_venc)
-				values(empcodigo, emptelefono, upper(emprazonsocial), empruc, empemail, upper(empactividad), 'ACTIVO', emptimbrado, 
-				emptimbradofecinic, emptimbradofecvenc);
+	        	insert into empresa(emp_codigo, emp_telefono, emp_razonsocial, emp_ruc, emp_email, emp_actividad, emp_estado)
+				values(empcodigo, emptelefono, upper(emprazonsocial), empruc, empemail, upper(empactividad), 'ACTIVO');
 				raise notice 'LA EMPRESA FUE REGISTRADA CON EXITO';
         elseif operacion = 2 then
         		update empresa
 				set emp_telefono=emptelefono, emp_razonsocial=upper(emprazonsocial), emp_ruc=empruc,
-				emp_email=empemail, emp_actividad=upper(empactividad), emp_estado='ACTIVO', emp_timbrado=emptimbrado,
-				emp_timbrado_fec_inic=emptimbradofecinic, emp_timbrado_fec_venc=emptimbradofecvenc 
+				emp_email=empemail, emp_actividad=upper(empactividad), emp_estado='ACTIVO' 
 				where emp_codigo=empcodigo;
 				raise notice 'LA EMPRESA FUE MODIFICADA CON EXITO';
         end if;
@@ -3680,9 +3726,6 @@ begin
 		'emp_telefono', emptelefono,
 		'emp_razonsocial', upper(emprazonsocial),
 		'emp_ruc', empruc,
-		'emp_timbrado', emptimbrado,
-		'emp_timbrado_fec_inic', emptimbradofecinic,
-		'emp_timbrado_fec_venc', emptimbradofecvenc,
 		'emp_email', empemail,
 		'emp_actividad', upper(empactividad),
 		'emp_estado', upper(empestado)
@@ -6845,6 +6888,10 @@ language plpgsql;
 select sp_pedido_venta_cab(1, '2023-10-22', 'VENDIDO', 1, 1, 2, 3, 3, 'afra', 'ALTA', '5555666', 'ALAM FRANCO DIAZ', 
 '8 de Diciembre', 'casa matriz');
 select coalesce(max(peven_codigo),0)+1 from pedido_venta_cab;
+
+select 1 from presupuesto_cab pc 
+where pc.peven_codigo=1 and pc.pres_estado <> 'ANULADO';
+
 create or replace function sp_pedido_venta_cab(
     pevencodigo integer,
     pevenfecha date,
@@ -6869,19 +6916,29 @@ begin
      if operacion = 1 then
 	     insert into pedido_venta_cab(peven_codigo, peven_fecha, peven_estado, suc_codigo, emp_codigo, cli_codigo, usu_codigo)
 		 values(pevencodigo, pevenfecha, 'PENDIENTE', succodigo, empcodigo, clicodigo, usucodigo);
+		 -- Enviamos un mensaje de confirmacion
 		 raise notice 'EL PEDIDO DE VENTA FUE REGISTRADO CON EXITO';
     end if;
 	--Validamos la operacion en este caso la eliminacion
     if operacion = 2 then 
-		--En esta parte se hace solo un borrado logico
-    	update pedido_venta_cab 
-		set peven_estado='ANULADO', usu_codigo=usucodigo
-		where peven_codigo=pevencodigo;
+		-- Validamos si ya se encuentra asociado un pedido a un presupuesto en un estado distinto a anulado 
+		perform 1 from presupuesto_cab pc 
+		where pc.peven_codigo=pevencodigo and pc.pres_estado <> 'ANULADO';
+		if found then
+			-- En caso de ser asi, generamos una excepcion
+			raise exception 'asociado';
+		elseif operacion = 2 then
+			--En esta parte se hace solo un borrado logico
+    		update pedido_venta_cab 
+			set peven_estado='ANULADO', usu_codigo=usucodigo
+			where peven_codigo=pevencodigo;
+			-- Enviamos un mensaje de confirmacion
 		raise notice 'EL PEDIDO DE VENTA FUE ANULADO CON EXITO';
+		end if;
     end if;
-	--consultamos el audit anterior
+	-- Consultamos el audit anterior
 	select coalesce(peven_audit, '') into pevenAudit from pedido_venta_cab where peven_codigo=pevencodigo;
-	--a los datos anteriores le agregamos los nuevos
+	-- A los datos anteriores le agregamos los nuevos
 	update pedido_venta_cab 
 	set peven_audit = pevenAudit||''||json_build_object(
 		'usu_codigo', usucodigo,
@@ -6925,6 +6982,7 @@ begin
      	elseif operacion = 1 then
 		     insert into pedido_venta_det(peven_codigo, it_codigo, tipit_codigo, pevendet_cantidad, pevendet_precio)
 			 values(pevencodigo, itcodigo, tipitcodigo, pevendetcantidad, pevendetprecio);
+			 -- Enviamos un mensaje de confirmacion
 			 raise notice 'EL PEDIDO DE VENTA DETALLE FUE REGISTRADO CON EXITO';
 		end if;
     end if;
@@ -6933,6 +6991,7 @@ begin
 		--Se realiza un borrado fisico el cual se audita
     	delete from pedido_venta_det 
     	where peven_codigo=pevencodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo;
+		-- Enviamos un mensaje de confirmacion
 		raise notice 'EL PEDIDO DE VENTA DETALLE FUE ELIMINADO CON EXITO';
     end if;
 end
@@ -10471,26 +10530,35 @@ create or replace function sp_apertura_cierre(
     operacion integer 
 ) returns void as	
 $function$
+-- Definimos las variables
 declare ultcod integer;
 begin 
+	 -- Validamos que la oepracion sea de insercion
      if operacion = 1 then
+		-- Validamos que no se repita la caja abierta por sucursal
      	perform * from apertura_cierre
-     	where (caj_codigo=cajcodigo and apercie_estado='ABIERTO' and apercie_codigo<>aperciecodigo);
+     	where (caj_codigo=cajcodigo and suc_codigo=succodigo and emp_codigo=empcodigo and apercie_estado='ABIERTO' and apercie_codigo<>aperciecodigo);
      	if found then
+			 -- En caso de ser asi, generamos una excepcion
      		 raise exception 'caja';
      	elseif operacion = 1 then
-	     insert into apertura_cierre(apercie_codigo, suc_codigo, emp_codigo, caj_codigo, usu_codigo,
-	     apercie_fechahoraapertura, apercie_fechahoracierre, apercie_montoapertura, apercie_montocierre, apercie_estado)
-		 values(aperciecodigo, succodigo, empcodigo, cajcodigo, usucodigo, aperciefechahoraapertura, aperciefechahoracierre,
-		 aperciemontoapertura, aperciemontocierre, 'ABIERTO');
+		 -- Si los parametros pasan la validacion, procedemos con su insercion
+	     insert into apertura_cierre(apercie_codigo, suc_codigo, emp_codigo, 
+									 caj_codigo, usu_codigo, apercie_fechahoraapertura, apercie_fechahoracierre, 
+									 apercie_montoapertura, apercie_montocierre, apercie_estado)
+		 values(aperciecodigo, succodigo, empcodigo, 
+				cajcodigo, usucodigo, aperciefechahoraapertura, aperciefechahoracierre,
+				aperciemontoapertura, aperciemontocierre, 'ABIERTO');
+		 -- Enviamos mensaje de confirmacion
 		 raise notice 'CAJA ABIERTA EXITOSAMENTE';
 		end if;
     end if;
+	-- Validamos que la operacion sea de modificacion
     if operacion = 2 then 
     	update apertura_cierre 
-		set apercie_fechahoracierre=aperciefechahoracierre, apercie_montocierre=aperciemontocierre,
-		apercie_estado='CERRADO', usu_codigo=usucodigo
+		set apercie_fechahoracierre=aperciefechahoracierre, apercie_montocierre=aperciemontocierre, apercie_estado='CERRADO', usu_codigo=usucodigo
 		where apercie_codigo=aperciecodigo;
+		-- Enviamos mensaje de confirmacion
 		raise notice 'CAJA CERRADA EXITOSAMENTE';
     end if;
 end
@@ -10507,11 +10575,13 @@ and caj_codigo=1;
 select coalesce(max(ven_codigo),0)+1 as ven_codigo from venta_cab;
 select  (0, '08/02/2024', '15000', 'CONTADO', 1, 0, 'S/I', 'ACTIVO', 1, 2, 1, 1, 1, 1);
 select split_part('001-001-0000001', '-', 3);
+
 create or replace function sp_venta_cab(
     vencodigo integer,
     venfecha date,
     vennumfactura varchar,
     ventimbrado varchar,
+    ventimbradovenc date,
     ventipofactura tipo_factura,
     vencuota integer,
     venmontocuota numeric,
@@ -10568,7 +10638,8 @@ begin
 			 suc_codigo, 
 			 emp_codigo,
 			 tipco_codigo,
-			 ven_timbrado
+			 ven_timbrado,
+			 ven_timbrado_venc
 			 )
 			 values(
 			 vencodigo, 
@@ -10584,7 +10655,8 @@ begin
 			 succodigo, 	
 			 empcodigo,
 			 tipcocodigo,
-			 ventimbrado
+			 ventimbrado,
+			 ventimbradovenc
 			 );
 			 --Cargamos pedido venta
 			 insert into pedido_venta(ven_codigo, peven_codigo, pedven_codigo)
@@ -10709,6 +10781,185 @@ join cliente c on c.cli_codigo=pvc.cli_codigo
 join personas p on p.per_codigo=c.per_codigo 
 where pvc.peven_codigo=1;
 
+-- Procedimiento actualizado venta_cab
+CREATE OR REPLACE FUNCTION sp_venta_cab(
+    vencodigo integer,
+    venfecha date,
+    vennumfactura varchar,
+    ventimbrado varchar,
+    ventimbradovenc date,
+    ventipofactura tipo_factura,
+    vencuota integer,
+    venmontocuota numeric,
+    veninterfecha varchar,
+    venestado varchar,
+    usucodigo integer,
+    clicodigo integer,
+    succodigo integer,
+    empcodigo integer,
+    tipcocodigo integer,
+    pevencodigo integer,
+    cajcodigo integer,
+    operacion integer 
+) RETURNS void AS
+$function$
+DECLARE
+    ventaDet record;
+    pedido   record;
+    -- Variables para reducir llamadas repetidas
+    usuario_txt varchar;
+    sucursal_txt varchar;
+    empresa_txt  varchar;
+    -- Variables para claves autocalculadas
+    ultcod_pedven integer;
+    ultcod_libven integer;
+BEGIN
+    -- PRE-CARGAS: usuario, sucursal y empresa (se usan en auditoría)
+    SELECT usu_login INTO usuario_txt FROM usuario WHERE usu_codigo = usucodigo;
+    SELECT suc_descripcion INTO sucursal_txt FROM sucursal WHERE suc_codigo = succodigo;
+    SELECT emp_razonsocial INTO empresa_txt FROM empresa WHERE emp_codigo = empcodigo;
+
+    -- OPERACION = 1 -> INSERTAR NUEVA VENTA
+    IF operacion = 1 THEN
+
+        -- Verificar duplicado de factura
+        IF EXISTS (
+            SELECT 1 FROM venta_cab
+            WHERE ven_numfactura = vennumfactura
+			  AND ven_timbrado = ventimbrado
+              AND ven_estado = 'ACTIVO'
+        ) THEN
+            RAISE EXCEPTION 'factura';
+        END IF;
+
+        -- Insertar cabecera venta
+        INSERT INTO venta_cab(
+            ven_codigo, ven_fecha, ven_numfactura, ven_tipofactura,
+            ven_cuota, ven_montocuota, ven_interfecha, ven_estado,
+            usu_codigo, cli_codigo, suc_codigo, emp_codigo,
+            tipco_codigo, ven_timbrado, ven_timbrado_venc
+        ) VALUES (
+            vencodigo, venfecha, vennumfactura, ventipofactura,
+            vencuota, venmontocuota, upper(veninterfecha), 'ACTIVO',
+            usucodigo, clicodigo, succodigo, empcodigo,
+            tipcocodigo, ventimbrado, ventimbradovenc
+        );
+
+        -- Insertar relacion pedido_venta (calcular nuevo pedven_codigo una sola vez)
+        SELECT coalesce(max(pedven_codigo),0) + 1 INTO ultcod_pedven FROM pedido_venta;
+        INSERT INTO pedido_venta(ven_codigo, peven_codigo, pedven_codigo)
+        VALUES (vencodigo, pevencodigo, ultcod_pedven);
+
+        -- Insertar libro_venta (calcular nuevo libven_codigo una sola vez)
+        SELECT coalesce(max(libven_codigo),0) + 1 INTO ultcod_libven FROM libro_venta;
+        INSERT INTO libro_venta(
+            libven_codigo, ven_codigo, libven_exenta, libven_iva5,
+            libven_iva10, libven_fecha, libven_numcomprobante, libven_estado, tipco_codigo
+        ) VALUES (
+            ultcod_libven, vencodigo, 0, 0, 0, venfecha, vennumfactura, 'ACTIVO', tipcocodigo
+        );
+
+        -- Insertar cuenta cobrar (inicialmente 0s)
+        INSERT INTO cuenta_cobrar(
+            ven_codigo, cuenco_nrocuota, cuenco_monto, cuenco_saldo, cuenco_estado, tipco_codigo
+        ) VALUES (
+            vencodigo, vencuota, 0, 0, 'ACTIVO', tipcocodigo
+        );
+
+        -- Actualizar pedido_venta_cab a 'VENDIDO'
+        UPDATE pedido_venta_cab
+        SET peven_estado = 'VENDIDO', usu_codigo = usucodigo
+        WHERE peven_codigo = pevencodigo;
+
+        -- Actualizar número de factura en tabla timbrados
+        UPDATE timbrados
+        SET timb_numero = split_part(vennumfactura, '-', 3), usu_codigo=usucodigo
+        WHERE suc_codigo = succodigo
+          AND emp_codigo = empcodigo
+          AND caj_codigo = cajcodigo
+		  AND tipco_codigo = tipcocodigo;
+
+		-- Enviamos un mensaje de confirmacion
+        RAISE NOTICE 'LA VENTA FUE REGISTRADA CON EXITO';
+
+    END IF; 
+
+    -- OPERACION = 2 -> ANULAR VENTA (borrado lógico y reversión stock)
+    IF operacion = 2 THEN
+
+		-- Verificamos si la venta ya se encuentra asociada a una nota
+        IF EXISTS (
+            SELECT 1 FROM nota_venta_cab
+            WHERE ven_codigo = vencodigo
+              AND notven_estado <> 'ANULADO'
+        ) THEN
+            RAISE EXCEPTION 'asociado';
+        END IF;
+
+        -- Marcar venta como ANULADO
+        UPDATE venta_cab
+        SET usu_codigo = usucodigo, ven_estado = 'ANULADO'
+        WHERE ven_codigo = vencodigo;
+
+        -- Anular libro de ventas y cuentas por cobrar
+        UPDATE libro_venta SET libven_estado = 'ANULADO' WHERE ven_codigo = vencodigo;
+        UPDATE cuenta_cobrar SET cuenco_estado = 'ANULADO' WHERE ven_codigo = vencodigo;
+
+        -- Activar/ajustar estado del pedido original
+        UPDATE pedido_venta_cab
+        SET peven_estado = 'TERMINADA', usu_codigo = usucodigo
+        WHERE peven_codigo = pevencodigo;
+
+        -- Revertir stock sumando las cantidades de venta_det
+        FOR ventaDet IN
+            SELECT * FROM venta_det WHERE ven_codigo = vencodigo
+        LOOP
+            UPDATE stock
+            SET st_cantidad = st_cantidad + ventaDet.vendet_cantidad
+            WHERE it_codigo = ventaDet.it_codigo
+              AND tipit_codigo = ventaDet.tipit_codigo
+              AND dep_codigo = ventaDet.dep_codigo
+              AND suc_codigo = ventaDet.suc_codigo
+              AND emp_codigo = ventaDet.emp_codigo;
+        END LOOP;
+
+		-- Enviamos un mensaje de confirmacion
+        RAISE NOTICE 'LA VENTA FUE ANULADA CON EXITO';
+
+    END IF; -- operacion = 2
+
+    -- AUDITORIA: actualizar campo peven_audit en pedido_venta_cab
+    FOR pedido IN (
+        SELECT pvc.peven_fecha, pvc.cli_codigo,
+               p.per_nombre || ' ' || p.per_apellido AS cliente,
+               p.per_numerodocumento, pvc.peven_estado, pvc.peven_audit
+        FROM pedido_venta_cab pvc
+        JOIN cliente c ON c.cli_codigo = pvc.cli_codigo
+        JOIN personas p ON p.per_codigo = c.per_codigo
+        WHERE pvc.peven_codigo = pevencodigo
+    ) LOOP
+        UPDATE pedido_venta_cab
+        SET peven_audit = pedido.peven_audit || '' || json_build_object(
+            'usu_codigo', usucodigo,
+            'usu_login', coalesce(usuario_txt, ''),
+            'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+            'procedimiento', 'MODIFICACION',
+            'peven_fecha', pedido.peven_fecha,
+            'cli_codigo', pedido.cli_codigo,
+            'cliente', pedido.cliente,
+            'per_numerodocumento', pedido.per_numerodocumento,
+            'emp_codigo', empcodigo,
+            'emp_razonsocial', coalesce(empresa_txt, ''),
+            'suc_codigo', succodigo,
+            'suc_descripcion', coalesce(sucursal_txt, ''),
+            'peven_estado', pedido.peven_estado
+        ) || ','
+        WHERE peven_codigo = pevencodigo;
+    END LOOP;
+
+END;
+$function$ LANGUAGE plpgsql;
+
 --Procedimiento almacenado de venta detalle
 select sp_venta_det(1, 2, 2, 1, 1, 1, 5, 350000, 1);
 create or replace function sp_venta_det(
@@ -10779,6 +11030,80 @@ end
 $function$ 
 language plpgsql;
 
+-- Nuevo Procedimiento venta_det
+CREATE OR REPLACE FUNCTION sp_venta_det(
+    vencodigo       integer,
+    itcodigo        integer,
+    tipitcodigo     integer,
+    depcodigo       integer,
+    succodigo       integer,
+    empcodigo       integer,
+    vendetcantidad  integer,
+    vendetprecio    numeric,
+    operacion       integer
+) RETURNS void AS
+$function$
+BEGIN
+    -- OPERACION = 1 -> INSERTAR DETALLE DE VENTA
+    IF operacion = 1 THEN
+        -- Validar si ya existe el item en el mismo depósito para la misma venta
+        IF EXISTS (
+            SELECT 1 FROM venta_det
+            WHERE ven_codigo = vencodigo
+              AND it_codigo  = itcodigo
+              AND dep_codigo = depcodigo
+        ) THEN
+            RAISE EXCEPTION 'item';
+        END IF;
+
+        -- Insertar detalle
+        INSERT INTO venta_det(
+            ven_codigo, it_codigo, tipit_codigo, dep_codigo,
+            suc_codigo, emp_codigo, vendet_cantidad, vendet_precio
+        ) VALUES (
+            vencodigo, itcodigo, tipitcodigo, depcodigo,
+            succodigo, empcodigo, vendetcantidad, vendetprecio
+        );
+
+        -- Actualizar stock (disminuir)
+        UPDATE stock
+        SET st_cantidad = st_cantidad - vendetcantidad
+        WHERE it_codigo   = itcodigo
+          AND tipit_codigo= tipitcodigo
+          AND dep_codigo  = depcodigo
+          AND suc_codigo  = succodigo
+          AND emp_codigo  = empcodigo;
+
+		-- Enviamos un mensaje de conformacion
+        RAISE NOTICE 'LA VENTA DETALLE FUE REGISTRADA CON EXITO';
+    END IF;
+
+    -- OPERACION = 2 -> ELIMINAR DETALLE DE VENTA
+    IF operacion = 2 THEN
+        -- Borrado físico del detalle
+        DELETE FROM venta_det
+        WHERE ven_codigo  = vencodigo
+          AND it_codigo   = itcodigo
+          AND tipit_codigo= tipitcodigo
+          AND dep_codigo  = depcodigo
+          AND suc_codigo  = succodigo
+          AND emp_codigo  = empcodigo;
+
+        -- Reponer stock (sumar)
+        UPDATE stock
+        SET st_cantidad = st_cantidad + vendetcantidad
+        WHERE it_codigo   = itcodigo
+          AND tipit_codigo= tipitcodigo
+          AND dep_codigo  = depcodigo
+          AND suc_codigo  = succodigo
+          AND emp_codigo  = empcodigo;
+
+		-- Enviamos un mensaje de conformacion
+        RAISE NOTICE 'LA VENTA DETALLE FUE ELIMINADA CON EXITO';
+    END IF;
+END;
+$function$ LANGUAGE plpgsql;
+
 
 --Procedimiento almacenado cuenta cobrar
 select sp_cuenta_cobrar(1, 350000, 350000);
@@ -10812,43 +11137,66 @@ end
 $function$ 
 language plpgsql;
 
+-- Nuevo procedimiento cuenta_cobrar
+CREATE OR REPLACE FUNCTION sp_cuenta_cobrar(
+    vencodigo    integer,
+    cuencomonto  numeric,
+    cuencosaldo  numeric,
+    tipcocodigo  integer,
+    operacion    integer
+) RETURNS void AS
+$function$
+DECLARE
+    factor int := 0;
+BEGIN
+    -- Definimos el factor según la operación
+    IF operacion = 1 THEN
+        factor := 1;   -- suma
+    ELSIF operacion = 2 THEN
+        factor := -1;  -- resta
+    END IF;
+
+    -- Un solo UPDATE usando el factor
+    UPDATE cuenta_cobrar
+    SET cuenco_monto = cuenco_monto + (cuencomonto * factor),
+        cuenco_saldo = cuenco_saldo + (cuencosaldo * factor),
+        tipco_codigo = tipcocodigo
+    WHERE ven_codigo = vencodigo;
+END;
+$function$ LANGUAGE plpgsql;
+
 --Procedimiento almacenado libro venta
 select sp_libro_venta(1, 0, 0, 350000);
-create or replace function sp_libro_venta(
-    vencodigo integer,
-    libvenexenta numeric,
-    libveniva5 numeric,
-    libveniva10 numeric,
+CREATE OR REPLACE FUNCTION sp_libro_venta(
+    vencodigo            integer,
+    libvenexenta         numeric,
+    libveniva5           numeric,
+    libveniva10          numeric,
     libvennumcomprobante varchar,
-    tipcocodigo integer,
-    operacion integer
-) returns void as
+    tipcocodigo          integer,
+    operacion            integer
+) RETURNS void AS
 $function$
-begin 
-	--Validamos si la operacion es 1 0 2
-	if operacion = 1 then
-	 --En caso de ser 1 procedemos a sumar el monto que nos pasan por parametro
-     update libro_venta 
-	 set libven_exenta=libven_exenta+libvenexenta, 
-		 libven_iva5=libven_iva5+libveniva5, 
-     	 libven_iva10=libven_iva10+libveniva10 
-	 where ven_codigo=vencodigo
-	 and libven_numcomprobante=libvennumcomprobante
-	 and tipco_codigo=tipcocodigo;
-    end if;
-    if operacion = 2 then
-	--En caso de ser 2 procedemos a restar el monto que nos pasan por parametro
-     update libro_venta 
-	 set libven_exenta=libven_exenta-libvenexenta, 
-		 libven_iva5=libven_iva5-libveniva5, 
-     	 libven_iva10=libven_iva10-libveniva10 
-	 where ven_codigo=vencodigo
-	 and libven_numcomprobante=libvennumcomprobante
-	 and tipco_codigo=tipcocodigo;
-    end if;
-end
-$function$ 
-language plpgsql;
+DECLARE
+    factor int := 0;
+BEGIN
+    -- Definir el factor según la operación
+    IF operacion = 1 THEN
+        factor := 1;  -- suma
+    ELSIF operacion = 2 THEN
+        factor := -1; -- resta
+    END IF;
+
+    -- Un solo UPDATE usando el factor
+    UPDATE libro_venta
+    SET libven_exenta = libven_exenta + (libvenexenta * factor),
+        libven_iva5   = libven_iva5   + (libveniva5   * factor),
+        libven_iva10  = libven_iva10  + (libveniva10  * factor)
+    WHERE ven_codigo = vencodigo
+      AND libven_numcomprobante = libvennumcomprobante
+      AND tipco_codigo = tipcocodigo;
+END;
+$function$ LANGUAGE plpgsql;
 
 select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=1;
 select sp_cobro_cab(0, '21/02/2024', 'ACTIVO', 1, 1, 1, 1, 3, 1);
@@ -11634,6 +11982,108 @@ end
 $function$ 
 language plpgsql;
 
+
+-- Procedimiento almacenado timbrados
+select coalesce(max(timb_codigo),0)+1 as timb_codigo from timbrados;
+
+select 
+	t.*,
+	s.suc_descripcion ,
+	e.emp_razonsocial,
+	c.caj_descripcion,
+	tc.tipco_descripcion,
+	lpad(cast(t.suc_codigo as text), 3, '0')|| '-' || 
+	lpad(cast(t.caj_codigo as text), 3, '0')|| '-' || t.timb_numero_comp as comprobante
+from timbrados t 
+	join sucursal s on s.suc_codigo=t.suc_codigo 
+	and s.emp_codigo=t.emp_codigo 
+		join empresa e on e.emp_codigo=s.emp_codigo 
+	join caja c on c.caj_codigo=t.caj_codigo 
+	join tipo_comprobante tc on tc.tipco_codigo=t.tipco_codigo 
+order by t.timb_codigo;
+
+select timb_numero from timbrados_auditoria ta;
+
+create or replace function sp_timbrados(
+    timbcodigo integer,
+    succodigo integer,
+    empcodigo integer,
+    cajcodigo integer,
+    tipcocodigo integer,
+    timbnumero integer,
+    timbnumerofechainic date,
+    timbnumerofechavenc date,
+    timbnumerocomp varchar,
+    timbnumerocompinic integer,
+    timbnumerocomplim integer,
+    timbestado varchar,
+    usucodigo integer,
+    operacion integer
+) returns void as
+$function$
+begin 
+	-- Validamos la operacion de insercion o modificacion
+    if operacion in(1,2) then
+		-- Validamos que la fecha de vencimiento no sea menor a la fecha de inicio
+		if timbnumerofechavenc < timbnumerofechainic then
+		  -- En caso de ser asi, generamos una excepcion
+		  raise exception 'fecha_venc';
+		end if;
+		-- Validamos que el número limite no sea menor al numero de inicio
+		if timbnumerocomplim < timbnumerocompinic then
+		  -- En caso de ser asi, generamos una excepcion
+		  raise exception 'numero_limite';
+		end if;
+		-- Validamos que no se repita el numero de timbrado
+		perform * from timbrados
+        where timb_numero=timbnumero and timb_codigo != timbcodigo;
+		if found then
+	       -- En caso de ser asi, generamos una excepcion
+            raise exception 'timbrado';
+		end if;
+		-- Validamos que no se repita la sucursal, empresa, caja y tipo comprobante
+        perform * from timbrados
+        where suc_codigo=succodigo and emp_codigo=empcodigo
+		and caj_codigo=cajcodigo and tipco_codigo=tipcocodigo
+        and timb_codigo != timbcodigo;
+        if found then
+			-- En caso de ser asi, generamos una excepcion
+            raise exception 'comprobante';
+		-- Si los parametros pasaron la validacion procedemos con la persistencia de un nuevo registro o modificacion
+    	elseif operacion = 1 then
+	        	insert into timbrados(timb_codigo, suc_codigo, emp_codigo, 
+									  caj_codigo, tipco_codigo, timb_numero,
+	        						  timb_numero_fecha_inic, timb_numero_fecha_venc, timb_numero_comp,
+									  timb_numero_comp_inic, timb_numero_comp_lim, timb_estado, usu_codigo)
+				values(timbcodigo, succodigo, empcodigo, 
+					   cajcodigo, tipcocodigo, timbnumero,
+	        		   timbnumerofechainic, timbnumerofechavenc, timbnumerocomp,
+					   timbnumerocompinic, timbnumerocomplim, 'ACTIVO', usucodigo);
+				-- Enviamos un mensaje de confirmacion
+				raise notice 'EL TIMBRADO FUE REGISTRADO CON EXITO';
+        elseif operacion = 2 then
+        		update timbrados
+				set suc_codigo=succodigo, emp_codigo=empcodigo, caj_codigo=cajcodigo,
+				tipco_codigo=tipcocodigo, timb_numero=timbnumero, timb_numero_fecha_inic=timbnumerofechainic,
+				timb_numero_fecha_venc=timbnumerofechavenc, timb_numero_comp=timbnumerocomp, timb_numero_comp_inic=timbnumerocompinic,
+				timb_numero_comp_lim=timbnumerocomplim, timb_estado='ACTIVO', usu_codigo=usucodigo
+				where timb_codigo=timbcodigo;
+				-- Enviamos un mensaje de confirmacion
+				raise notice 'EL TIMBRADO FUE MODIFICADO CON EXITO';
+        end if;
+    end if;
+	-- Validamos si la operacion es de elimianacion (borrado logíco)
+    if operacion = 3 then 
+    	update timbrados 
+		set timb_estado='INACTIVO', usu_codigo=usucodigo
+		where timb_codigo=timbcodigo;
+		-- Enviamos un mensaje de confirmacion
+		raise notice 'EL TIMBRADO FUE BORRADO CON EXITO';
+    end if;
+end
+$function$ 
+language plpgsql;
+
 --Procedimiento almacenado red_pago
 create or replace function sp_red_pago(
     redpacodigo integer,
@@ -11697,6 +12147,210 @@ $function$
 language plpgsql;
 
 --DML
+select round(i.it_stock_min) as minimo from items i where i.it_codigo=2 and i.tipit_codigo=2;
+
+select 
+               lpad(cast(fv.suc_codigo as text), 3, '0')|| '-' || 
+               lpad(cast(fv.caj_codigo as text), 3, '0')|| '-' || 
+               lpad(cast((cast(fv.facven_numero as integer)+1) as text), 7, '0') as ven_numfactura
+            from factura_venta fv 
+            where fv.suc_codigo={$_POST['suc_codigo']}
+               and fv.emp_codigo={$_POST['emp_codigo']}
+               and fv.caj_codigo={$_POST['caj_codigo']};
+              
+select 
+	lpad(cast(t.suc_codigo as text), 3, '0')|| '-' || 
+    lpad(cast(t.caj_codigo as text), 3, '0')|| '-' || 
+    lpad(cast((cast(t.timb_numero_comp as integer)+1) as text), 7, '0') as ven_numfactura,
+    t.timb_numero as ven_timbrado,
+    t.timb_numero_fecha_venc as ven_timbrado_venc
+from timbrados t 
+where t.suc_codigo=1
+	and t.emp_codigo=1
+	and t.caj_codigo=1
+	and t.tipco_codigo=4;
+
+select 
+         tc.tipco_codigo,
+         (case
+	         when tc.tipco_codigo in(1,2) then
+	         'NOTA '||tc.tipco_descripcion
+	         else
+	         tc.tipco_descripcion 
+	      end) as tipco_descripcion,
+         tc.tipco_estado 
+         from tipo_comprobante tc
+            where tc.tipco_descripcion ilike '%%'
+            and tc.tipco_codigo in(1, 2, 4)
+            and tc.tipco_estado = 'ACTIVO'
+         order by tc.tipco_codigo;
+
+select 
+	ncc.*, tc.tipco_descripcion, p.pro_razonsocial,
+	tp.tipro_descripcion, e.emp_razonsocial, s.suc_descripcion 
+from nota_compra_cab ncc 
+	join tipo_comprobante tc on tc.tipco_codigo=ncc.tipco_codigo 
+	join sucursal s on s.suc_codigo=ncc.suc_codigo 
+	and s.emp_codigo=ncc.emp_codigo 
+		join empresa e on e.emp_codigo=s.emp_codigo 
+	join proveedor p on p.pro_codigo=ncc.pro_codigo 
+	and p.tipro_codigo=ncc.tipro_codigo 
+		join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo 
+where ncc.nocom_codigo=2;
+
+select 
+*
+from libro_compra lc 
+
+for c_libro in
+select comp_codigo, licom_exenta, licom_iva5, licom_iva10,
+licom_fecha, tipco_codigo, licom_numcomprobante, licom_estado,
+licom_audit
+from libro_compra
+where comp_codigo=2
+and licom_numcomprobante='001-001-2222221'
+and tipco_codigo=2
+loop
+update libro_compra
+set licom_audit = licomAudit||''|| json_build_object(
+'usu_codigo', usucodigo,
+'usu_login', usulogin,
+'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+'procedimiento', upper(procedimiento),
+'comp_codigo', c_libro.comp_codigo,
+'licom_exenta', c_libro.licom_exenta,
+'licom_iva5', c_libro.licom_iva5,
+'licom_iva10', c_libro.licom_iva10,
+'licom_fecha', c_libro.licom_fecha,
+'tipco_codigo', c_libro.tipco_codigo,
+'tipco_descripcion', upper(tipcodescripcion),
+'licom_numcomprobante', c_libro.licom_numcomprobante,
+'licom_estado', c_libro.licom_estado
+)||','
+ where comp_codigo=2
+and licom_numcomprobante='001-001-2222221'
+and tipco_codigo=2;
+end loop;
+
+
+update nota_compra_cab set nocom_estado='ANULADO', usu_codigo=1 where nocom_codigo=2;
+update libro_compra set licom_estado='ANULADO';
+
+WITH datos AS (
+    -- Parte 1: los ítems de la compra
+    SELECT
+        cd.dep_codigo,
+        d.dep_descripcion,
+        cd.it_codigo,
+        cd.tipit_codigo,
+        i.tipim_codigo,
+        i.it_descripcion,
+        cd.compdet_cantidad AS cantidad,
+        cd.compdet_precio AS precio,
+        i.unime_codigo,
+        um.unime_descripcion
+    FROM compra_det cd
+    JOIN stock s 
+        ON s.it_codigo = cd.it_codigo
+       AND s.tipit_codigo = cd.tipit_codigo
+       AND s.dep_codigo = cd.dep_codigo
+       AND s.suc_codigo = cd.suc_codigo
+       AND s.emp_codigo = cd.emp_codigo
+    JOIN items i 
+        ON i.it_codigo = s.it_codigo
+       AND i.tipit_codigo = s.tipit_codigo
+    JOIN deposito d 
+        ON d.dep_codigo = s.dep_codigo
+       AND d.suc_codigo = s.suc_codigo
+       AND d.emp_codigo = s.emp_codigo
+    JOIN unidad_medida um 
+        ON um.unime_codigo = i.unime_codigo
+    WHERE cd.comp_codigo = 2
+      and i.it_descripcion ilike '%tela%'
+      and i.it_estado = 'ACTIVO'
+      and i.tipit_codigo not in (2, 3)
+
+    UNION ALL
+
+    -- Parte 2: los ítems de la nota de débito asociada
+    SELECT
+        ncd.dep_codigo,
+        d.dep_descripcion,
+        ncd.it_codigo,
+        ncd.tipit_codigo,
+        i.tipim_codigo,
+        i.it_descripcion,
+        ncd.nocomdet_cantidad AS cantidad,
+        ncd.nocomdet_precio AS precio,
+        i.unime_codigo,
+        um.unime_descripcion
+    FROM nota_compra_det ncd
+    JOIN nota_compra_cab nc
+        ON nc.nocom_codigo = ncd.nocom_codigo
+    JOIN items i
+        ON i.it_codigo = ncd.it_codigo
+       AND i.tipit_codigo = ncd.tipit_codigo
+    JOIN deposito d
+        ON d.dep_codigo = ncd.dep_codigo
+       AND d.suc_codigo = ncd.suc_codigo
+       AND d.emp_codigo = ncd.emp_codigo
+    JOIN unidad_medida um
+        ON um.unime_codigo = i.unime_codigo
+    WHERE nc.comp_codigo = 2
+      AND nc.tipco_codigo = 2 -- solo notas de débito
+      and i.it_descripcion ilike '%tela%'
+      and i.it_estado = 'ACTIVO'
+      and i.tipit_codigo not in (2, 3)
+)
+
+-- Agrupamos para sumar cantidades si el depósito es el mismo
+SELECT
+    it_codigo,
+    tipit_codigo,
+    tipim_codigo,
+    it_descripcion,
+    dep_descripcion,
+    dep_codigo,
+    SUM(cantidad) AS nocomdet_cantidad,
+    precio AS nocomdet_precio,
+    unime_codigo,
+    MAX(unime_descripcion) AS unime_descripcion
+FROM datos
+GROUP BY it_codigo, tipit_codigo, tipim_codigo, it_descripcion, dep_descripcion, nocomdet_precio, dep_codigo, unime_codigo
+ORDER BY it_codigo, dep_codigo;
+
+
+select 
+            cd.dep_codigo,
+            d.dep_descripcion,
+            cd.it_codigo,
+            cd.tipit_codigo,
+            i.tipim_codigo,
+            i.it_descripcion||' '||d.dep_descripcion as it_descripcion,
+            cd.compdet_cantidad as nocomdet_cantidad,
+            i.unime_codigo,
+            um.unime_descripcion,
+            cd.compdet_precio as nocomdet_precio
+         from compra_det cd
+            join stock s on s.it_codigo=cd.it_codigo
+            and s.tipit_codigo=cd.tipit_codigo
+            and s.dep_codigo=cd.dep_codigo 
+            and s.suc_codigo=cd.suc_codigo
+            and s.emp_codigo=cd.emp_codigo
+            join items i on i.it_codigo=s.it_codigo
+            and i.tipit_codigo=s.tipit_codigo
+            join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
+            join deposito d on d.dep_codigo=s.dep_codigo
+            and d.suc_codigo=s.suc_codigo
+            and d.emp_codigo=s.emp_codigo 
+            join unidad_medida um on um.unime_codigo=i.unime_codigo
+         where cd.comp_codigo=2
+            and i.it_descripcion ilike '%%'
+            and i.it_estado = 'ACTIVO'
+            and i.tipit_codigo not in (2, 3)
+         order by cd.comp_codigo;
+
+
 select 
  1
 from v_nota_compra_det vncd 
@@ -16627,37 +17281,6 @@ BEGIN
         );
     -- Validamos si la operacion es de actualizacion
 	ELSEIF TG_OP = 'UPDATE' THEN
-    -- Registramos el valor anterior a que se actualice
-    INSERT INTO apertura_cierre_auditoria(
-            apercieaud_codigo,
-            apercieaud_fecha,
-            apercieaud_procedimiento,
-            apercie_codigo,
-            suc_codigo,
-            emp_codigo,
-			caj_codigo,
-			usu_codigo,
-			apercie_fechahoraapertura,
-			apercie_fechahoracierre,
-			apercie_montoapertura,
-			apercie_montocierre,
-			apercie_estado
-    )
-    VALUES (
-            (SELECT COALESCE(MAX(apercieaud_codigo), 0) + 1 FROM apertura_cierre_auditoria),   
-            current_timestamp,
-            'MODIFICACION_ANTERIOR',   
-            OLD.apercie_codigo,
-            OLD.suc_codigo,
-            OLD.emp_codigo,
-			OLD.caj_codigo,
-			OLD.usu_codigo,
-			OLD.apercie_fechahoraapertura,
-			OLD.apercie_fechahoracierre,
-			OLD.apercie_montoapertura,
-			OLD.apercie_montocierre,
-			OLD.apercie_estado
-      );
     -- Registramos el nuevo valor actualizado
     INSERT INTO apertura_cierre_auditoria(
             apercieaud_codigo,
@@ -16677,7 +17300,7 @@ BEGIN
         VALUES (
             (SELECT COALESCE(MAX(apercieaud_codigo), 0) + 1 FROM apertura_cierre_auditoria),   
             current_timestamp,
-            'MODIFICACION_NUEVO',   
+            'MODIFICACION',   
             NEW.apercie_codigo,
             NEW.suc_codigo,
             NEW.emp_codigo,
@@ -16788,79 +17411,135 @@ CREATE TRIGGER t_insercion_arqueo_control
 AFTER INSERT ON arqueo_control
 FOR EACH ROW EXECUTE FUNCTION spt_insercion_arqueo_control_auditoria();
 
-CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_factura_venta()
+CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_timbrados()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Validamos si la operacion es de insercion
     IF TG_OP = 'INSERT' THEN
-        INSERT INTO factura_venta_auditoria(
-            facvenaud_codigo,
-            facvenaud_fecha,
-            facvenaud_procedimiento,
+        INSERT INTO timbrados_auditoria(
+            timbaud_codigo,
+            timbaud_fecha,
+            timbaud_procedimiento,
+            timb_codigo,
             suc_codigo,
             emp_codigo,
-            caj_codigo,
-			facven_numero
+			caj_codigo,
+			tipco_codigo,
+			timb_numero,
+			timb_numero_fecha_inic,
+			timb_numero_fecha_venc,
+			timb_numero_comp,
+			timb_numero_comp_inic,
+			timb_numero_comp_lim,
+			timb_estado,
+			usu_codigo
         )
         VALUES (
-            (SELECT COALESCE(MAX(facvenaud_codigo), 0) + 1 FROM factura_venta_auditoria),   
+            (SELECT COALESCE(MAX(timbaud_codigo), 0) + 1 FROM timbrados_auditoria),   
             current_timestamp,
             'ALTA',   
+            NEW.timb_codigo,
             NEW.suc_codigo,
             NEW.emp_codigo,
-            NEW.caj_codigo,
-			NEW.facven_numero
+			NEW.caj_codigo,
+			NEW.tipco_codigo,
+			NEW.timb_numero,
+			NEW.timb_numero_fecha_inic,
+			NEW.timb_numero_fecha_venc,
+			NEW.timb_numero_comp,
+			NEW.timb_numero_comp_inic,
+			NEW.timb_numero_comp_lim,
+			NEW.timb_estado,
+			NEW.usu_codigo
         );
     -- Validamos si la operacion es de actualizacion
 	ELSEIF TG_OP = 'UPDATE' THEN
-    -- Registramos el valor anterior a que se actualice
-    	INSERT INTO factura_venta_auditoria(
-            facvenaud_codigo,
-            facvenaud_fecha,
-            facvenaud_procedimiento,
+    	-- Validamos si el estado es activo o anulado
+		if NEW.timb_estado = 'ACTIVO' then
+			INSERT INTO timbrados_auditoria(
+            timbaud_codigo,
+            timbaud_fecha,
+            timbaud_procedimiento,
+            timb_codigo,
             suc_codigo,
             emp_codigo,
-            caj_codigo,
-			facven_numero
-        )
-        VALUES (
-            (SELECT COALESCE(MAX(facvenaud_codigo), 0) + 1 FROM factura_venta_auditoria),   
+			caj_codigo,
+			tipco_codigo,
+			timb_numero,
+			timb_numero_fecha_inic,
+			timb_numero_fecha_venc,
+			timb_numero_comp,
+			timb_numero_comp_inic,
+			timb_numero_comp_lim,
+			timb_estado,
+			usu_codigo
+        	)
+        	VALUES (
+            (SELECT COALESCE(MAX(timbaud_codigo), 0) + 1 FROM timbrados_auditoria),   
             current_timestamp,
-            'MODIFICACION_ANTERIOR',   
-            OLD.suc_codigo,
-            OLD.emp_codigo,
-            OLD.caj_codigo,
-			OLD.facven_numero
-        );
-    -- Registramos el nuevo valor actualizado
-   		INSERT INTO factura_venta_auditoria(
-            facvenaud_codigo,
-            facvenaud_fecha,
-            facvenaud_procedimiento,
-            suc_codigo,
-            emp_codigo,
-            caj_codigo,
-			facven_numero
-        )
-        VALUES (
-            (SELECT COALESCE(MAX(facvenaud_codigo), 0) + 1 FROM factura_venta_auditoria),   
-            current_timestamp,
-            'MODIFICACION_NUEVO',   
+            'MODIFICACION',   
+            NEW.timb_codigo,
             NEW.suc_codigo,
             NEW.emp_codigo,
-            NEW.caj_codigo,
-			NEW.facven_numero
-        );
+			NEW.caj_codigo,
+			NEW.tipco_codigo,
+			NEW.timb_numero,
+			NEW.timb_numero_fecha_inic,
+			NEW.timb_numero_fecha_venc,
+			NEW.timb_numero_comp,
+			NEW.timb_numero_comp_inic,
+			NEW.timb_numero_comp_lim,
+			NEW.timb_estado,
+			NEW.usu_codigo
+        	);
+		elsif NEW.timb_estado = 'INACTIVO' then
+			INSERT INTO timbrados_auditoria(
+            timbaud_codigo,
+            timbaud_fecha,
+            timbaud_procedimiento,
+            timb_codigo,
+            suc_codigo,
+            emp_codigo,
+			caj_codigo,
+			tipco_codigo,
+			timb_numero,
+			timb_numero_fecha_inic,
+			timb_numero_fecha_venc,
+			timb_numero_comp,
+			timb_numero_comp_inic,
+			timb_numero_comp_lim,
+			timb_estado,
+			usu_codigo
+        	)
+        	VALUES (
+            (SELECT COALESCE(MAX(timbaud_codigo), 0) + 1 FROM timbrados_auditoria),   
+            current_timestamp,
+            'BAJA',   
+            NEW.timb_codigo,
+            NEW.suc_codigo,
+            NEW.emp_codigo,
+			NEW.caj_codigo,
+			NEW.tipco_codigo,
+			NEW.timb_numero,
+			NEW.timb_numero_fecha_inic,
+			NEW.timb_numero_fecha_venc,
+			NEW.timb_numero_comp,
+			NEW.timb_numero_comp_inic,
+			NEW.timb_numero_comp_lim,
+			NEW.timb_estado,
+			NEW.usu_codigo
+        	);
+		end if;
 	END IF;
 		RETURN NEW;--Este return no se utiliza
 END;
 $$
  LANGUAGE plpgsql;
 
---Creamos el trigger que ejecutara la funcion spt_insercion_actualizacion_factura_venta
-CREATE TRIGGER t_insercion_actualizacion_factura_venta
-AFTER INSERT OR UPDATE ON factura_venta
-FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_factura_venta();
+--Creamos el trigger que ejecutara la funcion spt_insercion_actualizacion_timbrados
+CREATE TRIGGER t_insercion_actualizacion_timbrados
+AFTER INSERT OR UPDATE ON timbrados
+FOR EACH ROW EXECUTE FUNCTION spt_insercion_actualizacion_timbrados();
 
 select usu_codigo from venta_cab where ven_codigo=1;
 
@@ -16900,7 +17579,7 @@ END;
 $$
  LANGUAGE plpgsql;
 
---Creamos el trigger que ejecutara la funcion spt_insercion_pedido_venta
+--Creamos el trigger que ejecutara la funcion spt_insercion_pedido_venta 
 CREATE TRIGGER t_insercion_pedido_venta
 AFTER INSERT ON pedido_venta
 FOR EACH ROW EXECUTE FUNCTION spt_insercion_pedido_venta();
@@ -17119,6 +17798,76 @@ END;
 $$
  LANGUAGE plpgsql;
 
+-- Nuevo procedimiento para auditoria libro_Venta
+CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_libro_venta()
+RETURNS TRIGGER AS $$
+DECLARE 
+    usuCodigo     INTEGER;
+    usuLogin      VARCHAR;
+    procedimiento VARCHAR;
+BEGIN
+    -- Determinar el usuario según tipo de comprobante
+    IF NEW.tipco_codigo = 4 THEN
+        SELECT vc.usu_codigo, u.usu_login
+        INTO usuCodigo, usuLogin
+        FROM venta_cab vc
+        JOIN usuario u ON u.usu_codigo = vc.usu_codigo
+        WHERE vc.ven_codigo = NEW.ven_codigo;
+
+    ELSIF NEW.tipco_codigo IN (1, 2) THEN
+        SELECT nvc.usu_codigo, u.usu_login
+        INTO usuCodigo, usuLogin
+        FROM nota_venta_cab nvc
+        JOIN usuario u ON u.usu_codigo = nvc.usu_codigo
+        WHERE nvc.ven_codigo = NEW.ven_codigo
+          AND nvc.tipco_codigo = NEW.tipco_codigo
+          AND nvc.notven_numeronota = NEW.libven_numcomprobante;
+    END IF;
+
+    -- Determinar tipo de operación
+    procedimiento := CASE TG_OP
+                        WHEN 'INSERT' THEN 'ALTA'
+                        WHEN 'UPDATE' THEN 'MODIFICACION'
+                     END;
+
+    -- Inserción en la auditoría
+    INSERT INTO libro_venta_auditoria(
+        libvenaud_codigo,
+        usu_codigo,
+        usu_login,
+        libvenaud_fecha,
+        libvenaud_procedimiento,
+        libven_codigo,
+        ven_codigo,
+        libven_exenta,
+        libven_iva5,
+        libven_iva10,
+        libven_fecha,
+        libven_numcomprobante,
+        libven_estado,
+        tipco_codigo
+    )
+    VALUES (
+        (SELECT COALESCE(MAX(libvenaud_codigo), 0) + 1 FROM libro_venta_auditoria),   
+        usuCodigo,
+        usuLogin,
+        current_timestamp,
+        procedimiento,
+        NEW.libven_codigo,
+        NEW.ven_codigo,
+        NEW.libven_exenta,
+        NEW.libven_iva5,
+        NEW.libven_iva10,
+        NEW.libven_fecha,
+        NEW.libven_numcomprobante,
+        NEW.libven_estado,
+        NEW.tipco_codigo
+    );
+
+    RETURN NEW; -- Obligatorio en triggers BEFORE/AFTER ROW
+END;
+$$ LANGUAGE plpgsql;
+
 --Creamos el trigger que ejecutara la funcion spt_insercion_actualizacion_libro_venta
 CREATE TRIGGER t_insercion_actualizacion_libro_venta
 AFTER INSERT OR UPDATE ON libro_venta
@@ -17260,6 +18009,95 @@ END
 $$
  LANGUAGE plpgsql;
 
+-- Nuevo procedimiento de auditoria para cuenta_cobrar
+CREATE OR REPLACE FUNCTION spt_insercion_actualizacion_cuenta_cobrar()
+RETURNS TRIGGER AS $$
+DECLARE 
+    usuCodigo INTEGER;
+    usuLogin  VARCHAR;
+    cobCodigo INTEGER;
+    procedimiento VARCHAR;
+BEGIN
+    -- Determinar el usuario según tipo de comprobante
+    IF NEW.tipco_codigo = 4 THEN
+        -- Factura → usuario de venta
+        SELECT vc.usu_codigo, u.usu_login
+        INTO usuCodigo, usuLogin
+        FROM venta_cab vc
+        JOIN usuario u ON u.usu_codigo = vc.usu_codigo
+        WHERE vc.ven_codigo = NEW.ven_codigo;
+
+    ELSIF NEW.tipco_codigo IN (1, 2) THEN
+        -- Nota de venta → último usuario de nota
+        SELECT nvc.usu_codigo, u.usu_login
+        INTO usuCodigo, usuLogin
+        FROM nota_venta_cab nvc
+        JOIN usuario u ON u.usu_codigo = nvc.usu_codigo
+        WHERE nvc.ven_codigo = NEW.ven_codigo
+          AND nvc.tipco_codigo = NEW.tipco_codigo
+        ORDER BY nvc.notven_codigo DESC
+        LIMIT 1;
+
+    ELSIF NEW.tipco_codigo = 5 THEN
+        -- Recibo → buscar en cobro
+        SELECT cc.usu_codigo, u.usu_login
+        INTO usuCodigo, usuLogin
+        FROM cobro_det cd
+        JOIN cobro_cab cc ON cc.cob_codigo = cd.cob_codigo
+        JOIN usuario u ON u.usu_codigo = cc.usu_codigo
+        WHERE cd.ven_codigo = NEW.ven_codigo
+        ORDER BY cd.cob_codigo DESC
+        LIMIT 1;
+
+        -- Si no hay registro en cobro, buscar en auditoría
+        IF NOT FOUND THEN
+            SELECT cda.usu_codigo, cda.usu_login
+            INTO usuCodigo, usuLogin
+            FROM cobro_det_auditoria cda
+            WHERE cda.ven_codigo = NEW.ven_codigo
+            ORDER BY cda.cob_codigo DESC
+            LIMIT 1;
+        END IF;
+    END IF;
+
+    -- Determinar tipo de operación
+    procedimiento := CASE TG_OP
+                        WHEN 'INSERT' THEN 'ALTA'
+                        WHEN 'UPDATE' THEN 'MODIFICACION'
+                     END;
+
+    -- Insertar en la auditoría
+    INSERT INTO cuenta_cobrar_auditoria(
+        cuencoaud_codigo,
+        usu_codigo,
+        usu_login,
+        cuencoaud_fecha,
+        cuencoaud_procedimiento,
+        ven_codigo,
+        cuenco_nrocuota,
+        cuenco_monto,
+        cuenco_saldo,
+        cuenco_estado,
+        tipco_codigo
+    )
+    VALUES (
+        (SELECT COALESCE(MAX(cuencoaud_codigo), 0) + 1 FROM cuenta_cobrar_auditoria),
+        usuCodigo,
+        usuLogin,
+        current_timestamp,
+        procedimiento,
+        NEW.ven_codigo,
+        NEW.cuenco_nrocuota,
+        NEW.cuenco_monto,
+        NEW.cuenco_saldo,
+        NEW.cuenco_estado,
+        NEW.tipco_codigo
+    );
+
+    RETURN NEW; -- Obligatorio en triggers
+END;
+$$ LANGUAGE plpgsql;
+
 --Creamos el trigger que ejecutara la funcion spt_insercion_actualizacion_cuenta_cobrar
 CREATE TRIGGER t_insercion_actualizacion_cuenta_cobrar
 AFTER INSERT OR UPDATE ON cuenta_cobrar
@@ -17289,7 +18127,8 @@ BEGIN
 			suc_codigo,
 			emp_codigo,
 			tipco_codigo,
-			ven_timbrado
+			ven_timbrado,
+			ven_timbrado_venc
         )
         VALUES (
             (SELECT COALESCE(MAX(venaud_codigo), 0) + 1 FROM venta_cab_auditoria),   
@@ -17308,7 +18147,8 @@ BEGIN
 			NEW.suc_codigo,
 			NEW.emp_codigo,
 			NEW.tipco_codigo,
-			NEW.ven_timbrado
+			NEW.ven_timbrado,
+			NEW.ven_timbrado_venc
         );
     -- Validamos si la operacion es de actualizacion
 	ELSEIF TG_OP = 'UPDATE' THEN
@@ -17330,7 +18170,8 @@ BEGIN
 			suc_codigo,
 			emp_codigo,
 			tipco_codigo,
-			ven_timbrado
+			ven_timbrado,
+			ven_timbrado_venc
         )
         VALUES (
             (SELECT COALESCE(MAX(venaud_codigo), 0) + 1 FROM venta_cab_auditoria),   
@@ -17349,7 +18190,8 @@ BEGIN
 			NEW.suc_codigo,
 			NEW.emp_codigo,
 			NEW.tipco_codigo,
-			NEW.ven_timbrado
+			NEW.ven_timbrado,
+			NEW.ven_timbrado_venc
         );
 	END IF;
 		RETURN NEW; --Este return no se utiliza
@@ -18224,7 +19066,6 @@ BEFORE INSERT OR DELETE ON nota_compra_det
 FOR EACH ROW EXECUTE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar();
 
 -- nuevo spt_actualizacion2_libro_compra_cuenta_pagar
-
 CREATE OR REPLACE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -18416,7 +19257,7 @@ BEGIN
                 ) || ','
                 WHERE comp_codigo = compcodigo;
             END LOOP;
-
+			
         -- Si hay monto y la compra estaba anulada → reactivar (y auditar)
         ELSIF notaMonto > 0 AND compraEstado = 'ANULADO' THEN
             UPDATE cuenta_pagar SET cuenpa_estado = 'ACTIVO' WHERE comp_codigo = compcodigo;
@@ -18467,6 +19308,7 @@ CREATE TRIGGER t_actualizacion2_libro_compra_cuenta_pagar
 AFTER INSERT OR DELETE ON nota_compra_det
 FOR EACH ROW EXECUTE FUNCTION spt_actualizacion2_libro_compra_cuenta_pagar();
 
+select ncc.nocom_codigo from nota_compra_cab ncc where ncc.comp_codigo=2 and ncc.tipco_codigo=2 and ncc.nocom_estado='ACTIVO';
 
 --Reejecucion de triggers
 --Compras
@@ -18569,6 +19411,62 @@ AFTER INSERT OR DELETE ON costo_produccion_det
 FOR EACH ROW EXECUTE FUNCTION spt_insercion_costo_produccion_det();
 
 --vistas
+
+-- Reportes Compras
+create or replace view v_reporte_libro_compra as
+select 
+	lc.licom_fecha,
+	p.pro_codigo,
+	p.pro_razonsocial,
+	p.pro_ruc,
+	tc.tipco_codigo,
+	tc.tipco_descripcion as tipo_comprobante,
+	lc.licom_numcomprobante as nro_comprobante,
+	coalesce(round(lc.licom_iva5+lc.licom_iva10+lc.licom_exenta), 0) as importe_total,
+	coalesce(round((lc.licom_iva10)-(lc.licom_iva10/11)), 0) as sin_credito_fiscal_10,
+	coalesce(round((lc.licom_iva10/11)), 0) as credito_fiscal_10,
+	coalesce(round((lc.licom_iva5)-(lc.licom_iva5/21)), 0) as sin_credito_fiscal_5,
+	coalesce(round((lc.licom_iva5/21)), 0) as credito_fiscal_5,
+	coalesce(round(lc.licom_exenta), 0) as otros
+from libro_compra lc 
+	join compra_cab cc on cc.comp_codigo=lc.comp_codigo 
+	join proveedor p on p.pro_codigo=cc.pro_codigo
+	and p.tipro_codigo=cc.pro_codigo 
+	join tipo_comprobante tc on tc.tipco_codigo=lc.tipco_codigo;
+
+select * from v_reporte_libro_compra vrlc 
+where vrlc.licom_fecha between '01/01/2025' and '01/01/2026'
+and vrlc.pro_codigo=1 and vrlc.tipco_codigo=1;
+
+-- Reportes Ventas
+create or replace view v_reporte_libro_venta as
+select 
+	lv.libven_fecha,
+	c.cli_codigo,
+	p.per_numerodocumento,
+	p.per_nombre||' '||p.per_apellido as cliente,
+	tc.tipco_codigo,
+	tc.tipco_descripcion as tipo_comprobante,
+	lv.libven_numcomprobante as nro_comprobante,
+	coalesce(round(lv.libven_iva5+lv.libven_iva10+lv.libven_exenta), 0) as importe_total,
+	coalesce(round((lv.libven_iva10)-(lv.libven_iva10/11)), 0) as sin_credito_fiscal_10,
+	coalesce(round((lv.libven_iva10/11)), 0) as credito_fiscal_10,
+	coalesce(round((lv.libven_iva5)-(lv.libven_iva5/21)), 0) as sin_credito_fiscal_5,
+	coalesce(round((lv.libven_iva5/21)), 0) as credito_fiscal_5,
+	coalesce(round(lv.libven_exenta), 0) as otros
+from libro_venta lv 
+join venta_cab vc on vc.ven_codigo=lv.ven_codigo 
+join cliente c on c.cli_codigo=vc.cli_codigo 
+join personas p on p.per_codigo=c.per_codigo 
+join tipo_comprobante tc on tc.tipco_codigo=lv.tipco_codigo;
+
+select * from v_reporte_libro_venta vrlv 
+where vrlv.libven_fecha between '01/01/2024' and '01/01/2026'
+and vrlv.cli_codigo=1 and vrlv.tipco_codigo=4;
+
+-- Modulos
+select s.suc_direccion, s.suc_telefono from sucursal s where s.suc_descripcion ilike '%ca%';
+
 select * from v_costo_produccion_det vcpd where vcpd.copro_codigo=1;
 create or replace view v_costo_produccion_det as 
 select 
@@ -20048,10 +20946,7 @@ select
 	t.tall_descripcion,
 	um.unime_codigo,
 	um.unime_descripcion,
-	ti.tipit_descripcion,
-	(case i.tipim_codigo when 1 then pvd.pevendet_cantidad * pvd.pevendet_precio else 0 end) as grav5,
-	(case i.tipim_codigo when 2 then pvd.pevendet_cantidad * pvd.pevendet_precio else 0 end) as grav10,
-	(case i.tipim_codigo when 3 then pvd.pevendet_cantidad * pvd.pevendet_precio else 0 end) as exenta
+	ti.tipit_descripcion
 from pedido_venta_det pvd
 	join items i on i.it_codigo=pvd.it_codigo
 	and i.tipit_codigo=pvd.tipit_codigo
@@ -20060,7 +20955,7 @@ from pedido_venta_det pvd
 		join modelo m on m.mod_codigo=i.mod_codigo
 		join talle t on t.tall_codigo=i.tall_codigo
 		join unidad_medida um on um.unime_codigo=i.unime_codigo
-order by pvd.peven_codigo;
+order by pvd.peven_codigo, pvd.it_codigo;
 
 select * from v_pedido_venta_det vpvd where vpvd.peven_codigo=1;
 
@@ -20608,6 +21503,8 @@ ALTER TABLE nota_compra_cab ALTER COLUMN nocom_chapa TYPE integer;
 ALTER TABLE nota_compra_cab
 ALTER COLUMN nocom_chapa TYPE integer
 USING nocom_chapa::integer;
+alter table venta_cab add column ven_timbrado_venc date;
+alter table venta_cab_auditoria add column ven_timbrado_venc date;
 
 select now(); 
 

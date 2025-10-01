@@ -88,12 +88,41 @@ if (isset($_POST['operacion_cabecera'])) {
             lpad(cast(t.caj_codigo as text), 3, '0')|| '-' || 
             lpad(cast((cast(t.timb_numero_comp as integer)+1) as text), 7, '0') as ven_numfactura,
             t.timb_numero as ven_timbrado,
-            t.timb_numero_fecha_venc as ven_timbrado_venc
+            t.timb_numero_fecha_venc as ven_timbrado_venc,
+            (cast(t.timb_numero_comp as integer)+1) as proximo_numero,
+            t.timb_numero_comp_lim as limite
          from timbrados t 
          where t.suc_codigo={$_POST['suc_codigo']}
             and t.emp_codigo={$_POST['emp_codigo']}
             and t.caj_codigo={$_POST['caj_codigo']}
             and t.tipco_codigo=4;";
+
+   $resultado = pg_query($conexion, $sql);
+   $datos = pg_fetch_assoc($resultado);
+
+   // Validación contra el límite
+   if ((int) $datos['proximo_numero'] > (int) $datos['limite']) {
+      echo json_encode([
+         "error" => true,
+         "mensaje" => "Se alcanzó el máximo de facturas permitidas para este timbrado. Debe ampliar el rango."
+      ]);
+   } else {
+      echo json_encode($datos);
+   }
+
+} else if (isset($_POST['consulta3'])) {
+
+   //Calculamos el monto total del detalle de presupuesto
+   $sql = "select
+            coalesce(round(sum(case
+                        when pd.tipit_codigo = 2 then
+                           pd.presdet_cantidad*pd.presdet_precio 
+                        else
+                           pd.presdet_precio 
+                     end)), 0) as detallepresupuesto
+         from presupuesto_det pd 
+         join presupuesto_cab pc on pc.pres_codigo=pd.pres_codigo 
+         where pc.peven_codigo={$_POST['peven_codigo']};";
 
    $resultado = pg_query($conexion, $sql);
 
