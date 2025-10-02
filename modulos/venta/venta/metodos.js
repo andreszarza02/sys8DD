@@ -1,3 +1,246 @@
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras, numeros y el simbolo /
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros-algunos-simbolos2 realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros-algunos-simbolos2")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\,.<>?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si tiene simbolos distintos a /
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos distintos a /
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} solo acepta letras, números y el simbolo barra(/)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-letras realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-letras")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneNumero = /[0-9]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene números o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneNumero.test(input.value) && tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números y símbolos`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          } else if (tieneNumero.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value) ||
+            tieneSimbolo.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan simbolos
+const validacionInputsVacios4 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 // Valida si la venta esta asociado a una nota de venta
 const consultaAsociacion = (escenario, mensaje) => {
   $.ajax({
@@ -84,25 +327,6 @@ const getCodigo = () => {
 
 //Se encarga de generar el numero de factura de venta
 const getNumeroFactura = () => {
-  //   $.ajax({
-  //     method: "POST",
-  //     url: "controlador.php",
-  //     data: {
-  //       suc_codigo: $("#suc_codigo").val(),
-  //       emp_codigo: $("#emp_codigo").val(),
-  //       caj_codigo: $("#caj_codigo").val(),
-  //       consulta2: 1,
-  //     },
-  //   }).done(function (respuesta) {
-  //     //Establecemos lo que nos devuelve la consulta
-  //     $("#ven_numfactura").val(respuesta.ven_numfactura);
-  //     $("#ven_timbrado").val(respuesta.ven_timbrado);
-  //     $("#ven_timbrado_venc").val(respuesta.ven_timbrado_venc);
-
-  //     //Activamos el input de  y timbrado
-  //     $(".foco3").attr("class", "form-line foco3 focused");
-  //   });
-
   $.ajax({
     method: "POST",
     url: "controlador.php",
@@ -148,42 +372,42 @@ function formatoTabla() {
 }
 
 //Envia datos al controladorDetalle2 para actualizar un registro en libro venta
-const setLibroVenta = () => {
-  $.ajax({
-    //actualizamos el libro
-    method: "POST",
-    url: "controladorDetalle2.php",
-    data: {
-      ven_codigo: $("#ven_codigo").val(),
-      tipim_codigo: $("#tipim_codigo").val(),
-      vendet_cantidad: $("#vendet_cantidad").val(),
-      vendet_precio: $("#vendet_precio").val(),
-      tipit_codigo: $("#tipit_codigo").val(),
-      ven_numfactura: $("#ven_numfactura").val(),
-      tipco_codigo: $("#tipco_codigo").val(),
-      operacion_detalle: $("#operacion_detalle").val(),
-      consulta: 1,
-    },
-  });
-};
+// const setLibroVenta = () => {
+//   $.ajax({
+//     //actualizamos el libro
+//     method: "POST",
+//     url: "controladorDetalle2.php",
+//     data: {
+//       ven_codigo: $("#ven_codigo").val(),
+//       tipim_codigo: $("#tipim_codigo").val(),
+//       vendet_cantidad: $("#vendet_cantidad").val(),
+//       vendet_precio: $("#vendet_precio").val(),
+//       tipit_codigo: $("#tipit_codigo").val(),
+//       ven_numfactura: $("#ven_numfactura").val(),
+//       tipco_codigo: $("#tipco_codigo").val(),
+//       operacion_detalle: $("#operacion_detalle").val(),
+//       consulta: 1,
+//     },
+//   });
+// };
 
 //Envia datos al controladorDetalle2 para actualizar un registro en cuenta cobrar
-const setCuentaCobrar = () => {
-  $.ajax({
-    //actualizamos el libro
-    method: "POST",
-    url: "controladorDetalle2.php",
-    data: {
-      ven_codigo: $("#ven_codigo").val(),
-      vendet_cantidad: $("#vendet_cantidad").val(),
-      vendet_precio: $("#vendet_precio").val(),
-      tipit_codigo: $("#tipit_codigo").val(),
-      tipco_codigo: $("#tipco_codigo").val(),
-      operacion_detalle: $("#operacion_detalle").val(),
-      consulta: 2,
-    },
-  });
-};
+// const setCuentaCobrar = () => {
+//   $.ajax({
+//     //actualizamos el libro
+//     method: "POST",
+//     url: "controladorDetalle2.php",
+//     data: {
+//       ven_codigo: $("#ven_codigo").val(),
+//       vendet_cantidad: $("#vendet_cantidad").val(),
+//       vendet_precio: $("#vendet_precio").val(),
+//       tipit_codigo: $("#tipit_codigo").val(),
+//       tipco_codigo: $("#tipco_codigo").val(),
+//       operacion_detalle: $("#operacion_detalle").val(),
+//       consulta: 2,
+//     },
+//   });
+// };
 
 //Consulta y lista los datos de venta cabecera
 const listar = () => {
@@ -484,6 +708,9 @@ const nuevo = () => {
     getNumeroFactura();
     $("#cabecera").attr("style", "display: none");
     $("#detalle").attr("style", "display: none");
+    validacionInputsVacios1();
+    validacionInputsVacios2();
+    validacionInputsVacios3();
   }
 };
 
@@ -497,6 +724,7 @@ const nuevoDetalle = () => {
     "Nuevo",
     "Esta venta ya está asociada a una nota de venta; no se pueden añadir más ítems."
   );
+  validacionInputsVacios4();
 };
 
 //Metodo que establece la baja en venta cabecera
@@ -600,6 +828,8 @@ const grabarDetalle = () => {
       emp_codigo: $("#emp_codigo").val(),
       vendet_cantidad: $("#vendet_cantidad").val(),
       vendet_precio: $("#vendet_precio").val(),
+      item: $("#item").val(),
+      tall_descripcion: $("#tall_descripcion").val(),
       operacion_detalle: $("#operacion_detalle").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
@@ -701,8 +931,6 @@ const confirmar2 = () => {
     function (isConfirm) {
       //Si la operacion_cabecera es correcta llamamos al metodo grabar
       if (isConfirm) {
-        setLibroVenta();
-        setCuentaCobrar();
         grabarDetalle();
       } else {
         //Si cancelamos la operacion_cabecera realizamos un reload

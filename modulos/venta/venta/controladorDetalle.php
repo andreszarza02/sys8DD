@@ -45,26 +45,35 @@ if (isset($_POST['operacion_detalle'])) {
       );
    } else {
 
-      // Validamos que el item no llego al stock minimo
-      $sql2 = "select round(i.it_stock_min) as minimo from items i where i.it_codigo={$_POST['it_codigo']} and i.tipit_codigo=2;";
+      $sql2 = "select coalesce(round(i.it_stock_min),0) as minimo 
+         from items i 
+         where i.it_codigo={$_POST['it_codigo']} 
+           and i.tipit_codigo=2;";
 
-      $sql3 = "select s.st_cantidad as cantidad_item from stock s where s.it_codigo={$_POST['it_codigo']} and s.tipit_codigo={$_POST['tipit_codigo']} and s.dep_codigo={$_POST['dep_codigo']} and s.suc_codigo={$_POST['suc_codigo']} and s.emp_codigo={$_POST['emp_codigo']};";
+      $sql3 = "select coalesce(s.st_cantidad,0) as cantidad_item 
+         from stock s 
+         where s.it_codigo={$_POST['it_codigo']} 
+           and s.tipit_codigo={$_POST['tipit_codigo']} 
+           and s.dep_codigo={$_POST['dep_codigo']} 
+           and s.suc_codigo={$_POST['suc_codigo']} 
+           and s.emp_codigo={$_POST['emp_codigo']};";
 
       $resultado2 = pg_query($conexion, $sql2);
-
       $resultado3 = pg_query($conexion, $sql3);
 
       $minimo = pg_fetch_assoc($resultado2);
-
       $cantidad_stock = pg_fetch_assoc($resultado3);
 
-      if ((int) $cantidad_stock['cantidad_item'] <= (int) $minimo['minimo']) {
-         // Si es asi enviams un mensaje de alerta
+      // Evitamos el warning si alguna consulta no devolvió filas
+      $valor_minimo = $minimo ? (int) $minimo['minimo'] : 0;
+      $valor_stock = $cantidad_stock ? (int) $cantidad_stock['cantidad_item'] : 0;
+
+      if ($valor_stock <= $valor_minimo) {
+         // Si es así enviamos un mensaje de alerta
          $response = array(
-            "mensaje" => pg_last_notice($conexion) . ", EL ITEM: $it_descripcion TALLE $tall_descripcion ALCANZÓ SU STOCK MÍNIMO EN EL DEPOSITO.",
+            "mensaje" => "EL ITEM: $it_descripcion TALLE $tall_descripcion ALCANZÓ SU STOCK MÍNIMO EN EL DEPÓSITO.",
             "tipo" => "info"
          );
-
       } else {
          // Sino enviamos un mensaje normal
          $response = array(

@@ -170,8 +170,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line tp">
-                                    <input type="text" class="form-control no-disabled solo-letras" id="ven_tipofactura"
-                                       disabled onclick="getTipoFactura()">
+                                    <input type="text" class="form-control no-disabled" id="ven_tipofactura" disabled
+                                       onclick="getTipoFactura()">
                                     <label class="form-label">Tipo Factura</label>
                                     <div id="listaTipoFactura" style="display: none;">
                                        <ul class="list-group" id="ulTipoFactura" style="height: 100px; overflow: auto">
