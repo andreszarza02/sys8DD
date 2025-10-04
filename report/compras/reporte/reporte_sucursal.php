@@ -1,147 +1,268 @@
 <?php
+
 //Iniciamos sesion
 session_start();
-$usuario = $_SESSION['usuario']['usu_login'];
-$perfil = $_SESSION['usuario']['perf_descripcion'];
-$modulo = $_SESSION['usuario']['modu_descripcion'];
 
+// Definimos datos generales a utilizar en el encabezado
+$usuario = $_SESSION['usuario']['usu_login'];
+$sucursal = $_SESSION['usuario']['suc_descripcion'];
+
+//Definimos la zona horaria
+date_default_timezone_set('America/Asuncion');
 $fechaActual = date('d-m-Y');
 
 //Requerimos conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
+
+// Creamos una instanca de la clase Conexion
 $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
-$desde = $_GET['desde'];
-$hasta = $_GET['hasta'];
+// Definimos y cargamos las variables
+$desde = $_GET['desde'] ?? null;
+$hasta = $_GET['hasta'] ?? null;
+$ciudad = $_GET['ciudad'] ?? null;
+$descripcion = $_GET['descripcion'] ?? null;
+$general = $_GET['general'] ?? null;
 
-$sql = "select s.*, e.emp_razonsocial, c.ciu_descripcion from sucursal s join empresa e on e.emp_codigo=s.emp_codigo
-join ciudad c on c.ciu_codigo=s.ciu_codigo where s.suc_codigo between $desde and $hasta order by s.suc_codigo;";
+// Definimos la consulta principal
+$sql = "SELECT
+            s.suc_codigo,
+            s.suc_descripcion,
+            s.suc_direccion,
+            s.suc_telefono,
+            s.suc_estado,
+            s.suc_email,
+            e.emp_razonsocial,
+            c.ciu_descripcion
+         FROM sucursal s
+            JOIN empresa e ON e.emp_codigo=s.emp_codigo
+            JOIN ciudad c ON c.ciu_codigo=s.ciu_codigo";
+
+// Array de condiciones
+$conditions = [];
+
+if (empty($general)) {
+   if (!empty($desde) && !empty($hasta)) {
+      $conditions[] = "s.suc_codigo BETWEEN $desde AND $hasta";
+   } elseif (empty($desde) && !empty($hasta)) {
+      $conditions[] = "s.suc_codigo BETWEEN 1 AND $hasta";
+   } elseif (!empty($desde) && empty($hasta)) {
+      $conditions[] = "s.suc_codigo BETWEEN $desde AND (SELECT MAX(suc_codigo) FROM sucursal)";
+   }
+
+   if (!empty($ciudad)) {
+      $conditions[] = "s.ciu_codigo = $ciudad";
+   }
+
+   if (!empty($descripcion)) {
+      $conditions[] = "s.suc_descripcion ILIKE '%$descripcion%'";
+   }
+}
+
+// Unimos las condiciones con AND
+if (count($conditions) > 0) {
+   $sql .= " WHERE " . implode(" AND ", $conditions);
+}
+
+// Orden para más consistencia
+$sql .= " ORDER BY s.suc_codigo";
+
 $resultado = pg_query($conexion, $sql);
+
 $datos = pg_fetch_all($resultado);
+
+// Datos extra sucursal.
+$sql2 = "select 
+            s.suc_direccion, s.suc_telefono 
+         from sucursal s 
+         where s.suc_descripcion ilike '%$sucursal%';";
+
+$resultado2 = pg_query($conexion, $sql2);
+
+$datosSucursal = pg_fetch_assoc($resultado2);
+
+// Datos extra ciudad.
+if (!empty($ciudad)) {
+
+   $sql3 = "select 
+               ciu_descripcion 
+            from ciudad  
+            where ciu_codigo = $ciudad;";
+
+   $resultado3 = pg_query($conexion, $sql3);
+
+   $datosCiudad = pg_fetch_assoc($resultado3);
+}
+
 
 ?>
 
 <?php ob_start(); ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
    <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Reporte Sucursal</title>
+   <title>Sucursal</title>
    <style>
-      .tabla {
-         border-collapse: collapse;
-         width: 100%;
-         font-size: 10px;
+      body {
+         font-family: Arial, Helvetica, sans-serif;
+         font-size: 8px;
+         margin: 10px;
+         color: #000;
       }
 
-      th,
-      .celda {
-         border: 1px solid black;
-         padding: 5px;
-      }
-
-      th {
-         background-color: #009688;
-      }
-
-      h1 {
-         color: #333;
-         font-size: 20px;
-         text-align: center;
-         text-transform: uppercase;
-         letter-spacing: -1px;
-         font-family: 'Times New Roman', Times, serif;
-      }
-
-      h4 {
-         font-weight: bold;
-         font-size: 15px;
+      h2 {
          text-align: center;
       }
 
-      .usuarioCelda {
-         width: 300px;
+      .sucursal {
+         font-size: 9px;
+      }
+
+      .cabecera {
          font-size: 12px;
       }
 
-      .usuario {
-         margin-bottom: 10px;
+      .espacio1 {
+         width: 55px;
+      }
+
+      .descripcion {
+         margin-bottom: 13px;
+      }
+
+      .sucursal {
+         border-collapse: collapse;
+         width: 100%;
+         margin-top: 20px;
+      }
+
+      .sucursal th,
+      .sucursal td {
+         border: 1px solid #000;
+         padding: 2px;
+         font-size: 8px;
+      }
+
+      .sucursal th {
+         background-color: #f0f0f0;
+         text-align: center;
       }
    </style>
 </head>
 
 <body>
-   <h1>8 DE DICIEMBRE CONFECCIONES</h1>
+   <p><strong>8 DE DICIEMBRE - <?php echo $sucursal ?></strong></p>
+   <p class="sucursal"><strong>Direccion:</strong> <?php echo $datosSucursal['suc_direccion']; ?> </p>
+   <p class="sucursal"><strong>Contacto:</strong>
+      <?php echo $datosSucursal['suc_telefono']; ?></p>
 
-   <h4>LISTA DE SUCURSALES</h4>
+   <h2>SUCURSAL</h2>
 
-   <table class="usuario">
-      <tbody>
-         <tr class="usuarioFila">
-            <td class="usuarioCelda">
-               <b>USUARIO:</b>
-               <?php echo $usuario; ?>
+   <hr>
+
+   <table class="cabecera1">
+      <tr class=cabecera">
+         <td>
+            <p><b>USUARIO: </b></p>
+         </td>
+         <td>
+            <p class="descripcion"><?php echo $usuario ?>
+            </p>
+         </td>
+         <td class="espacio1"></td>
+         <td>
+            <p><b>FECHA:</b></p>
+         </td>
+         <td>
+            <p class="descripcion"><?php echo $fechaActual ?>
+            </p>
+         </td>
+         <td class="espacio1"></td>
+         <?php if (!empty($desde)) { ?>
+            <td>
+               <p><b>DESDE:</b></p>
             </td>
-            <td class="usuarioCelda">
-               <b>PERFIL:</b>
-               <?php echo $perfil; ?>
+            <td>
+               <p class="descripcion"><?php echo $desde ?>
+               </p>
             </td>
-            <td class="usuarioCelda">
-               <b>MÓDULO:</b>
-               <?php echo $modulo ?>
+         <?php } ?>
+         <td class="espacio1"></td>
+         <?php if (!empty($hasta)) { ?>
+            <td>
+               <p><b>HASTA:</b></p>
             </td>
-            <td class="usuarioCelda">
-               <b>FECHA:</b>
-               <?php echo $fechaActual; ?>
+            <td>
+               <p class="descripcion"><?php echo $hasta ?>
+               </p>
             </td>
-         </tr>
-      </tbody>
+         <?php } ?>
+         <td class="espacio1"></td>
+         <?php if (!empty($ciudad)) { ?>
+            <td>
+               <p><b>CIUDAD:</b></p>
+            </td>
+            <td>
+               <p class="descripcion"><?php echo $datosCiudad['ciu_descripcion'] ?>
+               </p>
+            </td>
+         <?php } ?>
+         <td class="espacio1"></td>
+         <?php if (!empty($descripcion)) { ?>
+            <td>
+               <p><b>DESCRIPCION:</b></p>
+            </td>
+            <td>
+               <p class="descripcion"><?php echo $descripcion ?>
+               </p>
+            </td>
+         <?php } ?>
+      </tr>
    </table>
 
-   <table class="tabla">
+   <hr>
+
+   <table class="sucursal">
       <thead>
          <tr>
             <th>CODIGO</th>
             <th>EMPRESA</th>
-            <th>SUCURSAL</th>
+            <th>CIUDAD</th>
+            <th>DESCRIPCION</th>
             <th>DIRECCION</th>
             <th>TELEFONO</th>
-            <th>CIUDAD</th>
+            <th>CORREO</th>
             <th>ESTADO</th>
          </tr>
       </thead>
       <tbody>
-         <?php foreach ($datos as $fila) { ?>
-            <tr class="fila">
-               <td class="celda">
-                  <?php echo $fila['suc_codigo'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['emp_razonsocial'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['suc_descripcion'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['suc_direccion'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['suc_telefono'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['ciu_descripcion'] ?>
-               </td>
-               <td class="celda">
-                  <?php echo $fila['suc_estado'] ?>
-               </td>
+         <?php if (pg_num_rows($resultado) > 0) { ?>
+            <?php foreach ($datos as $cantidad_fila => $fila) {
+               ?>
+               <tr>
+                  <td><?php echo $fila['suc_codigo'] ?></td>
+                  <td><?php echo $fila['emp_razonsocial'] ?></td>
+                  <td><?php echo $fila['ciu_descripcion'] ?></td>
+                  <td><?php echo $fila['suc_descripcion'] ?></td>
+                  <td><?php echo $fila['suc_direccion'] ?></td>
+                  <td><?php echo $fila['suc_telefono'] ?></td>
+                  <td><?php echo $fila['suc_email'] ?></td>
+                  <td><?php echo $fila['suc_estado'] ?></td>
+               </tr>
+            <?php } ?>
+         <?php } else { ?>
+            <tr>
+               <td colspan="12" style="text-align: center; style=" background-color: #f0f0f0;">NO SE ENCONTRARON REGISTROS
+                  PARA MOSTRAR</td>
             </tr>
          <?php } ?>
       </tbody>
    </table>
+
 </body>
 
 </html>
@@ -158,7 +279,7 @@ $dompdf = new Dompdf();
 
 $dompdf->loadHtml($html);
 
-$dompdf->setPaper('A4', 'landscape'); //portrait -> vertical landscape -> horizontal
+$dompdf->setPaper('A4', 'portrait'); //portrait -> vertical landscape -> horizontal
 
 $dompdf->render();
 
