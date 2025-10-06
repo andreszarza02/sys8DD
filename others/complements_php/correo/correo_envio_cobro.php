@@ -19,7 +19,15 @@ $sql = "select
             c.ciu_descripcion,
             u.usu_login,
             p.per_nombre||' '||p.per_apellido persona,
-            e.emp_ruc 
+            e.emp_ruc,
+            p2.per_nombre||' '||p2.per_apellido cliente,
+            'DE LA CUOTA '||cc.cob_numerocuota||'/'||vc.ven_cuota||' POR LA COMPRA N° '||vc.ven_numfactura concepto,
+            (select 
+               p.per_email
+            from cliente c 
+               join personas p on p.per_codigo=c.per_codigo 
+	            where p.per_numerodocumento=p2.per_numerodocumento) correo,
+               cc.cob_num_recibo
          from cobro_cab cc
             join usuario u on u.usu_codigo=cc.usu_codigo 
             join funcionario f on f.func_codigo=u.func_codigo 
@@ -27,7 +35,10 @@ $sql = "select
             join sucursal s on s.suc_codigo=cc.suc_codigo 
             and s.emp_codigo=cc.emp_codigo 
             join empresa e on e.emp_codigo=s.emp_codigo 
-            join ciudad c on c.ciu_codigo=s.ciu_codigo 
+            join ciudad c on c.ciu_codigo=s.ciu_codigo
+            join venta_cab vc on vc.ven_codigo=cc.ven_codigo 
+            join cliente c2 on c2.cli_codigo=vc.cli_codigo 
+            join personas p2 on p2.per_codigo=c2.per_codigo 
          where cc.cob_codigo=$cobro;";
 
 $resultado = pg_query($conexion, $sql);
@@ -37,17 +48,10 @@ $logo = pg_fetch_assoc($resultado);
 $sql2 = "select 
             vcd.cob_codigo codigo,
             sum(vcd.cobdet_monto) monto,
-            (select to_char(max(cc.cob_fecha), 'dd-mm-yyyy') from cobro_cab cc where cc.cob_codigo=$cobro) fecha,
-            vcd.cliente,
-            'DE LA CUOTA '||vcd.cobdet_numerocuota||'/'||vcd.cuota||' POR LA COMPRA N° '||vcd.factura concepto,
-            (select 
-               p.per_email
-            from cliente c 
-               join personas p on p.per_codigo=c.per_codigo 
-	            where p.per_numerodocumento=vcd.ci) correo
+            (select to_char(max(cc.cob_fecha), 'dd-mm-yyyy') from cobro_cab cc where cc.cob_codigo=$cobro) fecha
          from v_cobro_det vcd 
          where vcd.cob_codigo=$cobro
-            group by 1,3,4,5,6;";
+            group by 1,3;";
 
 $resultado2 = pg_query($conexion, $sql2);
 $detalle = pg_fetch_assoc($resultado2);
@@ -250,7 +254,7 @@ $montoSuma = floatval($detalle['monto']);
       <span class="titulo">RECIBO</span>
 
       <div class="datosCobro1">
-         <span class="presentacion nroCobro">N.° <?php echo $detalle['codigo'] ?></span>
+         <span class="presentacion nroCobro">N.° <?php echo $logo['cob_num_recibo'] ?></span>
          <span class="presentacion montoCobro">Gs. <?php echo number_format($detalle['monto'], 0, ',', '.'); ?></span>
       </div>
 
@@ -263,7 +267,7 @@ $montoSuma = floatval($detalle['monto']);
          <tr>
             <td width="120px" style="vertical-align: bottom; padding-right: 10px;">Recibí (mos) de:</td>
             <td width="100%" style="vertical-align: bottom;">
-               <span><?php echo $detalle['cliente']; ?></span>
+               <span><?php echo $logo['cliente']; ?></span>
                <div style="border-bottom: 1px solid black; margin-top: 2px;"></div>
             </td>
          </tr>
@@ -285,7 +289,7 @@ $montoSuma = floatval($detalle['monto']);
          <tr>
             <td width="160px" style="vertical-align: bottom; padding-right: 5px;">En concepto de pago:</td>
             <td width="100%" style="vertical-align: bottom;">
-               <span><?php echo $detalle['concepto']; ?></span>
+               <span><?php echo $logo['concepto']; ?></span>
                <div style="border-bottom: 1px solid black; margin-top: 2px;"></div>
             </td>
          </tr>
@@ -353,17 +357,17 @@ try {
    // Remitente y destinatario
    $mail->setFrom('adm.8DD@gmail.com', '
    Admnistracion 8 de Diciembre');
-   $mail->addAddress("{$detalle['correo']}", "{$detalle['cliente']}");
+   $mail->addAddress("{$logo['correo']}", "{$logo['cliente']}");
 
    //Guaradamos el pdf generado y le ponemos un nombre y extension
    $mail->addStringAttachment(
       $output,
-      "8_DE_DICIEMBRE_RECIBO_Nro_$cobro.pdf"
+      "8_DE_DICIEMBRE_RECIBO_Nro_{$logo['cob_num_recibo']}.pdf"
    );
 
    // Contenido del correo
    $mail->isHTML(true);
-   $mail->Subject = "CONFIRMACION DE RECIBO DE COBRO - Nro{$cobro}";
+   $mail->Subject = "CONFIRMACION DE RECIBO DE COBRO - Nro {$logo['cob_num_recibo']}";
    $mail->Body = '
    <!DOCTYPE html>
    <html lang="es">
@@ -416,8 +420,8 @@ try {
                <h1>Recibo de Cobro</h1>
          </div>
          <div class="content">
-               <p>Estimado/a <strong>' . $detalle['cliente'] . '</strong>,</p>
-               <p>Le confirmamos la recepción del pago correspondiente al recibo de cobro Nro. <strong>' . $cobro . '</strong>.</p>
+               <p>Estimado/a <strong>' . $logo['cliente'] . '</strong>,</p>
+               <p>Le confirmamos la recepción del pago correspondiente al recibo de cobro Nro. <strong>' . $logo['cob_num_recibo'] . '</strong>.</p>
                <p><strong>Detalles del Pago:</strong></p>
                <ul>
                   <li><strong>Monto:</strong> Gs.' . number_format($detalle['monto'], 0, ',', '.') . '</li>
@@ -441,7 +445,7 @@ try {
    $mail->send();
 
    $response = array(
-      "mensaje" => "EL RECIBO SE ENVIO A EL CLIENTE {$detalle['cliente']}",
+      "mensaje" => "EL RECIBO SE ENVIO A EL CLIENTE {$logo['cliente']}",
       "tipo" => "info"
    );
 
@@ -450,7 +454,7 @@ try {
 } catch (Exception $e) {
 
    $response = array(
-      "mensaje" => "EL RECIBO SE ENVIO A EL CLIENTE {$detalle['cliente']}",
+      "mensaje" => "EL RECIBO SE ENVIO A EL CLIENTE {$logo['cliente']}",
       "tipo" => "error"
    );
 

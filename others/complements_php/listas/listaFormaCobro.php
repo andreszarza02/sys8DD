@@ -15,7 +15,7 @@ $sql = "select
          fc.forco_codigo,
          fc.forco_descripcion 
       from forma_cobro fc 
-      where forco_estado = 'ACTIVO'
+         where forco_estado = 'ACTIVO'
       order by forco_codigo;";
 
 $resultado = pg_query($conexion, $sql);

@@ -13,32 +13,26 @@ $conexion = $objConexion->getConexion();
 //Recibimos y definimos las variables
 $consulta = $_POST['consulta'] ?? 0;
 
-//Si la forma de cobroo es tarjeta ejecutamos el sp cobro tarjeta
-if (isset($_POST['forma']) == "TARJETA") {
+//Si la forma de cobro es tarjeta ejecutamos el sp cobro tarjeta
+if (isset($_POST['tarjeta'])) {
 
-   //Recibimos y definimos las variables
-   $cobta_numero = pg_escape_string($conexion, $_POST['cobta_numero']);
-
+   // Definimos y cargamos las variables
    $cobta_monto = str_replace(",", ".", $_POST['cobta_monto']);
 
    $cobta_tipotarjeta = pg_escape_string($conexion, $_POST['cobta_tipotarjeta']);
 
-   $cobta_transaccion = pg_escape_string($conexion, $_POST['cobta_transaccion']);
-
    //Definimos la sentencia SQL a ejecuatar
    $sql = "select sp_cobro_tarjeta(
-      0, 
-      '$cobta_numero', 
+      '{$_POST['cobta_transaccion']}',
       $cobta_monto, 
       '$cobta_tipotarjeta',
       {$_POST['entad_codigo']},
       {$_POST['ent_codigo']},
       {$_POST['marta_codigo']},
-      {$_POST['cob_codigo']},
-      {$_POST['ven_codigo']},
-      {$_POST['cobdet_codigo']},
-      '$cobta_transaccion',
       {$_POST['redpa_codigo']},
+      {$_POST['cobdet_codigo']},
+      {$_POST['cob_codigo']},
+      {$_POST['forco_codigo']},
       {$_POST['operacion_detalle']}
       )";
 
@@ -56,26 +50,24 @@ if (isset($_POST['forma']) == "TARJETA") {
 }
 
 //Si la forma de cobro es cheque ejecutamos el sp cobro cheque
-if (isset($_POST['forma']) == "CHEQUE") {
+if (isset($_POST['cheque'])) {
 
-   //Recibimos y definimos las variables
-   $coche_numero = pg_escape_string($conexion, $_POST['coche_numero']);
-
+   // Definimos y cargamos las variables
    $coche_monto = str_replace(",", ".", $_POST['coche_monto']);
 
    $coche_tipocheque = pg_escape_string($conexion, $_POST['coche_tipocheque']);
 
    //Cargamos el procedimiento almacenado
-   $sql = "select sp_cobro_cheque(
-      0, 
-      '$coche_numero', 
+   $sql = "select sp_cobro_cheque( 
+      '{$_POST['coche_numero']}', 
       $coche_monto,
       '$coche_tipocheque',
+      '{$_POST['coche_fecha_emi']}',
       '{$_POST['coche_fechavencimiento']}',
       {$_POST['ent_codigo2']},
-      {$_POST['cob_codigo']},
-      {$_POST['ven_codigo']},
       {$_POST['cobdet_codigo']},
+      {$_POST['cob_codigo']},
+      {$_POST['forco_codigo']},
       {$_POST['operacion_detalle']}
       )";
 
@@ -112,7 +104,7 @@ if ($consulta == '2') {
    $sql = "select distinct 
             fc.forco_descripcion 
          from cobro_det cd 
-         join forma_cobro fc on fc.forco_codigo=cd.forco_codigo 
+            join forma_cobro fc on fc.forco_codigo=cd.forco_codigo 
          where cd.cob_codigo={$_POST['cob_codigo']} 
          and fc.forco_descripcion='EFECTIVO';";
 

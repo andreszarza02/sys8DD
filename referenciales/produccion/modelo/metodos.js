@@ -1,3 +1,4 @@
+//Permite aplicar un formato de tabla a la lista de la referencial
 function formatoTabla() {
   //Exportable table
   $(".js-exportable").DataTable({
@@ -13,6 +14,7 @@ function formatoTabla() {
   });
 }
 
+//Consulta  y establece el codigo de la referencial
 const getCodigo = () => {
   $.ajax({
     method: "POST",
@@ -25,6 +27,7 @@ const getCodigo = () => {
   });
 };
 
+//Consulta y lista los datos en la grilla de la referencial
 const listar = () => {
   $.ajax({
     //solicitamos los datos al controlador

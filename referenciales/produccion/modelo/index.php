@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -74,7 +75,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="mod_codigomodelo" disabled>
+                                 <input type="text" class="form-control no-disabled letras-numeros"
+                                    id="mod_codigomodelo" disabled>
                                  <label class="form-label">Modelo Codigo</label>
                               </div>
                            </div>
@@ -83,8 +85,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line col">
                                  <input type="hidden" id="col_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="col_descripcion" disabled
-                                    onkeyup="getColor()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="col_descripcion"
+                                    disabled onkeyup="getColor()">
                                  <label class="form-label">Color</label>
                                  <div id="listaColor" style="display: none;">
                                     <ul class="list-group" id="ulColor" Style="height: 100px; overflow: auto"></ul>
@@ -107,8 +109,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line obs">
-                                 <input type="text" class="form-control no-disabled" id="mod_observacion" disabled
-                                    onclick="limpiarObservacion()">
+                                 <input type="text" class="form-control no-disabled letras-numeros" id="mod_observacion"
+                                    disabled onclick="limpiarObservacion()">
                                  <label class="form-label">Observacion</label>
                               </div>
                            </div>
@@ -116,7 +118,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="mod_estado" disabled>
+                                 <input type="text" class="form-control" id="mod_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -146,7 +148,7 @@ $permisos = pg_fetch_all($resultado);
                                  </button>
                               <?php } ?>
                            <?php } ?>
-                           <button type="button" class="btn btn-primary waves-effect" onclick="salir  ()">
+                           <button type="button" class="btn btn-primary waves-effect" onclick="salir()">
                               <i class="material-icons">exit_to_app</i>
                               <span>SALIR</span>
                            </button>
@@ -156,7 +158,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>GRABAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>

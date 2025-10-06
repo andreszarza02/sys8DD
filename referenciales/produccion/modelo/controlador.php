@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,23 +13,18 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   $codigoModelo = $_POST['mod_codigomodelo'];
-   $mod_codigomodelo = str_replace("'", "''", $codigoModelo);
+   // Definimos y cargamos las variables
+   $mod_codigomodelo = pg_escape_string($conexion, $_POST['mod_codigomodelo']);
 
-   $observacion = $_POST['mod_observacion'];
-   $mod_observacion = str_replace("'", "''", $observacion);
+   $mod_observacion = pg_escape_string($conexion, $_POST['mod_observacion']);
 
-   $estado = $_POST['mod_estado'];
-   $mod_estado = str_replace("'", "''", $estado);
+   $mod_estado = pg_escape_string($conexion, $_POST['mod_estado']);
 
-   $usuLogin = $_POST['usu_login'];
-   $usu_login = str_replace("'", "''", $usuLogin);
+   $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
 
-   $procedimiento1 = $_POST['procedimiento'];
-   $procedimiento2 = str_replace("'", "''", $procedimiento1);
+   $procedimiento = pg_escape_string($conexion, $_POST['procedimiento']);
 
-   $colDescripcion = $_POST['col_descripcion'];
-   $col_descripcion = str_replace("'", "''", $colDescripcion);
+   $col_descripcion = pg_escape_string($conexion, $_POST['col_descripcion']);
 
    $sql = "select sp_modelo(
    {$_POST['mod_codigo']},
@@ -39,7 +36,7 @@ if (isset($_POST['operacion'])) {
    {$_POST['operacion']},
    {$_POST['usu_codigo']},
    '$usu_login',
-   '$procedimiento2',
+   '$procedimiento',
    '$col_descripcion'
    )";
 

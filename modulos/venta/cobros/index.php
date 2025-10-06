@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -96,12 +97,13 @@ foreach ($permisos as $permiso) {
                      <div class="body">
                         <input type="hidden" id="operacion_cabecera" value="0">
                         <input type="hidden" id="tipco_codigo" value="5">
+                        <input type="hidden" id="cob_codigo" value="0">
                         <div class="row clearfix">
                            <div class="col-sm-1">
                               <div class="form-group form-float">
-                                 <div class="form-line activar">
-                                    <input type="text" class="form-control" id="cob_codigo" disabled>
-                                    <label class="form-label">N° Cobro</label>
+                                 <div class="form-line foco2">
+                                    <input type="text" class="form-control" id="cob_num_recibo" disabled>
+                                    <label class="form-label">N° Recibo</label>
                                  </div>
                               </div>
                            </div>
@@ -183,6 +185,77 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
+                           <div class="col-sm-6">
+                              <div class="form-group form-float">
+                                 <div class="form-line vent">
+                                    <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                       id="per_numerodocumento" disabled onkeyup="getVenta()">
+                                    <label class="form-label">Documento Cliente</label>
+                                    <div id="listaVenta" style="display: none;">
+                                       <ul class="list-group" id="ulVenta" Style="height: 100px; overflow: auto">
+                                       </ul>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-2">
+                              <div class="form-group form-float">
+                                 <div class="form-line vent">
+                                    <input type="hidden" id="ven_codigo" value="0">
+                                    <input type="text" class="form-control" id="ven_numfactura" disabled>
+                                    <label class="form-label">N° Factura</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-2">
+                              <div class="form-group form-float">
+                                 <div class="form-line vent">
+                                    <input type="text" class="form-control" id="cuenco_nrocuota" disabled>
+                                    <label class="form-label">Cantidad Coutas</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-2">
+                              <div class="form-group form-float">
+                                 <div class="form-line vent">
+                                    <input type="hidden" id="cuenco_monto" value="0">
+                                    <input type="text" class="form-control" id="cuenco_saldo" disabled>
+                                    <label class="form-label">Monto Saldo</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-3">
+                              <div class="form-group form-float">
+                                 <div class="form-line vent">
+                                    <input type="text" class="form-control" id="cliente" disabled>
+                                    <label class="form-label">Cliente</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-3">
+                              <div class="form-group form-float">
+                                 <div class="form-line cob">
+                                    <input type="text" class="form-control" id="cob_numerocuota" disabled>
+                                    <label class="form-label">Cuota</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-3">
+                              <div class="form-group form-float">
+                                 <div class="form-line vent">
+                                    <input type="text" class="form-control" id="ven_montocuota" disabled>
+                                    <label class="form-label">Monto Cuota</label>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-3">
+                              <div class="form-group form-float">
+                                 <div class="form-line vent">
+                                    <input type="text" class="form-control" id="ven_interfecha" disabled>
+                                    <label class="form-label">Intervalo</label>
+                                 </div>
+                              </div>
+                           </div>
                         </div>
 
                         <!-- Botones Cabecera -->
@@ -210,7 +283,7 @@ foreach ($permisos as $permiso) {
                                  <i class="material-icons">save</i>
                                  <span>CONFIRMAR</span>
                               </button>
-                              <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                              <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                                  <i class="material-icons">lock</i>
                                  <span>CANCELAR</span>
                               </button>
@@ -221,7 +294,7 @@ foreach ($permisos as $permiso) {
                </div>
 
                <!-- Formulario Cobro Detalle -->
-               <div id="detalle" style="display: block;">
+               <div id="detalle" style="display: none;">
                   <div id="tamañoDetalle" class="col-lg-12 col-md-12 col-sm-12">
                      <div class="card">
                         <div class="header" style="background: #4DC18B;">
@@ -229,121 +302,38 @@ foreach ($permisos as $permiso) {
                               DETALLE COBRO
                            </h2>
                         </div>
-                        <div class="header">
-                           <div class="row clearfix">
-                              <div class="col-sm-6">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="text" class="form-control no-disabled2" id="ci" disabled
-                                          onkeyup="getVenta()">
-                                       <label class="form-label">Documento Cliente</label>
-                                       <div id="listaVenta" style="display: none;">
-                                          <ul class="list-group" id="ulVenta" Style="height: 100px; overflow: auto"></ul>
-                                       </div>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="hidden" id="ven_codigo" value="0">
-                                       <input type="text" class="form-control" id="factura" disabled>
-                                       <label class="form-label">N° Factura</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="number" class="form-control" id="cuota" disabled>
-                                       <label class="form-label">Cantidad Coutas</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="hidden" id="cuenco_monto" value="0">
-                                       <input type="number" class="form-control" id="saldo" disabled>
-                                       <label class="form-label">Monto Saldo</label>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
                         <div class="body detalleCobro">
                            <input type="hidden" id="operacion_detalle" value="0">
                            <input type="hidden" id="cobdet_codigo" value="0">
                            <div class="row clearfix">
-                              <!-- La clase cliente nos permite definir el tamaño del input -->
-                              <div class="col-sm-4 cliente">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="text" class="form-control" id="cliente" disabled>
-                                       <label class="form-label">Cliente</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-1 cuota">
-                                 <div class="form-group form-float">
-                                    <div class="form-line cob">
-                                       <input type="number" class="form-control" id="cobdet_numerocuota" disabled>
-                                       <label class="form-label">Cuota</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2 montoCuota">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="number" class="form-control" id="ven_montocuota" disabled>
-                                       <label class="form-label">Monto Cuota</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-2 intervalo">
-                                 <div class="form-group form-float">
-                                    <div class="form-line vent">
-                                       <input type="text" class="form-control" id="ven_interfecha" disabled>
-                                       <label class="form-label">Intervalo</label>
-                                    </div>
-                                 </div>
-                              </div>
                               <!-- La clase montoEfectivo nos permite definir el tamaño del input -->
-                              <div class="col-sm-3 montoEfectivo" style="display: block;">
+                              <div class="col-sm-3" id="efectivo" style="display: none;">
                                  <div class="form-group form-float">
-                                    <div class="form-line cob2">
-                                       <input type="number" class="form-control no-disabled2" id="cobdet_monto" disabled>
+                                    <div class="form-line efec">
+                                       <input type="text" class="form-control no-disabled2" id="cobdet_monto" disabled>
                                        <label class="form-label">Monto Efectivo</label>
                                     </div>
                                  </div>
                               </div>
-                              <!-- Botones que determinan el tipo de cobro -->
-                              <div class="col-sm-2" style="display: none;" id="forco_simbolo">
-                                 <input type="hidden" id="forco_codigo" value="0">
-                                 <input type="hidden" id="forco_descripcion" value="0">
-                                 <div class="icon-button-demo">
-                                    <div class="col-sm-4 contenedorEfectivo">
-                                       <button type="button"
-                                          class="btn bg-teal btn-circle waves-effect  waves-circle waves-float"
-                                          id="forco_efectivo">
-                                          <i class="material-icons">attach_money</i>
-                                       </button>
-                                    </div>
-                                    <div class="col-sm-4">
-                                       <button type="button"
-                                          class="btn bg-teal btn-circle waves-effect  waves-circle waves-float"
-                                          id="forco_tarjeta">
-                                          <i class="material-icons">credit_card</i>
-                                       </button>
-                                    </div>
-                                    <div class="col-sm-4">
-                                       <button type="button"
-                                          class="btn bg-teal btn-circle waves-effect  waves-circle waves-float"
-                                          id="forco_cheque">
-                                          <i class="material-icons">local_atm</i>
-                                       </button>
-                                    </div>
-                                 </div>
+                           </div>
+                           <!-- Botones que determinan el tipo de cobro -->
+                           <div style="display: none;" id="forco_forma">
+                              <input type="hidden" id="forco_codigo" value="0">
+                              <input type="hidden" id="forco_descripcion" value="0">
+                              <div class="icon-and-text-button-demo">
+                                 <button type="button" class="btn bg-teal waves-effect" id="forco_efectivo">
+                                    <i class="material-icons">attach_money</i>
+                                    <span>EFECTIVO</span>
+                                 </button>
+                                 <button type="button" class="btn bg-teal waves-effect" id="forco_tarjeta"
+                                    style="display: inline;">
+                                    <i class="material-icons">credit_card</i>
+                                    <span>TARJETA</span>
+                                 </button>
+                                 <button type="button" class="btn bg-teal waves-effect" id="forco_cheque"
+                                    style="display: inline;">
+                                    <i class="material-icons">local_atm</i><span>CHEQUE</span>
+                                 </button>
                               </div>
                            </div>
 
@@ -379,7 +369,7 @@ foreach ($permisos as $permiso) {
                                     <i class="material-icons">save</i>
                                     <span>CONFIRMAR</span>
                                  </button>
-                                 <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                                 <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                                     <i class="material-icons">lock</i>
                                     <span>CANCELAR</span>
                                  </button>
@@ -391,10 +381,7 @@ foreach ($permisos as $permiso) {
                               <table class="table table-bordered table-striped table-hover">
                                  <thead>
                                     <tr>
-                                       <th>FACTURA</th>
-                                       <th>CLIENTE</th>
                                        <th>FORMA COBRO</th>
-                                       <th>N° CUOTA</th>
                                        <th>MONTO</th>
                                     </tr>
                                  </thead>
@@ -421,15 +408,17 @@ foreach ($permisos as $permiso) {
                               <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line cobta">
-                                       <input type="text" class="form-control no-disabled2" id="cobta_numero" disabled>
-                                       <label class="form-label">N° Tarjeta</label>
+                                       <input type="text" class="form-control no-disabled2 solo-numeros"
+                                          id="cobta_transaccion" disabled>
+                                       <label class="form-label">N° Transaccion</label>
                                     </div>
                                  </div>
                               </div>
                               <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line cobta2">
-                                       <input type="number" class="form-control no-disabled2" id="cobta_monto" disabled>
+                                       <input type="text" class="form-control no-disabled2 solo-numeros" id="cobta_monto"
+                                          disabled>
                                        <label class="form-label">Monto Tajeta</label>
                                     </div>
                                  </div>
@@ -453,8 +442,8 @@ foreach ($permisos as $permiso) {
                                        <input type="hidden" id="entad_codigo" value="0">
                                        <!--Se usa para ambas entidades-->
                                        <input type="hidden" id="ent_codigo" value="0">
-                                       <input type="text" class="form-control no-disabled2" id="ent_razonsocial"
-                                          onkeyup="getEntidadAdherida()" disabled>
+                                       <input type="text" class="form-control no-disabled2 letras-numeros-algunos-simbolos"
+                                          id="ent_razonsocial" onkeyup="getEntidadAdherida()" disabled>
                                        <label class="form-label">Entidad</label>
                                        <div id="listaEntidadTarjeta" style="display: none;">
                                           <ul class="list-group" id="ulEntidadTarjeta"
@@ -475,19 +464,10 @@ foreach ($permisos as $permiso) {
                               </div>
                               <div class="col-sm-3">
                                  <div class="form-group form-float">
-                                    <div class="form-line cobta">
-                                       <input type="text" class="form-control no-disabled2" id="cobta_transaccion"
-                                          disabled>
-                                       <label class="form-label">N° Transaccion</label>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-sm-3">
-                                 <div class="form-group form-float">
                                     <div class="form-line redpa">
                                        <input type="hidden" id="redpa_codigo" value="0">
-                                       <input type="text" class="form-control no-disabled2" id="redpa_descripcion"
-                                          onkeyup="getRedPago()" disabled>
+                                       <input type="text" class="form-control no-disabled2 solo-letras"
+                                          id="redpa_descripcion" onkeyup="getRedPago()" disabled>
                                        <label class="form-label">Red Pago</label>
                                        <div id="listaRedPago" style="display: none;">
                                           <ul class="list-group" id="ulRedPago" Style="height: 100px; overflow: auto">
@@ -516,7 +496,8 @@ foreach ($permisos as $permiso) {
                               <div class="col-sm-3">
                                  <div class="form-group form-float">
                                     <div class="form-line coche">
-                                       <input type="text" class="form-control no-disabled2" id="coche_numero" disabled>
+                                       <input type="text" class="form-control no-disabled2 solo-numeros" id="coche_numero"
+                                          disabled>
                                        <label class="form-label">N° Cheque</label>
                                     </div>
                                  </div>
@@ -524,7 +505,8 @@ foreach ($permisos as $permiso) {
                               <div class="col-sm-2">
                                  <div class="form-group form-float">
                                     <div class="form-line coche2">
-                                       <input type="number" class="form-control no-disabled2" id="coche_monto" disabled>
+                                       <input type="text" class="form-control no-disabled2 solo-numeros" id="coche_monto"
+                                          disabled>
                                        <label class="form-label">Monto Cheque</label>
                                     </div>
                                  </div>
@@ -545,8 +527,15 @@ foreach ($permisos as $permiso) {
                               <div class="col-sm-2">
                                  <div class="form-group form-float">
                                     <div class="form-line focused">
-                                       <input type="date" class="form-control no-disabled2" id="coche_fechavencimiento"
-                                          disabled>
+                                       <input type="date" class="form-control no-disabled2" id="coche_fecha_emi" disabled>
+                                       <label class="form-label">Fecha Emision</label>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="col-sm-2">
+                                 <div class="form-group form-float">
+                                    <div class="form-line focused">
+                                       <input type="date" class="form-control" id="coche_fechavencimiento" disabled>
                                        <label class="form-label">Fecha Vencimiento</label>
                                     </div>
                                  </div>
@@ -555,8 +544,8 @@ foreach ($permisos as $permiso) {
                                  <div class="form-group form-float">
                                     <div class="form-line ent">
                                        <input type="hidden" id="ent_codigo2" value="0">
-                                       <input type="text" class="form-control no-disabled2" id="ent_razonsocial2"
-                                          onkeyup="getEntidad()" disabled>
+                                       <input type="text" class="form-control no-disabled2 letras-numeros-algunos-simbolos"
+                                          id="ent_razonsocial2" onkeyup="getEntidad()" disabled>
                                        <label class="form-label">Entidad</label>
                                        <div id="listaEntidadCheque" style="display: none;">
                                           <ul class="list-group" id="ulEntidadCheque"
@@ -586,8 +575,11 @@ foreach ($permisos as $permiso) {
                            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
                               <thead>
                                  <tr>
-                                    <th>N° COBRO</th>
+                                    <th>N° RECIBO</th>
                                     <th>FECHA</th>
+                                    <th>N° FACTURA</th>
+                                    <th>CLIENTE</th>
+                                    <th>N° CUOTA</th>
                                     <th>CAJA</th>
                                     <th>USUARIO</th>
                                     <th>SUCURSAL</th>
