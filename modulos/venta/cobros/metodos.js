@@ -1,3 +1,259 @@
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan letras o simbolos excepto el guion -
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o simbolo distinto a -
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene letras o simbolo distinto a -
+          if (
+            tieneSimbolo.test(input.value) &&
+            (tieneMayuscula.test(input.value) ||
+              tieneMinuscula.test(input.value))
+          ) {
+            mensaje = `El campo ${labelText} contiene letras y símbolos distintos a guion(-)`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos distintos a guion(-)`;
+          } else if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} contiene letras`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value) ||
+            tieneSimbolo.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras, numeros y el simbolo .
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si tiene simbolos distintos a .
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene simbolos distintos a .
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} solo acepta letras, números y el simbolo punto(.)`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan numeros o simbolos
+const validacionInputsVacios4 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-letras realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-letras")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneNumero = /[0-9]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene números o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneNumero.test(input.value) && tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números y símbolos`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          } else if (tieneNumero.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene números`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -171,7 +427,7 @@ const validarTipoEfectivo = () => {
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
       if (lista.forco_descripcion == "EFECTIVO") {
-        $("#efectivo").attr("style", "display: none;");
+        $("#forco_efectivo").attr("style", "display: none;");
       }
     });
 };
@@ -311,6 +567,52 @@ const getNumeroCuota = () => {
     $("#cob_numerocuota").val(respuesta.cob_numerocuota);
     $(".cob").attr("class", "form-line cob focused");
   });
+};
+
+// Establece la fecha de vencimiento de forma automatica en cheque
+const establecerFechaVencimiento = () => {
+  const fechaEmi = this.value; // valor en formato YYYY-MM-DD
+  if (fechaEmi) {
+    const fecha = new Date(fechaEmi);
+    fecha.setDate(fecha.getDate() + 30); // sumar 30 días
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dd = String(fecha.getDate()).padStart(2, "0");
+    const fechaVenc = `${yyyy}-${mm}-${dd}`;
+    document.getElementById("coche_fechavencimiento").value = fechaVenc;
+  } else {
+    document.getElementById("coche_fechavencimiento").value = "";
+  }
+};
+
+// Valida si hay un cobro con el numero de cuota mayor con el estado activo
+const consultaAsociacion = (escenario, mensaje) => {
+  $.ajax({
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      ven_codigo: $("#ven_codigo").val(),
+      cob_numerocuota: $("#cob_numerocuota").val(),
+      consulta1: 1,
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (respuesta) {
+      if (respuesta.validacion == "asociado") {
+        swal(
+          {
+            title: "VALIDACION " + escenario.toUpperCase(),
+            text: mensaje.toUpperCase(),
+            type: "error",
+            confirmButtonText: "OK",
+          },
+          function (isConfirm) {
+            if (isConfirm) {
+              window.location.reload(true);
+            }
+          }
+        );
+      }
+    });
 };
 
 //Actualiza el estado de cuenta a cobrar, una vez se termina de pagar en su totalidad la venta
@@ -533,6 +835,7 @@ const nuevo = () => {
   $(".foco").attr("class", "form-line foco focused");
   $(".foco2").attr("class", "form-line foco2 focused");
   $(".est").attr("class", "form-line est focused");
+  validacionInputsVacios1();
 };
 
 //Metodo que establece el alta en detalle
@@ -542,13 +845,17 @@ const nuevoDetalle = () => {
   habilitarBotones2(false);
   limpiarDetalle();
   $("#operacion_detalle").val(1);
-  $("#tablaDet").attr("style", "display: none");
+  //$("#tablaDet").attr("style", "display: none");
   //Establece el formato de interfaz
   $("#forco_codigo").val(0);
   $("#efectivo").attr("style", "display: none;");
   $("#cobroTarjeta").attr("style", "display: none;");
   $("#cobroCheque").attr("style", "display: none;");
   $("#forco_forma").attr("style", "display: block;");
+  validacionInputsVacios2();
+  validacionInputsVacios3();
+  validacionInputsVacios4();
+  validarTipoEfectivo();
 };
 
 //Metodo que establece la baja en cabecera
@@ -561,58 +868,62 @@ const anular = () => {
 
 //Metodo que establece la baja en detalle
 const eliminar = () => {
-  $("#tablaDet").attr("style", "display: none");
+  //$("#tablaDet").attr("style", "display: none");
+  consultaAsociacion(
+    "Eliminar",
+    "No es posible eliminar este detalle de cobro, ya que existe un cobro posterior con un número mayor registrado."
+  );
   if ($("#forco_descripcion").val() == "EFECTIVO") {
     $(".efectivo").attr("style", "display: block;");
     $("#cobroTarjeta").attr("style", "display: none;");
     $("#cobroCheque").attr("style", "display: none;");
     $("#forco_forma").attr("style", "display: none;");
-    $("#cobta_transaccion").val("sin_definir");
-    $("#redpa_codigo").val("0");
-    $("#cobta_monto").val("0");
-    $("#coche_numero").val("sin_definir");
-    $("#ent_codigo2").val("0");
-    $("#coche_monto").val("0");
-    $(".cliente").attr("class", "col-sm-4 cliente");
-    $(".cuota").attr("class", "col-sm-1 cuota");
-    $(".montoCuota").attr("class", "col-sm-2 montoCuota");
-    $(".intervalo").attr("class", "col-sm-2 intervalo");
-    $(".efectivo").attr("class", "col-sm-3 efectivo");
+    //  $("#cobta_transaccion").val("sin_definir");
+    //  $("#redpa_codigo").val("0");
+    //  $("#cobta_monto").val("0");
+    //  $("#coche_numero").val("sin_definir");
+    //  $("#ent_codigo2").val("0");
+    //  $("#coche_monto").val("0");
+    //  $(".cliente").attr("class", "col-sm-4 cliente");
+    //  $(".cuota").attr("class", "col-sm-1 cuota");
+    //  $(".montoCuota").attr("class", "col-sm-2 montoCuota");
+    //  $(".intervalo").attr("class", "col-sm-2 intervalo");
+    //  $(".efectivo").attr("class", "col-sm-3 efectivo");
   }
   if ($("#forco_descripcion").val() == "TARJETA") {
+    $("#cobroTarjeta").attr("style", "display: block;");
     $(".efectivo").attr("style", "display: none;");
     $("#cobroCheque").attr("style", "display: none;");
     $("#forco_forma").attr("style", "display: none;");
-    $(".cliente").attr("class", "col-sm-3 cliente");
-    $(".cuota").attr("class", "col-sm-3 cuota");
-    $(".montoCuota").attr("class", "col-sm-3 montoCuota");
-    $(".intervalo").attr("class", "col-sm-3 intervalo");
-    $("#cobroTarjeta").attr("style", "display: block;");
-    $("#coche_numero").val("sin_definir");
-    $("#ent_codigo2").val("0");
-    $("#coche_monto").val("0");
-    $(".cobta").attr("class", "form-line cobta focused");
-    $(".cobta2").attr("class", "form-line cobta2 focused");
-    $(".tipTar").attr("class", "form-line tipTar focused");
-    $(".ent").attr("class", "form-line ent focused");
-    $(".redpa").attr("class", "form-line redpa focused");
+    //  $(".cliente").attr("class", "col-sm-3 cliente");
+    //  $(".cuota").attr("class", "col-sm-3 cuota");
+    //  $(".montoCuota").attr("class", "col-sm-3 montoCuota");
+    //  $(".intervalo").attr("class", "col-sm-3 intervalo");
+    //  $("#coche_numero").val("sin_definir");
+    //  $("#ent_codigo2").val("0");
+    //  $("#coche_monto").val("0");
+    //  $(".cobta").attr("class", "form-line cobta focused");
+    //  $(".cobta2").attr("class", "form-line cobta2 focused");
+    //  $(".tipTar").attr("class", "form-line tipTar focused");
+    //  $(".ent").attr("class", "form-line ent focused");
+    //  $(".redpa").attr("class", "form-line redpa focused");
   }
   if ($("#forco_descripcion").val() == "CHEQUE") {
+    $("#cobroCheque").attr("style", "display: block;");
     $(".efectivo").attr("style", "display: none;");
     $("#cobroTarjeta").attr("style", "display: none;");
     $("#forco_forma").attr("style", "display: none;");
-    $(".cliente").attr("class", "col-sm-3 cliente");
-    $(".cuota").attr("class", "col-sm-3 cuota");
-    $(".montoCuota").attr("class", "col-sm-3 montoCuota");
-    $(".intervalo").attr("class", "col-sm-3 intervalo");
-    $("#cobroCheque").attr("style", "display: block;");
-    $("#cobta_transaccion").val("sin_definir");
-    $("#redpa_codigo").val("0");
-    $("#cobta_monto").val("0");
-    $(".coche").attr("class", "form-line coche focused");
-    $(".coche2").attr("class", "form-line coche2 focused");
-    $(".tipChe").attr("class", "form-line tipChe focused");
-    $(".ent").attr("class", "form-line ent focused");
+    //  $(".cliente").attr("class", "col-sm-3 cliente");
+    //  $(".cuota").attr("class", "col-sm-3 cuota");
+    //  $(".montoCuota").attr("class", "col-sm-3 montoCuota");
+    //  $(".intervalo").attr("class", "col-sm-3 intervalo");
+    //  $("#cobta_transaccion").val("sin_definir");
+    //  $("#redpa_codigo").val("0");
+    //  $("#cobta_monto").val("0");
+    //  $(".coche").attr("class", "form-line coche focused");
+    //  $(".coche2").attr("class", "form-line coche2 focused");
+    //  $(".tipChe").attr("class", "form-line tipChe focused");
+    //  $(".ent").attr("class", "form-line ent focused");
   }
   habilitarBotones2(false);
   $("#operacion_detalle").val(2);
@@ -657,19 +968,18 @@ const grabarCobroTarjeta = () => {
     method: "POST",
     url: "controladorDetalle2.php",
     data: {
-      cobta_numero: $("#cobta_numero").val(),
+      cobta_transaccion: $("#cobta_transaccion").val(),
       cobta_monto: $("#cobta_monto").val(),
       cobta_tipotarjeta: $("#cobta_tipotarjeta").val(),
       entad_codigo: $("#entad_codigo").val(),
       ent_codigo: $("#ent_codigo").val(),
       marta_codigo: $("#marta_codigo").val(),
-      cob_codigo: $("#cob_codigo").val(),
-      ven_codigo: $("#ven_codigo").val(),
-      cobdet_codigo: $("#cobdet_codigo").val(),
-      cobta_transaccion: $("#cobta_transaccion").val(),
       redpa_codigo: $("#redpa_codigo").val(),
+      cobdet_codigo: $("#cobdet_codigo").val(),
+      cob_codigo: $("#cob_codigo").val(),
+      forco_codigo: $("#forco_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
-      forma: $("#forco_descripcion").val(),
+      tarjeta: 1,
     },
   });
 };
@@ -684,13 +994,14 @@ const grabarCobroCheque = () => {
       coche_numero: $("#coche_numero").val(),
       coche_monto: $("#coche_monto").val(),
       coche_tipocheque: $("#coche_tipocheque").val(),
+      coche_fecha_emi: $("#coche_fecha_emi").val(),
       coche_fechavencimiento: $("#coche_fechavencimiento").val(),
       ent_codigo2: $("#ent_codigo2").val(),
-      cob_codigo: $("#cob_codigo").val(),
-      ven_codigo: $("#ven_codigo").val(),
       cobdet_codigo: $("#cobdet_codigo").val(),
+      cob_codigo: $("#cob_codigo").val(),
+      forco_codigo: $("#forco_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
-      forma: $("#forco_descripcion").val(),
+      cheque: 1,
     },
   });
 };
@@ -764,12 +1075,12 @@ const grabarDetalle = () => {
       cob_codigo: $("#cob_codigo").val(),
       forco_codigo: $("#forco_codigo").val(),
       cobdet_monto: $("#cobdet_monto").val(),
-      cobta_monto: $("#cobta_monto").val(),
-      coche_monto: $("#coche_monto").val(),
-      coche_numero: $("#coche_numero").val(),
-      ent_codigo2: $("#ent_codigo2").val(),
-      cobta_transaccion: $("#cobta_transaccion").val(),
-      redpa_codigo: $("#redpa_codigo").val(),
+      cobta_monto: $("#cobta_monto").val() || 0,
+      coche_monto: $("#coche_monto").val() || 0,
+      coche_numero: $("#coche_numero").val() || 0,
+      ent_codigo2: $("#ent_codigo2").val() || 0,
+      cobta_transaccion: $("#cobta_transaccion").val() || 0,
+      redpa_codigo: $("#redpa_codigo").val() || 0,
       forco_descripcion: $("#forco_descripcion").val(),
       usu_codigo: $("#usu_codigo").val(),
       ven_codigo: $("#ven_codigo").val(),
@@ -804,6 +1115,7 @@ const grabarDetalle = () => {
             $("#cobroCheque").attr("style", "display: none;");
             habilitarBotones2(true);
             listarDetalle();
+            $("#tablaDet").attr("style", "display: block");
             //Al terminar ambos la insercion, limpiamos los inputs de detalle
             //limpiarCampos();
           }
@@ -977,7 +1289,6 @@ const seleccionarFila = (objetoJSON) => {
   limpiarDetalle();
   listarDetalle();
   getFormaCobro();
-  validarTipoEfectivo();
 };
 
 const seleccionarFila2 = (objetoJSON) => {
@@ -1324,5 +1635,24 @@ const salir = () => {
 
 //Siempre que se cargue la pagina se ejecutaran estas funciones
 listar();
+
+// Agrega un evento de tipo change al input de fecha de emisión de cheque
+document
+  .getElementById("coche_fecha_emi")
+  .addEventListener("change", function () {
+    const fechaEmi = this.value; // valor en formato YYYY-MM-DD
+    if (fechaEmi) {
+      const fecha = new Date(fechaEmi);
+      fecha.setDate(fecha.getDate() + 30); // sumar 30 días
+      const yyyy = fecha.getFullYear();
+      const mm = String(fecha.getMonth() + 1).padStart(2, "0");
+      const dd = String(fecha.getDate()).padStart(2, "0");
+      const fechaVenc = `${yyyy}-${mm}-${dd}`;
+      document.getElementById("coche_fechavencimiento").value = fechaVenc;
+    } else {
+      document.getElementById("coche_fechavencimiento").value = "";
+    }
+  });
+
 //Ejecutamos la validaacion de los inputs, cada 10 milisegundos
-setInterval(setInputsDetalle, 10);
+// setInterval(setInputsDetalle, 10);

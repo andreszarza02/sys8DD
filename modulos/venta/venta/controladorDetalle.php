@@ -109,6 +109,30 @@ if (isset($_POST['operacion_detalle'])) {
 
    echo json_encode($response);
 
+} else if (isset($_POST['consulta2'])) {
+
+   //Consultamos si el numero de venta ya se encuentra asociado a un cobro
+   $sql = "SELECT 1 FROM cobro_cab
+            WHERE ven_codigo = {$_POST['ven_codigo']}
+              AND cob_estado <> 'ANULADO'";
+
+   $resultado = pg_query($conexion, $sql);
+
+   // Si devuelve alguna fila generamos una respuesta con "asociado"
+   if (pg_num_rows($resultado) > 0) {
+      // Al menos un registro encontrado
+      $response = array(
+         "validacion" => "asociado",
+      );
+   } else {
+      // Si no, generamos una respuesta con "no_asociado"
+      $response = array(
+         "validacion" => "no_asociado",
+      );
+   }
+
+   echo json_encode($response);
+
 } else if (isset($_POST['venta'])) {
 
    $venta = $_POST['venta'];

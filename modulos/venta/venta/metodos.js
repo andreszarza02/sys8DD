@@ -241,14 +241,114 @@ const validacionInputsVacios4 = () => {
   ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
 };
 
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan letras o simbolos excepto el guion -
+const validacionInputsVacios5 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o simbolo distinto a -
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene letras o simbolo distinto a -
+          if (
+            tieneSimbolo.test(input.value) &&
+            (tieneMayuscula.test(input.value) ||
+              tieneMinuscula.test(input.value))
+          ) {
+            mensaje = `El campo ${labelText} contiene letras y símbolos distintos a guion(-)`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos distintos a guion(-)`;
+          } else if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} contiene letras`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 // Valida si la venta esta asociado a una nota de venta
-const consultaAsociacion = (escenario, mensaje) => {
+const consultaAsociacion1 = (escenario, mensaje) => {
   $.ajax({
     method: "POST",
     url: "controladorDetalle.php",
     data: {
       ven_codigo: $("#ven_codigo").val(),
       consulta1: 1,
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (respuesta) {
+      if (respuesta.validacion == "asociado") {
+        swal(
+          {
+            title: "VALIDACION " + escenario.toUpperCase(),
+            text: mensaje.toUpperCase(),
+            type: "error",
+            confirmButtonText: "OK",
+          },
+          function (isConfirm) {
+            if (isConfirm) {
+              window.location.reload(true);
+            }
+          }
+        );
+      }
+    });
+};
+
+// Valida si la venta esta asociado a un cobro
+const consultaAsociacion2 = (escenario, mensaje) => {
+  $.ajax({
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      ven_codigo: $("#ven_codigo").val(),
+      consulta2: 1,
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (respuesta) {
@@ -711,6 +811,7 @@ const nuevo = () => {
     validacionInputsVacios1();
     validacionInputsVacios2();
     validacionInputsVacios3();
+    validacionInputsVacios5();
   }
 };
 
@@ -720,9 +821,13 @@ const nuevoDetalle = () => {
   limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
-  consultaAsociacion(
+  consultaAsociacion1(
     "Nuevo",
     "Esta venta ya está asociada a una nota de venta; no se pueden añadir más ítems."
+  );
+  consultaAsociacion2(
+    "Nuevo",
+    "Esta venta ya está asociada a un cobro; no se pueden añadir más ítems."
   );
   validacionInputsVacios4();
 };
@@ -733,9 +838,13 @@ const anular = () => {
   $("#ven_estado").val("ANULADO");
   $(".est").attr("class", "form-line est focused");
   habilitarBotones(false);
-  consultaAsociacion(
+  consultaAsociacion1(
     "Eliminar",
     "Esta venta ya está asociada a una nota de venta; no se pueden eliminar más ítems."
+  );
+  consultaAsociacion2(
+    "Eliminar",
+    "Esta venta ya está asociada a un cobro; no se pueden eliminar más ítems."
   );
 };
 

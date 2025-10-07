@@ -41,6 +41,11 @@ if (isset($_POST['operacion_cabecera'])) {
          "mensaje" => "EL NUMERO DE RECIBO YA SE ENCUENTRA REGISTRADO, POR FAVOR VERIFIQUE E INTENTE NUEVAMENTE",
          "tipo" => "error"
       );
+   } else if (strpos($error, "cuota") !== false) {
+      $response = array(
+         "mensaje" => "PARA ANULAR EL COBRO SE DEBE DE ANULAR EL O LOS COBROS SUPERIORES",
+         "tipo" => "error"
+      );
    } else {
       $response = array(
          "mensaje" => pg_last_notice($conexion),

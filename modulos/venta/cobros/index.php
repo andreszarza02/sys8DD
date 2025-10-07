@@ -310,7 +310,8 @@ foreach ($permisos as $permiso) {
                               <div class="col-sm-3" id="efectivo" style="display: none;">
                                  <div class="form-group form-float">
                                     <div class="form-line efec">
-                                       <input type="text" class="form-control no-disabled2" id="cobdet_monto" disabled>
+                                       <input type="text" class="form-control no-disabled2 solo-numeros" id="cobdet_monto"
+                                          disabled>
                                        <label class="form-label">Monto Efectivo</label>
                                     </div>
                                  </div>
@@ -436,7 +437,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-3">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line ent">
                                        <input type="hidden" id="entad_codigo" value="0">
@@ -453,7 +454,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-3">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line ent">
                                        <input type="hidden" id="marta_codigo" value="0">
@@ -462,7 +463,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-3">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line redpa">
                                        <input type="hidden" id="redpa_codigo" value="0">
@@ -493,7 +494,7 @@ foreach ($permisos as $permiso) {
                         </div>
                         <div class="body">
                            <div class="row clearfix">
-                              <div class="col-sm-3">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line coche">
                                        <input type="text" class="form-control no-disabled2 solo-numeros" id="coche_numero"
@@ -502,7 +503,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-2">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line coche2">
                                        <input type="text" class="form-control no-disabled2 solo-numeros" id="coche_monto"
@@ -511,7 +512,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-2">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line tipChe">
                                        <input type="text" class="form-control no-disabled2" id="coche_tipocheque"
@@ -524,7 +525,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-2">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line focused">
                                        <input type="date" class="form-control no-disabled2" id="coche_fecha_emi" disabled>
@@ -532,7 +533,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-2">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line focused">
                                        <input type="date" class="form-control" id="coche_fechavencimiento" disabled>
@@ -540,7 +541,7 @@ foreach ($permisos as $permiso) {
                                     </div>
                                  </div>
                               </div>
-                              <div class="col-sm-3">
+                              <div class="col-sm-4">
                                  <div class="form-group form-float">
                                     <div class="form-line ent">
                                        <input type="hidden" id="ent_codigo2" value="0">

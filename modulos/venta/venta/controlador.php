@@ -55,9 +55,14 @@ if (isset($_POST['operacion_cabecera'])) {
          "mensaje" => "EL NUMERO DE FACTURA CON EL TIMBRADO $ven_timbrado YA SE ENCUENTRA REGISTRADO",
          "tipo" => "error"
       );
-   } else if (strpos($error, "asociado") !== false) {
+   } else if (strpos($error, "asociado_nota") !== false) {
       $response = array(
-         "mensaje" => "YA SE ENCUENTRA ASOCIADO LA VENTA A UNA NOTA DE VENTA",
+         "mensaje" => "YA SE ENCUENTRA ASOCIADO LA VENTA A UNA NOTA DE VENTA, LA MISMA NO SE PUEDE ANULAR",
+         "tipo" => "error"
+      );
+   } else if (strpos($error, "asociado_cobro") !== false) {
+      $response = array(
+         "mensaje" => "YA SE ENCUENTRA ASOCIADO LA VENTA A UN COBRO, LA MISMA NO SE PUEDE ANULAR",
          "tipo" => "error"
       );
    } else {

@@ -14,13 +14,13 @@ $conexion = $objConexion->getConexion();
 if (isset($_POST['operacion_detalle'])) {
 
    // Definimos y cargamos las variables
-   $coche_numero = isset($_POST['coche_numero']) ?? 0;
+   $coche_numero = $_POST['coche_numero'];
 
-   $ent_codigo2 = isset($_POST['ent_codigo2']) ?? 0;
+   $ent_codigo2 = $_POST['ent_codigo2'];
 
-   $cobta_transaccion = isset($_POST['cobta_transaccion']) ?? 0;
+   $cobta_transaccion = $_POST['cobta_transaccion'];
 
-   $redpa_codigo = isset($_POST['redpa_codigo']) ?? 0;
+   $redpa_codigo = $_POST['redpa_codigo'];
 
    $forco_descripcion = pg_escape_string($conexion, $_POST['forco_descripcion']);
 
@@ -119,6 +119,31 @@ if (isset($_POST['operacion_detalle'])) {
       $response = array(
          "mensaje" => pg_last_notice($conexion),
          "tipo" => "info"
+      );
+   }
+
+   echo json_encode($response);
+
+} else if (isset($_POST['consulta1'])) {
+
+   //Consultamos si el numero de venta ya se encuentra asociado a una nota de venta 
+   $sql = "select 1 from cobro_cab cc 
+            where cc.ven_codigo={$_POST['ven_codigo']} 
+            and cc.cob_numerocuota > {$_POST['cob_numerocuota']} 
+            and cc.cob_estado='ACTIVO'";
+
+   $resultado = pg_query($conexion, $sql);
+
+   // Si devuelve alguna fila generamos una respuesta con "asociado"
+   if (pg_num_rows($resultado) > 0) {
+      // Al menos un registro encontrado
+      $response = array(
+         "validacion" => "asociado",
+      );
+   } else {
+      // Si no, generamos una respuesta con "no_asociado"
+      $response = array(
+         "validacion" => "no_asociado",
       );
    }
 

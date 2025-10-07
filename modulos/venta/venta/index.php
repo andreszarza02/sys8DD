@@ -111,7 +111,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-3">
                               <div class="form-group form-float">
                                  <div class="form-line ped">
-                                    <input type="text" class="form-control no-disabled letras-numeros-algunos-simbolos"
+                                    <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
                                        id="per_numerodocumento" disabled onkeyup="getPedidoVenta()">
                                     <label class="form-label">Documento Cliente</label>
                                     <div id="listaPedido" style="display: none;">
