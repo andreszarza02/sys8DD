@@ -52,9 +52,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Asignación Permiso Ususario-->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE ASIGNACION PERMISO USUARIO<small>Mantener referencial asignacion permiso
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE ASIGNACION PERMISO USUARIO<small style="color: white; font-weight: bold;">Mantener
+                           referencial asignacion permiso
                            usuario</small>
                      </h2>
                   </div>
@@ -161,9 +162,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="asignaciones" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           ASIGNACIONES DE PERMSISOS REGISTRADOS <small>Lista de asignacion permiso usuario
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           ASIGNACIONES DE PERMSISOS REGISTRADOS <small style="color: white; font-weight: bold;">Lista
+                              de asignacion permiso usuario
                               registrados</small>
                         </h2>
                      </div>

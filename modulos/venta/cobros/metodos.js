@@ -569,6 +569,23 @@ const getNumeroCuota = () => {
   });
 };
 
+//Valida si el detalle llego al monto del Monto Cuota
+const validaMontoCobroDetalle = () => {
+  $.ajax({
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      cob_codigo: $("#cob_codigo").val(),
+      ven_montocuota: $("#ven_montocuota").val(),
+      consulta2: 1,
+    },
+  }).done(function (respuesta) {
+    if (respuesta.validacion == "recargar") {
+      window.location.reload(true);
+    }
+  });
+};
+
 // Establece la fecha de vencimiento de forma automatica en cheque
 const establecerFechaVencimiento = () => {
   const fechaEmi = this.value; // valor en formato YYYY-MM-DD
@@ -1108,6 +1125,8 @@ const grabarDetalle = () => {
               if ($("#forco_descripcion").val() == "CHEQUE") {
                 grabarCobroCheque();
               }
+              // Validamos que monto del cobro sea igual al de cuota para rtecargar pagina
+              validaMontoCobroDetalle();
             }
             limpiarDetalle();
             $("#efectivo").attr("style", "display: none;");

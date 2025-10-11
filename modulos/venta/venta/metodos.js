@@ -455,6 +455,14 @@ const getNumeroFactura = () => {
   });
 };
 
+//Se encarga de generar la factura
+const imprimir = () => {
+  let ven_codigo = $("#ven_codigo").val();
+  window.location =
+    "/sys8DD/report/ventas/reporte/reporte_factura.php?ven_codigo=" +
+    ven_codigo;
+};
+
 //Permite aplicar un formato de tabla a la lista de venta cabecera
 function formatoTabla() {
   //Exportable table

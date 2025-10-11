@@ -46,7 +46,7 @@ if (isset($_POST['operacion_detalle'])) {
    echo json_encode($response);
 
    // Consultamos si existe la variable consulta y si es igual a 2
-} else if (isset($_POST['consulta']) == 2) {
+} else if (isset($_POST['consulta2'])) {
 
    //Consultamos si el numero de pedido ya se ecnuentra asociado a un prespuesto
    $sql = "select

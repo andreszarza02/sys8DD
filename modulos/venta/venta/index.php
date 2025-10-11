@@ -376,12 +376,10 @@ foreach ($permisos as $permiso) {
                                        <span>ELIMINAR</span>
                                     </button>
                                  <?php } ?>
-                                 <?php if ($btnEliminar === true) { ?>
-                                    <button type="button" class="btn btn-primary waves-effect" onclick="eliminar()">
-                                       <i class="material-icons">insert_drive_file</i>
-                                       <span>IMPRIMIR</span>
-                                    </button>
-                                 <?php } ?>
+                                 <button type="button" class="btn btn-primary waves-effect" onclick="imprimir()">
+                                    <i class="material-icons">insert_drive_file</i>
+                                    <span>IMPRIMIR</span>
+                                 </button>
                               </div>
                               <div class="botonesExtra4" style="display: none;">
                                  <button type="button" class="btn bg-red waves-effect" onclick="controlVacio2()">

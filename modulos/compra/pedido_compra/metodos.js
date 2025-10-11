@@ -906,7 +906,7 @@ const consultaAsociacion = (escenario, mensaje) => {
     url: "controladorDetalle.php",
     data: {
       pedco_codigo: $("#pedco_codigo").val(),
-      consulta: 2,
+      consulta2: 1,
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (respuesta) {

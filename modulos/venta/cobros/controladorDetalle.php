@@ -149,6 +149,28 @@ if (isset($_POST['operacion_detalle'])) {
 
    echo json_encode($response);
 
+} else if (isset($_POST['consulta2'])) {
+
+   //Consultamos la sumatoria de detalle de cobro es igual a monto de venta
+   $sql = "select 
+            sum(cd.cobdet_monto) as sumatoria 
+         from cobro_det cd where cd.cob_codigo={$_POST['cob_codigo']} ;";
+
+   $resultado = pg_query($conexion, $sql);
+   $dato = pg_fetch_assoc($resultado);
+
+   if ((int) $dato['sumatoria'] == (int) $_POST['ven_montocuota']) {
+      $response = array(
+         "validacion" => "recargar",
+      );
+   } else {
+      $response = array(
+         "validacion" => "no_recargar",
+      );
+   }
+
+   echo json_encode($response);
+
 } else if (isset($_POST['cobro'])) {
 
    //Recibimos y definimos el codigo de cobro
