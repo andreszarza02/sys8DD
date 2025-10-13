@@ -84,7 +84,7 @@ $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
 <head>
    <meta charset="utf-8" />
    <meta name="viewport" content="width=device-width,initial-scale=1" />
-   <title>Factura - Formato</title>
+   <title>Factura</title>
    <style>
       * {
          box-sizing: border-box;
@@ -395,6 +395,6 @@ $dompdf->setPaper('A4', 'portrait'); //portrait -> vertical landscape -> horizon
 
 $dompdf->render();
 
-$dompdf->stream("8_DE_DICIEMBRE_OC_Nro_.pdf", array('Attachment' => false));
+$dompdf->stream("8_DE_DICIEMBRE_FACTURA_Nro_{$cabecera['ven_numfactura']}.pdf", array('Attachment' => false));
 
 ?>

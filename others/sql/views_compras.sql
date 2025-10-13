@@ -271,7 +271,13 @@ select
 	p.pro_razonsocial,
 	tp.tipro_descripcion,
 	cc2.comp_tipofactura,
-	cc.comp_cuota
+	cc.comp_cuota,
+	fp.funpro_documento,
+	fp.funpro_nombre,
+	fp.funpro_apellido,
+	cv.chave_chapa,
+	mv.modve_descripcion,
+	mv2.marve_descripcion 
 from nota_compra_cab ncc
 	join compra_cab cc2 on cc2.comp_codigo=ncc.comp_codigo 
 	join tipo_comprobante tc on tc.tipco_codigo=ncc.tipco_codigo
@@ -283,6 +289,10 @@ from nota_compra_cab ncc
 	join proveedor p on p.pro_codigo=ncc.pro_codigo
 	and p.tipro_codigo=ncc.tipro_codigo
 	join tipo_proveedor tp on tp.tipro_codigo=p.tipro_codigo
+	left join chapa_vehiculo cv on cv.chave_codigo=ncc.nocom_chapa 
+	left join modelo_vehiculo mv on mv.modve_codigo=cv.modve_codigo 
+	left join marca_vehiculo mv2 on mv2.marve_codigo=mv.marve_codigo 
+	left join funcionario_proveedor fp on fp.funpro_codigo=ncc.nocom_funcionario 
 order by ncc.nocom_codigo;
 
 create or replace view v_nota_compra_det as

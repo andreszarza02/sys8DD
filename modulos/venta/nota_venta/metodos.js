@@ -16,10 +16,29 @@ const getCodigo = () => {
     method: "POST",
     url: "controlador.php",
     data: {
-      consulta: 1,
+      consulta1: 1,
     },
   }).done(function (respuesta) {
     $("#notven_codigo").val(respuesta.notven_codigo);
+  });
+};
+
+//Consulta y establece los timbrados
+const getTimbrados = () => {
+  $.ajax({
+    method: "POST",
+    url: "controlador.php",
+    data: {
+      suc_codigo: $("#suc_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
+      tipco_codigo: $("#tipco_codigo").val(),
+      consulta3: 1,
+    },
+  }).done(function (respuesta) {
+    $("#notven_numeronota").val(respuesta.notven_numeronota);
+    $("#notven_timbrado").val(respuesta.notven_timbrado);
+    $("#notven_timbrado_venc").val(respuesta.notven_timbrado_venc);
+    $(".foco").attr("class", "form-line foco focused");
   });
 };
 
@@ -74,6 +93,12 @@ const listar = () => {
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.ven_numfactura;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.notven_timbrado;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.notven_timbrado_venc;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.usu_login;
@@ -135,6 +160,9 @@ const listarDetalle = () => {
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.tall_descripcion;
+        tabla += "</td>";
+        tabla += "<td>";
+        tabla += objeto.tipit_descripcion;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.notvendet_cantidad;
@@ -352,20 +380,37 @@ const nuevo = () => {
   $("#operacion_cabecera").val(1);
   habilitarCampos(true);
   getCodigo();
+  // Inputs cabecera
   $("#notven_numeronota").val("");
   $("#notven_fecha").val(getTimestamp());
   $("#tipco_descripcion").val("");
   $("#notven_concepto").val("");
   $("#per_numerodocumento").val("");
+  $("#cli_codigo").val(0);
   $("#cliente").val("");
   $("#ven_codigo").val("");
   $("#ven_numfactura").val("");
+  $("#notven_timbrado").val("");
+  $("#notven_timbrado_venc").val("");
   $("#notven_estado").val("ACTIVO");
   $(".foco").attr("class", "form-line foco");
   $(".foco2").attr("class", "form-line foco2 focused");
   $(".tip").attr("class", "form-line tip");
+  $(".foco4").attr("class", "form-line foco4");
   $(".vent").attr("class", "form-line vent");
   $(".est").attr("class", "form-line est focused");
+  // Inputs remision
+  $("#notven_funcionario").val(0);
+  $("#per_numerodocumento2").val("");
+  $("#funcionario").val("");
+  $("#chave_codigo").val(0);
+  $("#chave_chapa").val("");
+  $("#marve_codigo").val(0);
+  $("#marve_descripcion").val("");
+  $("#modve_codigo").val(0);
+  $("#modve_descripcion").val("");
+  $(".func").attr("class", "form-line func focused");
+  $(".ch").attr("class", "form-line ch focused");
   actualizacionCabecera();
   habilitarBotones(false);
   $("#cabecera").attr("style", "display: none");
@@ -734,7 +779,8 @@ const seleccionTipoComprobante = (datos) => {
   $("#ulTC").html();
   $("#listaTC").attr("style", "display: none;");
   $(".tip").attr("class", "form-line tip focused");
-
+  // Establecemos los datos de numero nota, timbrado y vencimiento timbrado
+  getTimbrados();
   //   if ($("#tipco_codigo").val() == "1") {
   //     getConcepto();
   //   }

@@ -148,7 +148,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line foco2">
-                                 <input type="text" class="form-control no-disabled solo-numeros" id="timb_numero_comp">
+                                 <input type="text" class="form-control solo-numeros" id="timb_numero_comp" disabled>
                                  <label class="form-label">Numero Comprobante</label>
                               </div>
                            </div>

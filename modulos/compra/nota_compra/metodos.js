@@ -1128,6 +1128,16 @@ const seleccionarFila = (objetoJSON) => {
   mostrarInputDeposito();
   listarDetalle();
   limpiarCamposDetalle();
+  //Si es una nota de remision mostramos los cards
+  if ($("#tipco_codigo").val() == "3") {
+    $("#nota_remision").attr("style", "display: block;");
+    $(".funex").attr("class", "form-line funex focused");
+    $(".ch").attr("class", "form-line ch focused");
+    $(".mod").attr("class", "form-line mod focused");
+    $(".mar").attr("class", "form-line mar focused");
+  } else {
+    $("#nota_remision").attr("style", "display: none;");
+  }
 };
 
 //Envia a los inputs de detalle lo seleccionado en la tabla de detalle

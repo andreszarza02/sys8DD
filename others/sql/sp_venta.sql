@@ -983,11 +983,12 @@ $function$
 language plpgsql;
 
 --Venta cabecera
-create or replace function sp_venta_cab(
+CREATE OR REPLACE FUNCTION sp_venta_cab(
     vencodigo integer,
     venfecha date,
     vennumfactura varchar,
     ventimbrado varchar,
+    ventimbradovenc date,
     ventipofactura tipo_factura,
     vencuota integer,
     venmontocuota numeric,
@@ -1001,496 +1002,581 @@ create or replace function sp_venta_cab(
     pevencodigo integer,
     cajcodigo integer,
     operacion integer 
-) returns void as
+) RETURNS void AS
 $function$
-declare ventaDet record;
-		usuario varchar;
-		sucursal varchar;
-		empresa varchar;
-		c_pedido cursor is
-		select 
-	 	pvc.peven_fecha,
-	 	pvc.cli_codigo,
-	 	p.per_nombre||' '||p.per_apellido as cliente,
-	 	p.per_numerodocumento,
-	 	pvc.peven_estado,
-		pvc.peven_audit 
-		from pedido_venta_cab pvc
-		join cliente c on c.cli_codigo=pvc.cli_codigo 
-		join personas p on p.per_codigo=c.per_codigo 
-		where pvc.peven_codigo=pevencodigo;
-begin 
-	 --Validamos si la operacion es de insercion
-     if operacion = 1 then
-		--Validamos si se repite el numero de factura
-     	perform * from venta_cab
-     	where ven_numfactura=vennumfactura and ven_estado='ACTIVO';
-     	if found then
-			 --En caso de ser asi generamos una excepcion
-     		 raise exception 'factura';
-     	elseif operacion = 1 then
-			 --Procedemos a insertar el nuevo registro en venta cabecera
-		     insert into venta_cab(
-			 ven_codigo, 
-			 ven_fecha, 
-			 ven_numfactura, 
-			 ven_tipofactura, 
-			 ven_cuota, 
-			 ven_montocuota,
-		     ven_interfecha, 
-			 ven_estado, 
-			 usu_codigo, 
-			 cli_codigo, 
-			 suc_codigo, 
-			 emp_codigo,
-			 tipco_codigo,
-			 ven_timbrado
-			 )
-			 values(
-			 vencodigo, 
-			 venfecha, 
-			 vennumfactura, 
-			 ventipofactura, 	
-			 vencuota, 
-			 venmontocuota, 
-			 upper(veninterfecha), 
-			 'ACTIVO',
-			 usucodigo, 
-			 clicodigo, 
-			 succodigo, 	
-			 empcodigo,
-			 tipcocodigo,
-			 ventimbrado
-			 );
-			 --Cargamos pedido venta
-			 insert into pedido_venta(ven_codigo, peven_codigo, pedven_codigo)
-		 	 values(vencodigo, pevencodigo, (select coalesce(max(pedven_codigo),0)+1 from pedido_venta));
-		 	 --Cargamos libro venta
-		 	 insert into libro_venta(
-			 libven_codigo, 
-			 ven_codigo, 
-			 libven_exenta, 
-			 libven_iva5, 
-			 libven_iva10, 
-			 libven_fecha,
-		 	 libven_numcomprobante, 	
-			 libven_estado,
-			 tipco_codigo)
-		 	 values(
-			 (select coalesce(max(libven_codigo),0)+1 from libro_venta), 
-			 vencodigo, 
-			 0, 
-			 0, 
-			 0, 
-			 venfecha,
-		 	 vennumfactura, 
-			 'ACTIVO',
-			 tipcocodigo
-			 );
-		 	 --Cargamos cuenta cobrar
-		 	 insert into cuenta_cobrar(
-			 ven_codigo, 
-			 cuenco_nrocuota, 
-			 cuenco_monto, 
-			 cuenco_saldo, 
-			 cuenco_estado,
-			 tipco_codigo
-			 )
-		 	 values(
-			 vencodigo, 
-			 vencuota, 
-			 0, 
-			 0, 
-			 'ACTIVO',
-			 tipcocodigo
-			 );
-		 	 --Actualizamos estado del pedido de venta
-		 	 update pedido_venta_cab set peven_estado='VENDIDO', usu_codigo=usucodigo where peven_codigo=pevencodigo;
-			 --Una vez insertado el nuevo registro, actualizamos el numero de factura en la tabla factura venta
-			 update 
-					factura_venta 
-			 set facven_numero=split_part(vennumfactura, '-', 3)
-			 where suc_codigo=succodigo
-			 and emp_codigo=empcodigo
-			 and caj_codigo=cajcodigo;
-			 --Enviamos un mensaje de confirmacion de insercion
-			 raise notice 'LA VENTA FUE REGISTRADA CON EXITO';
-		end if;
-    end if;
-	--Validamos si la operacion es de eliminacion
-    if operacion = 2 then 
-        --En este caso realizamos un borrado logico
-    	update venta_cab 
-		set usu_codigo=usucodigo, ven_estado='ANULADO'
-		where ven_codigo=vencodigo;
-	    --Anulamos libro venta
-	    update libro_venta set libven_estado='ANULADO' where ven_codigo=vencodigo;
-	    --Anulamos cuenta cobrar
-	    update cuenta_cobrar set cuenco_estado='ANULADO' where ven_codigo=vencodigo;
-	    --Activamos el pedido de venta seleccionada
-	    update pedido_venta_cab set peven_estado='TERMINADA', usu_codigo=usucodigo where peven_codigo=pevencodigo;
-	    --Actualizamos el stock 
-	    for ventaDet in select * from venta_det where ven_codigo=vencodigo loop
-	       	update stock set st_cantidad=st_cantidad+ventaDet.vendet_cantidad 
-			where it_codigo=ventaDet.it_codigo and tipit_codigo=ventaDet.tipit_codigo and dep_codigo=ventaDet.dep_codigo
-	        and suc_codigo=ventaDet.suc_codigo and emp_codigo=ventaDet.emp_codigo;
-        end loop;
-		--Enviamos un mensaje de confirmacion de anulacion
-		raise notice 'LA VENTA FUE ANULADA CON EXITO';
-    end if;
-	--Auditamos pedido venta
-	for pedido in c_pedido loop
-		--Consultamos el usuario de venta cabecera
-		usuario := (select usu_login from usuario where usu_codigo=usucodigo);
-		--Consultamos la sucursal de venta cabecera
-		sucursal := (select suc_descripcion from sucursal where suc_codigo=succodigo);
-		--Consultamos la empresa de venta cabecera
-		empresa := (select emp_razonsocial from empresa where emp_codigo=empcodigo);
-		--Actualizamos el audit de pedido venta
-		update pedido_venta_cab 
-		set peven_audit = pedido.peven_audit||''||json_build_object(
-		'usu_codigo', usucodigo,
-		'usu_login', usuario,
-		'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
-		'procedimiento', 'MODIFICACION',
-		'peven_fecha', pedido.peven_fecha,
-		'cli_codigo', pedido.cli_codigo,
-		'cliente', pedido.cliente,
-		'per_numerodocumento', pedido.per_numerodocumento,
-		'emp_codigo', empcodigo,
-		'emp_razonsocial', empresa,
-		'suc_codigo', succodigo,
-		'suc_descripcion', sucursal,
-		'peven_estado', pedido.peven_estado
-		)||','
-		where peven_codigo = pevencodigo;
-	end loop;
-end
-$function$ 
-language plpgsql;
+DECLARE
+    ventaDet record;
+    pedido   record;
+	presupuestoDet record;
+    -- Variables para reducir llamadas repetidas
+    usuario_txt varchar;
+    sucursal_txt varchar;
+    empresa_txt  varchar;
+    -- Variables para claves autocalculadas
+    ultcod_pedven integer;
+    ultcod_libven integer;
+	-- Variables de cantidad
+	cantidadStockAuditoria numeric := 0;
+BEGIN
+    -- PRE-CARGAS: usuario, sucursal y empresa (se usan en auditoría)
+    SELECT usu_login INTO usuario_txt FROM usuario WHERE usu_codigo = usucodigo;
+    SELECT suc_descripcion INTO sucursal_txt FROM sucursal WHERE suc_codigo = succodigo;
+    SELECT emp_razonsocial INTO empresa_txt FROM empresa WHERE emp_codigo = empcodigo;
+
+    -- OPERACION = 1 -> INSERTAR NUEVA VENTA
+    IF operacion = 1 THEN
+
+        -- Verificar duplicado de factura
+        IF EXISTS (
+            SELECT 1 FROM venta_cab
+            WHERE ven_numfactura = vennumfactura
+			  AND ven_timbrado = ventimbrado
+              AND ven_estado = 'ACTIVO'
+        ) THEN
+            RAISE EXCEPTION 'factura';
+        END IF;
+
+        -- Insertar cabecera venta
+        INSERT INTO venta_cab(
+            ven_codigo, ven_fecha, ven_numfactura, ven_tipofactura,
+            ven_cuota, ven_montocuota, ven_interfecha, ven_estado,
+            usu_codigo, cli_codigo, suc_codigo, emp_codigo,
+            tipco_codigo, ven_timbrado, ven_timbrado_venc
+        ) VALUES (
+            vencodigo, venfecha, vennumfactura, ventipofactura,
+            vencuota, venmontocuota, upper(veninterfecha), 'ACTIVO',
+            usucodigo, clicodigo, succodigo, empcodigo,
+            tipcocodigo, ventimbrado, ventimbradovenc
+        );
+
+        -- Insertar relacion pedido_venta (calcular nuevo pedven_codigo una sola vez)
+        SELECT coalesce(max(pedven_codigo),0) + 1 INTO ultcod_pedven FROM pedido_venta;
+        INSERT INTO pedido_venta(ven_codigo, peven_codigo, pedven_codigo)
+        VALUES (vencodigo, pevencodigo, ultcod_pedven);
+
+        -- Insertar libro_venta (calcular nuevo libven_codigo una sola vez)
+        SELECT coalesce(max(libven_codigo),0) + 1 INTO ultcod_libven FROM libro_venta;
+        INSERT INTO libro_venta(
+            libven_codigo, ven_codigo, libven_exenta, libven_iva5,
+            libven_iva10, libven_fecha, libven_numcomprobante, libven_estado, tipco_codigo
+        ) VALUES (
+            ultcod_libven, vencodigo, 0, 0, 0, venfecha, vennumfactura, 'ACTIVO', tipcocodigo
+        );
+
+        -- Insertar cuenta cobrar (inicialmente 0s)
+        INSERT INTO cuenta_cobrar(
+            ven_codigo, cuenco_nrocuota, cuenco_monto, cuenco_saldo, cuenco_estado, tipco_codigo
+        ) VALUES (
+            vencodigo, vencuota, 0, 0, 'ACTIVO', tipcocodigo
+        );
+
+		-- Insertar detalle venta 
+		FOR presupuestoDet IN
+            SELECT pd.it_codigo, pd.tipit_codigo, pd.presdet_cantidad, pd.presdet_precio
+			FROM presupuesto_det pd 
+			 JOIN presupuesto_cab pc ON pc.pres_codigo=pd.pres_codigo 
+			WHERE pc.peven_codigo=pevencodigo
+        LOOP
+			-- Insertamos en detalle
+            INSERT INTO venta_det(
+            ven_codigo, it_codigo, tipit_codigo, dep_codigo,
+            suc_codigo, emp_codigo, vendet_cantidad, vendet_precio
+        	) VALUES (
+            vencodigo, presupuestoDet.it_codigo, presupuestoDet.tipit_codigo, 1,
+            succodigo, empcodigo, presupuestoDet.presdet_cantidad, presupuestoDet.presdet_precio
+        	);
+			-- Restamos de stock la cantidad
+			-- Actualizar stock (disminuir)
+	        UPDATE stock
+	        SET st_cantidad = st_cantidad - presupuestoDet.presdet_cantidad
+	        WHERE it_codigo   = presupuestoDet.it_codigo
+	          AND tipit_codigo= presupuestoDet.tipit_codigo
+	          AND dep_codigo  = 1
+	          AND suc_codigo  = succodigo
+	          AND emp_codigo  = empcodigo;
+			-- Actualizar auditoria stock pito
+			select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=presupuestoDet.it_codigo and s.tipit_codigo=presupuestoDet.tipit_codigo
+			and s.dep_codigo=1 and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+			perform sp_stock(presupuestoDet.it_codigo, presupuestoDet.tipit_codigo, 1, succodigo, empcodigo, cantidadStockAuditoria, 2, usucodigo, usuario_txt);
+        END LOOP;
+
+        -- Actualizar pedido_venta_cab a 'VENDIDO'
+        UPDATE pedido_venta_cab
+        SET peven_estado = 'VENDIDO', usu_codigo = usucodigo
+        WHERE peven_codigo = pevencodigo;
+
+        -- Actualizar número de factura en tabla timbrados
+        UPDATE timbrados
+        SET timb_numero_comp = split_part(vennumfactura, '-', 3)::integer, usu_codigo=usucodigo
+        WHERE suc_codigo = succodigo
+          AND emp_codigo = empcodigo
+          AND caj_codigo = cajcodigo
+		  AND tipco_codigo = tipcocodigo;
+
+		-- Enviamos un mensaje de confirmacion
+        RAISE NOTICE 'LA VENTA FUE REGISTRADA CON EXITO';
+
+    END IF; 
+
+    -- OPERACION = 2 -> ANULAR VENTA (borrado lógico y reversión stock)
+    IF operacion = 2 THEN
+
+		-- Verificamos si la venta ya se encuentra asociada a una nota
+        IF EXISTS (
+            SELECT 1 FROM nota_venta_cab
+            WHERE ven_codigo = vencodigo
+              AND notven_estado <> 'ANULADO'
+        ) THEN
+            RAISE EXCEPTION 'asociado_nota';
+        END IF;
+
+		-- Verificamos si la venta ya se encuentra asociada a un cobro
+        IF EXISTS (
+            SELECT 1 FROM cobro_cab
+            WHERE ven_codigo = vencodigo
+              AND cob_estado <> 'ANULADO'
+        ) THEN
+            RAISE EXCEPTION 'asociado_cobro';
+        END IF;
+
+        -- Marcar venta como ANULADO
+        UPDATE venta_cab
+        SET usu_codigo = usucodigo, ven_estado = 'ANULADO'
+        WHERE ven_codigo = vencodigo;
+
+        -- Anular libro de ventas y cuentas por cobrar
+        UPDATE libro_venta SET libven_estado = 'ANULADO' WHERE ven_codigo = vencodigo;
+        UPDATE cuenta_cobrar SET cuenco_estado = 'ANULADO' WHERE ven_codigo = vencodigo;
+
+        -- Activar/ajustar estado del pedido original
+        UPDATE pedido_venta_cab
+        SET peven_estado = 'TERMINADA', usu_codigo = usucodigo
+        WHERE peven_codigo = pevencodigo;
+
+        -- Revertir stock sumando las cantidades de venta_det
+        FOR ventaDet IN
+            SELECT * FROM venta_det WHERE ven_codigo = vencodigo
+        LOOP
+            UPDATE stock
+            SET st_cantidad = st_cantidad + ventaDet.vendet_cantidad
+            WHERE it_codigo = ventaDet.it_codigo
+              AND tipit_codigo = ventaDet.tipit_codigo
+              AND dep_codigo = ventaDet.dep_codigo
+              AND suc_codigo = ventaDet.suc_codigo
+              AND emp_codigo = ventaDet.emp_codigo;
+			-- Actualizar auditoria stock pito
+			select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=ventaDet.it_codigo and s.tipit_codigo=ventaDet.tipit_codigo
+			and s.dep_codigo=ventaDet.dep_codigo and s.suc_codigo=ventaDet.suc_codigo and s.emp_codigo=ventaDet.emp_codigo;
+			perform sp_stock(ventaDet.it_codigo, ventaDet.tipit_codigo, ventaDet.dep_codigo, ventaDet.suc_codigo, ventaDet.emp_codigo, 
+			cantidadStockAuditoria, 2, usucodigo, usuario_txt);
+        END LOOP;
+
+		-- Enviamos un mensaje de confirmacion
+        RAISE NOTICE 'LA VENTA FUE ANULADA CON EXITO';
+
+    END IF; -- operacion = 2
+
+    -- AUDITORIA: actualizar campo peven_audit en pedido_venta_cab
+    FOR pedido IN (
+        SELECT pvc.peven_fecha, pvc.cli_codigo,
+               p.per_nombre || ' ' || p.per_apellido AS cliente,
+               p.per_numerodocumento, pvc.peven_estado, pvc.peven_audit
+        FROM pedido_venta_cab pvc
+        JOIN cliente c ON c.cli_codigo = pvc.cli_codigo
+        JOIN personas p ON p.per_codigo = c.per_codigo
+        WHERE pvc.peven_codigo = pevencodigo
+    ) LOOP
+        UPDATE pedido_venta_cab
+        SET peven_audit = pedido.peven_audit || '' || json_build_object(
+            'usu_codigo', usucodigo,
+            'usu_login', coalesce(usuario_txt, ''),
+            'fecha', to_char(current_timestamp, 'DD-MM-YYYY HH24:MI:SS'),
+            'procedimiento', 'MODIFICACION',
+            'peven_fecha', pedido.peven_fecha,
+            'cli_codigo', pedido.cli_codigo,
+            'cliente', pedido.cliente,
+            'per_numerodocumento', pedido.per_numerodocumento,
+            'emp_codigo', empcodigo,
+            'emp_razonsocial', coalesce(empresa_txt, ''),
+            'suc_codigo', succodigo,
+            'suc_descripcion', coalesce(sucursal_txt, ''),
+            'peven_estado', pedido.peven_estado
+        ) || ','
+        WHERE peven_codigo = pevencodigo;
+    END LOOP;
+
+END;
+$function$ LANGUAGE plpgsql;
 
 --Venta Detalle
-create or replace function sp_venta_det(
-    vencodigo integer,
-    itcodigo integer,
-    tipitcodigo integer,
-    depcodigo integer,
-    succodigo integer,
-    empcodigo integer,
-    vendetcantidad integer,
-    vendetprecio numeric,
-    operacion integer
-) returns void as
+CREATE OR REPLACE FUNCTION sp_venta_det(
+    vencodigo       integer,
+    itcodigo        integer,
+    tipitcodigo     integer,
+    depcodigo       integer,
+    succodigo       integer,
+    empcodigo       integer,
+    vendetcantidad  integer,
+    vendetprecio    numeric,
+    operacion       integer
+) RETURNS void AS
 $function$
-begin 
-	 --Validamos si la operacion es de insercion
-     if operacion = 1 then
-		--Validamos que no se repita el item
-     	perform * from venta_det
-     	where it_codigo=itcodigo and dep_codigo=depcodigo and ven_codigo=vencodigo;
-     	if found then
-			 --En caso de ser asi generamos una excepcion
-     		 raise exception 'item';
-     	elseif operacion = 1 then
-     	 	 --Insertamos nuevo registro en venta detalle
-		     insert into venta_det(
-			 ven_codigo, 
-			 it_codigo, 
-			 tipit_codigo, 
-			 dep_codigo, 
-			 suc_codigo,
-		     emp_codigo, 
-			 vendet_cantidad, 
-			 vendet_precio
-			 )
-			 values(
-			 vencodigo, 
-			 itcodigo, 
-			 tipitcodigo, 
-			 depcodigo, 
-			 succodigo, 
-			 empcodigo, 
-			 vendetcantidad, 
-			 vendetprecio
-			 );
-			 --Actualizamos el stock 
-			 update stock set st_cantidad=st_cantidad-vendetcantidad 
-			 where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-			 and suc_codigo=succodigo and emp_codigo=empcodigo;
-			 --Enviamos un mensaje de confirmacion de insercion
-			 raise notice 'LA VENTA DETALLE FUE REGISTRADA CON EXITO';
-		end if;
-    end if;
-	--Validamos si la operacion es de eliminacion
-    if operacion = 2 then 
-    	--En este caso realizamos un borrado fisico
-    	delete from venta_det 
-    	where ven_codigo=vencodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo
-        and dep_codigo=depcodigo and suc_codigo=succodigo and emp_codigo=empcodigo;
-       	--Actualizamos el stock 
-		update stock set st_cantidad=st_cantidad+vendetcantidad 
-		where it_codigo=itcodigo and tipit_codigo=tipitcodigo and dep_codigo=depcodigo
-		and suc_codigo=succodigo and emp_codigo=empcodigo;
-		--Enviamos un mensaje de de confirmacion de eliminacion
-		raise notice 'LA VENTA DETALLE FUE ELIMINADA CON EXITO';
-    end if;
-end
-$function$ 
-language plpgsql;
+declare cantidadStockAuditoria numeric := 0;
+		usuario_int integer := 0;
+		usuario_txt varchar;
+BEGIN
+	SELECT vc.usu_codigo INTO usuario_int FROM venta_cab vc WHERE vc.ven_codigo = vencodigo;
+	SELECT usu_login INTO usuario_txt FROM usuario WHERE usu_codigo = usuario_int;
+    -- OPERACION = 1 -> INSERTAR DETALLE DE VENTA
+    IF operacion = 1 THEN
+        -- Validar si ya existe el item en el mismo depósito para la misma venta
+        IF EXISTS (
+            SELECT 1 FROM venta_det
+            WHERE ven_codigo = vencodigo
+              AND it_codigo  = itcodigo
+              AND dep_codigo = depcodigo
+        ) THEN
+            RAISE EXCEPTION 'item';
+        END IF;
+
+        -- Insertar detalle
+        INSERT INTO venta_det(
+            ven_codigo, it_codigo, tipit_codigo, dep_codigo,
+            suc_codigo, emp_codigo, vendet_cantidad, vendet_precio
+        ) VALUES (
+            vencodigo, itcodigo, tipitcodigo, depcodigo,
+            succodigo, empcodigo, vendetcantidad, vendetprecio
+        );
+
+        -- Actualizar stock (disminuir)
+        UPDATE stock
+        SET st_cantidad = st_cantidad - vendetcantidad
+        WHERE it_codigo   = itcodigo
+          AND tipit_codigo= tipitcodigo
+          AND dep_codigo  = depcodigo
+          AND suc_codigo  = succodigo
+          AND emp_codigo  = empcodigo;
+
+		-- Actualizar auditoria stock
+		select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+		and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+		perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usuario_int, usuario_txt);
+
+		-- Enviamos un mensaje de conformacion
+        RAISE NOTICE 'LA VENTA DETALLE FUE REGISTRADA CON EXITO';
+    END IF;
+
+    -- OPERACION = 2 -> ELIMINAR DETALLE DE VENTA
+    IF operacion = 2 THEN
+        -- Borrado físico del detalle
+        DELETE FROM venta_det
+        WHERE ven_codigo  = vencodigo
+          AND it_codigo   = itcodigo
+          AND tipit_codigo= tipitcodigo
+          AND dep_codigo  = depcodigo
+          AND suc_codigo  = succodigo
+          AND emp_codigo  = empcodigo;
+
+        -- Reponer stock (sumar)
+        UPDATE stock
+        SET st_cantidad = st_cantidad + vendetcantidad
+        WHERE it_codigo   = itcodigo
+          AND tipit_codigo= tipitcodigo
+          AND dep_codigo  = depcodigo
+          AND suc_codigo  = succodigo
+          AND emp_codigo  = empcodigo;
+	
+		-- Actualizar auditoria stock
+		select s.st_cantidad into cantidadStockAuditoria from stock s where s.it_codigo=itcodigo and s.tipit_codigo=tipitcodigo
+		and s.dep_codigo=depcodigo and s.suc_codigo=succodigo and s.emp_codigo=empcodigo;
+		perform sp_stock(itcodigo, tipitcodigo, depcodigo, succodigo, empcodigo, cantidadStockAuditoria, 2, usuario_int, usuario_txt);
+
+		-- Enviamos un mensaje de conformacion
+        RAISE NOTICE 'LA VENTA DETALLE FUE ELIMINADA CON EXITO';
+    END IF;
+END;
+$function$ LANGUAGE plpgsql;
 
 --Libro venta
-create or replace function sp_libro_venta(
-    vencodigo integer,
-    libvenexenta numeric,
-    libveniva5 numeric,
-    libveniva10 numeric,
+CREATE OR REPLACE FUNCTION sp_libro_venta(
+    vencodigo            integer,
+    libvenexenta         numeric,
+    libveniva5           numeric,
+    libveniva10          numeric,
     libvennumcomprobante varchar,
-    tipcocodigo integer,
-    operacion integer
-) returns void as
+    tipcocodigo          integer,
+    operacion            integer
+) RETURNS void AS
 $function$
-begin 
-	--Validamos si la operacion es 1 0 2
-	if operacion = 1 then
-	 --En caso de ser 1 procedemos a sumar el monto que nos pasan por parametro
-     update libro_venta 
-	 set libven_exenta=libven_exenta+libvenexenta, 
-		 libven_iva5=libven_iva5+libveniva5, 
-     	 libven_iva10=libven_iva10+libveniva10 
-	 where ven_codigo=vencodigo
-	 and libven_numcomprobante=libvennumcomprobante
-	 and tipco_codigo=tipcocodigo;
-    end if;
-    if operacion = 2 then
-	--En caso de ser 2 procedemos a restar el monto que nos pasan por parametro
-     update libro_venta 
-	 set libven_exenta=libven_exenta-libvenexenta, 
-		 libven_iva5=libven_iva5-libveniva5, 
-     	 libven_iva10=libven_iva10-libveniva10 
-	 where ven_codigo=vencodigo
-	 and libven_numcomprobante=libvennumcomprobante
-	 and tipco_codigo=tipcocodigo;
-    end if;
-end
-$function$ 
-language plpgsql;
+DECLARE
+    factor int := 0;
+BEGIN
+    -- Definir el factor según la operación
+    IF operacion = 1 THEN
+        factor := 1;  -- suma
+    ELSIF operacion = 2 THEN
+        factor := -1; -- resta
+    END IF;
+
+    -- Un solo UPDATE usando el factor
+    UPDATE libro_venta
+    SET libven_exenta = libven_exenta + (libvenexenta * factor),
+        libven_iva5   = libven_iva5   + (libveniva5   * factor),
+        libven_iva10  = libven_iva10  + (libveniva10  * factor)
+    WHERE ven_codigo = vencodigo
+      AND libven_numcomprobante = libvennumcomprobante
+      AND tipco_codigo = tipcocodigo;
+END;
+$function$ LANGUAGE plpgsql;
 
 --Cuenta Cobrar
-create or replace function sp_cuenta_cobrar(
-    vencodigo integer,
-    cuencomonto numeric,
-    cuencosaldo numeric,
-    tipcocodigo integer,
-    operacion integer
-) returns void as
+CREATE OR REPLACE FUNCTION sp_cuenta_cobrar(
+    vencodigo    integer,
+    cuencomonto  numeric,
+    cuencosaldo  numeric,
+    tipcocodigo  integer,
+    operacion    integer
+) RETURNS void AS
 $function$
-begin 
-	--Validamos si la operacion es 1 0 2
-	if operacion = 1 then
-	  --En caso de ser 1 procedemos a sumar el monto que nos pasan por parametro
-	 update	cuenta_cobrar 
-	 set cuenco_monto=cuenco_monto+cuencomonto, 
-	 	 cuenco_saldo=cuenco_saldo+cuencosaldo,
-		 tipco_codigo=tipcocodigo
-	 where ven_codigo=vencodigo;
-	end if;
-	if operacion = 2 then 
-	 --En caso de ser 2 procedemos a restar el monto que nos pasan por parametro
-	 update	cuenta_cobrar 
-	 set cuenco_monto=cuenco_monto-cuencomonto, 
-	 	 cuenco_saldo=cuenco_saldo-cuencosaldo,
-		 tipco_codigo=tipcocodigo
-	 where ven_codigo=vencodigo;
-	end if;
-end
-$function$ 
-language plpgsql;
+DECLARE
+    factor int := 0;
+BEGIN
+    -- Definimos el factor según la operación
+    IF operacion = 1 THEN
+        factor := 1;   -- suma
+    ELSIF operacion = 2 THEN
+        factor := -1;  -- resta
+    END IF;
+
+    -- Un solo UPDATE usando el factor
+    UPDATE cuenta_cobrar
+    SET cuenco_monto = cuenco_monto + (cuencomonto * factor),
+        cuenco_saldo = cuenco_saldo + (cuencosaldo * factor),
+        tipco_codigo = tipcocodigo
+    WHERE ven_codigo = vencodigo;
+END;
+$function$ LANGUAGE plpgsql;
 
 --Cobro Cabecera
-create or replace function sp_cobro_cab(
-    cobcodigo integer,
-    cobfecha timestamp,
-    cobestado varchar,
-    aperciecodigo integer,
-    succodigo integer,
-    empcodigo integer,
-    cajcodigo integer,
-    usucodigo integer,
-    tipcocodigo integer,
-    operacion integer 
-) returns void as
+CREATE OR REPLACE FUNCTION sp_cobro_cab(
+    cobcodigo       integer,
+    cobfecha        timestamp,
+    cobestado       varchar,
+    cobnumerocuota  integer,
+    aperciecodigo   integer,
+    succodigo       integer,
+    empcodigo       integer,
+    cajcodigo       integer,
+    usucodigo       integer,
+    tipcocodigo     integer,
+    vencodigo       integer,
+    cobnumrecibo    varchar,
+    operacion       integer
+) RETURNS void AS
 $function$
-declare cobroDet record;
-		ventaEstado varchar;
-begin 
-	 --Validamos si la operacion es de insercion 
-     if operacion = 1 then
-      	--Procedemos a insertar el nuevo registro en cobro cabecera
-		insert into cobro_cab(
-		cob_codigo, 
-		cob_fecha, 
-		cob_estado, 
-		apercie_codigo, 
-		suc_codigo, 
-		emp_codigo, 
-		caj_codigo, 
-		usu_codigo,
-		tipco_codigo
-		)
-		values(
-		cobcodigo, 
-		cobfecha, 
-		'ACTIVO', 
-		aperciecodigo, 
-		succodigo, 
-		empcodigo, 
-		cajcodigo, 
-		usucodigo,
-		tipcocodigo
-		);
-		--Enviamos un mensaje de confirmacion de insercion
-		raise notice 'EL COBRO FUE REGISTRADO CON EXITO';
-    end if;
-	--Validamos si la operacion es de anulacion
-    if operacion = 2 then 
-		--Consultamos el estado de venta cabecera
-		ventaEstado := (select ven_estado from venta_cab where ven_codigo=(select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=cobcodigo));
-        --En este caso realizamos un borrado logico
-    	update cobro_cab 
-		set cob_estado='ANULADO', usu_codigo=usucodigo
-		where cob_codigo=cobcodigo;
-		--Actualizamos el monto saldo de cuentas a cobrar asociado al cobro anulado
-	    for cobroDet in select * from cobro_det where cob_codigo=cobcodigo loop
-	       	update cuenta_cobrar 
-			set 
-			cuenco_saldo=cuenco_saldo+cobroDet.cobdet_monto, 
-			cuenco_estado='ACTIVO', 
-			tipco_codigo=5
-			where ven_codigo=cobroDet.ven_codigo;
-        end loop;
-		--Actualizamos el estado de venta cabecera en caso de que sea cancelado
-		if ventaEstado = 'CANCELADO' then
-			update venta_cab 
-			set ven_estado='ACTIVO',
-			usu_codigo=usucodigo  
-			where ven_codigo=(select distinct cd.ven_codigo from cobro_det cd where cd.cob_codigo=cobcodigo);
-		end if;
-		--Enviamos un mensaje de confirmacion de anulacion
-		raise notice 'EL COBRO FUE ANULADO CON EXITO';
-    end if;
-end
-$function$ 
-language plpgsql;
+DECLARE
+    ventaEstado varchar;
+	cobroDet record;
+BEGIN 
+    -- Inserción de cobro
+    IF operacion = 1 THEN
+        -- Validar duplicado de número de recibo
+        IF EXISTS (SELECT 1 FROM cobro_cab WHERE cob_num_recibo = cobnumrecibo) THEN
+            RAISE EXCEPTION 'recibo';
+        END IF;
+
+        -- Insertar en cabecera
+        INSERT INTO cobro_cab(
+            cob_codigo, cob_fecha, cob_estado, cob_numerocuota,
+            apercie_codigo, suc_codigo, emp_codigo, caj_codigo, 
+            usu_codigo, tipco_codigo, ven_codigo, cob_num_recibo
+        )
+        VALUES (
+            cobcodigo, cobfecha, 'ACTIVO', cobnumerocuota,
+            aperciecodigo, succodigo, empcodigo, cajcodigo,
+            usucodigo, tipcocodigo, vencodigo, cobnumrecibo
+        );
+
+		-- Actualizar número de recibo en tabla timbrados
+        UPDATE timbrados
+        SET timb_numero_comp = cobnumrecibo::varchar, usu_codigo=usucodigo
+        WHERE suc_codigo = succodigo
+          AND emp_codigo = empcodigo
+          AND caj_codigo = cajcodigo
+		  AND tipco_codigo = tipcocodigo;
+
+		-- Enviamos mensaje de confirmacion
+        RAISE NOTICE 'EL COBRO FUE REGISTRADO CON EXITO';
+    END IF;
+
+    -- Anulación de cobro
+    IF operacion = 2 THEN
+
+		-- Validamos que no exista un cobro mayor en estado activo para anular
+		IF EXISTS (select 1 from cobro_cab cc where cc.ven_codigo=vencodigo and cc.cob_numerocuota > cobnumerocuota and cc.cob_estado='ACTIVO') THEN
+            RAISE EXCEPTION 'cuota';
+        END IF;		
+
+        -- Estado de la venta asociada
+        SELECT ven_estado
+        INTO ventaEstado
+        FROM venta_cab
+        WHERE ven_codigo = vencodigo;
+
+        -- Anulación lógica
+        UPDATE cobro_cab 
+        SET cob_estado='ANULADO', usu_codigo=usucodigo
+        WHERE cob_codigo=cobcodigo;
+
+        -- Revertir saldos de cuenta_cobrar
+        FOR cobroDet IN 
+	        SELECT * FROM cobro_det WHERE cob_codigo = cobcodigo 
+	    LOOP
+	        UPDATE cuenta_cobrar 
+	        SET cuenco_saldo = cuenco_saldo + cobroDet.cobdet_monto, 
+	            cuenco_estado = 'ACTIVO', 
+	            tipco_codigo = 5
+	        WHERE ven_codigo = vencodigo;
+	    END LOOP;
+
+        -- Restaurar estado de venta si estaba cancelada
+        IF ventaEstado = 'CANCELADO' THEN
+            UPDATE venta_cab 
+            SET ven_estado='ACTIVO', usu_codigo=usucodigo
+            WHERE ven_codigo = vencodigo;
+        END IF;
+
+		-- Enviamos mensae de confirmacion
+        RAISE NOTICE 'EL COBRO FUE ANULADO CON EXITO';
+    END IF;
+END
+$function$
+LANGUAGE plpgsql;
+
 
 --Cobro Detalle
-create or replace function sp_cobro_det(
-    cobdetcodigo integer,
-    cobcodigo integer,
-    vencodigo integer,
-    cobdetmonto numeric,
-    cobdetnumerocuota integer,
-    forcocodigo integer,
-    cochenumero varchar,
-    entcodigo integer,
-    usucodigo integer,
-    cobtatransaccion varchar,
-    redpacodigo integer,
-    operacion integer 
-) returns void as
+CREATE OR REPLACE FUNCTION sp_cobro_det(
+    cobdetcodigo    INTEGER,
+    cobcodigo       INTEGER,
+    forcocodigo     INTEGER,
+    cobdetmonto     NUMERIC,
+    cochenumero     VARCHAR,
+    entcodigo       INTEGER,
+    usucodigo       INTEGER,
+    cobtatransaccion VARCHAR,
+    redpacodigo     INTEGER,
+    vencodigo       INTEGER,
+    venmontocuota   NUMERIC,
+    operacion       INTEGER
+) RETURNS VOID AS
 $function$
-declare ventaEstado varchar;
-begin 
-   --Validamos la operacion en este caso la insercion
-   --Validamos si es una insercion y si la forma de cobro es tarjeta
-   if operacion = 1 and forcocodigo = 2 then
-	   --Validamos que no se repita el numero de transaccion y la red de pago 
-      	perform * from cobro_tarjeta	
-     	where cobta_transaccion=cobtatransaccion and redpa_codigo=redpacodigo;
-     	if found then
-		     --En caso de ser asi generamos una excepcion
-     		 raise exception 'tarjeta';
-		end if;
-   end if;
-   --Validamos si es una insercion y si la forma de cobro es cheque 
-   if operacion = 1 and forcocodigo = 3 then
-      	--Validamos que no se repita el numero de cheque 
-      	perform * from cobro_cheque	
-     	where coche_numero=cochenumero and ent_codigo=entcodigo;
-     	if found then
-		     --En caso de ser asi generamos una excepcion
-     		 raise exception 'cheque';
-		end if;
-    end if;
-	--Validamos si la operacion es de insercion y si la forma de cobro es efectivo
-	if operacion = 1 and forcocodigo = 1 then
-		--Validamos que no se repita 2 veces la forma de cobro efectivo en el detalle
-      	perform * from cobro_det	
-     	where forco_codigo=forcocodigo and cob_codigo=cobcodigo and ven_codigo=vencodigo;
-     	if found then
-		     --En caso de ser asi generamos una excepcion
-     		 raise exception 'efectivo';
-		end if;
-    end if;
-	--Validamos si la operacion es de insercion
-    if operacion = 1 then
-		--Insertamos nuevo registro en cobro detalle
-		insert into cobro_det(
-		cobdet_codigo, 
-		cob_codigo, 
-		ven_codigo, 	
-		cobdet_monto, 
-		cobdet_numerocuota, 	
-		forco_codigo
-		)
-		values(
-		(select coalesce(max(cobdet_codigo),0)+1 from cobro_det), 
-		cobcodigo, 
-		vencodigo, 
-		cobdetmonto, 
-		cobdetnumerocuota, 
-		forcocodigo
-		);
-		--Actualizamos saldo y tipo de comprobante en cuenta cobrar
-		update cuenta_cobrar 
-		set cuenco_saldo=cuenco_saldo-cobdetmonto, 
-		tipco_codigo=5
-		where ven_codigo=vencodigo;
-		--Enviamos un mensaje de confirmacion de insercion
-		raise notice 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
-    end if;
-	--Validamos si la operacion es de eliminacion
-    if operacion = 2 then 
-		--Consultamos el estado de venta cabecera
-		ventaEstado := (select ven_estado from venta_cab where ven_codigo=vencodigo);
-        --Eliminamos el registro de cobro tarjeta en caso de que toque
-    	if forcocodigo = 2 then
-    	 delete from cobro_tarjeta where cobdet_codigo=cobdetcodigo;
-    	end if;
-		--Eliminamos el registro de cobro cheque en caso de que toque
-    	if forcocodigo = 3 then
-    	 delete from cobro_cheque where cobdet_codigo=cobdetcodigo;
-    	end if;
-		--Realizamos un borrado fisico de cobro detalle
-    	delete from cobro_det where cobdet_codigo=cobdetcodigo;
-		--Actualizamos registro de cuenta cobrar
-    	update cuenta_cobrar 
-		set cuenco_saldo=cuenco_saldo+cobdetmonto, 
-			cuenco_estado='ACTIVO',
-			tipco_codigo=5
-		where ven_codigo=vencodigo;
-		--Actualizamos registro de venta cabecera en caso de que el mismo sea cancelado
-		if ventaEstado = 'CANCELADO' then
-			update venta_cab 
-			set ven_estado='ACTIVO',
-			usu_codigo=usucodigo  
-			where ven_codigo=vencodigo;
-		end if;
-		--Enviamos un mensaje de de confirmacion de eliminacion
-		raise notice 'EL DETALLE DEL COBRO FUE ELIMINADO CON EXITO';
-    end if;
-end
+DECLARE 
+    ventaEstado VARCHAR;
+	sumatoriaCobro NUMERIC;
+BEGIN 
+    -- Operación: Inserción
+    IF operacion = 1 THEN
+		-- Validacion monto cuota menor a sumatoria de cobro_det
+		SELECT round((coalesce(sum(cobdet_monto), 0)+cobdetmonto)) INTO sumatoriaCobro FROM cobro_det cd WHERE cd.cob_codigo=cobcodigo;
+		IF sumatoriaCobro > venmontocuota THEN
+			RAISE EXCEPTION 'monto_superado';
+		END IF;
+        -- Validación según forma de cobro
+        CASE 
+            WHEN forcocodigo = 2 THEN  -- Tarjeta
+                IF EXISTS (
+                    SELECT 1 FROM cobro_tarjeta ct
+					JOIN cobro_cab cc ON cc.cob_codigo=ct.cob_codigo
+                    WHERE ct.cobta_transaccion = cobtatransaccion 
+                      AND ct.redpa_codigo = redpacodigo
+					  AND cc.cob_estado = 'ACTIVO'
+                ) THEN
+                    RAISE EXCEPTION 'tarjeta';
+                END IF;
+
+            WHEN forcocodigo = 3 THEN  -- Cheque
+                IF EXISTS (
+                    SELECT 1 FROM cobro_cheque cc 
+					JOIN cobro_cab cc2 ON cc2.cob_codigo=cc.cob_codigo
+                    WHERE cc.coche_numero = cochenumero 
+                      AND cc.ent_codigo = entcodigo
+					  AND cc2.cob_estado = 'ACTIVO'
+                ) THEN
+                    RAISE EXCEPTION 'cheque';
+                END IF;
+
+            WHEN forcocodigo = 1 THEN  -- Efectivo
+                IF EXISTS (
+                    SELECT 1 FROM cobro_det 
+                    WHERE forco_codigo = forcocodigo 
+                      AND cob_codigo = cobcodigo 
+                ) THEN
+                    RAISE EXCEPTION 'efectivo';
+                END IF;
+        END CASE;
+
+        -- Insertamos detalle de cobro
+        INSERT INTO cobro_det(
+            cobdet_codigo, 
+            cob_codigo, 
+            forco_codigo, 	
+            cobdet_monto
+        )
+        VALUES (
+            (SELECT COALESCE(MAX(cobdet_codigo),0)+1 FROM cobro_det),  -- Mejor: usar secuencia
+            cobcodigo, 
+            forcocodigo,
+            cobdetmonto
+        );
+
+        -- Actualizamos saldo en cuenta cobrar
+        UPDATE cuenta_cobrar 
+        SET cuenco_saldo = cuenco_saldo - cobdetmonto, 
+            tipco_codigo = 5
+        WHERE ven_codigo = vencodigo;
+
+		-- Enviamos un mensaje de confirmacion
+        RAISE NOTICE 'EL DETALLE DEL COBRO FUE REGISTRADO CON EXITO';
+    END IF;
+
+    -- Operación: Eliminación
+    IF operacion = 2 THEN 
+        -- Estado de la venta
+        SELECT ven_estado INTO ventaEstado 
+        FROM venta_cab 
+        WHERE ven_codigo = vencodigo;
+
+        -- Eliminaciones asociadas
+        IF forcocodigo = 2 THEN
+            DELETE FROM cobro_tarjeta WHERE cobdet_codigo = cobdetcodigo;
+        ELSIF forcocodigo = 3 THEN
+            DELETE FROM cobro_cheque WHERE cobdet_codigo = cobdetcodigo;
+        END IF;
+
+        -- Eliminamos el detalle
+        DELETE FROM cobro_det WHERE cobdet_codigo = cobdetcodigo;
+
+        -- Revertimos saldo en cuenta cobrar
+        UPDATE cuenta_cobrar 
+        SET cuenco_saldo = cuenco_saldo + cobdetmonto, 
+            cuenco_estado = 'ACTIVO',
+            tipco_codigo = 5
+        WHERE ven_codigo = vencodigo;
+
+        -- Si estaba cancelada, volvemos a activa
+        IF ventaEstado = 'CANCELADO' THEN
+            UPDATE venta_cab 
+            SET ven_estado = 'ACTIVO',
+                usu_codigo = usucodigo  
+            WHERE ven_codigo = vencodigo;
+        END IF;
+
+		-- Enviamos un mensaje de confirmacion
+        RAISE NOTICE 'EL DETALLE DEL COBRO FUE ELIMINADO CON EXITO';
+    END IF;
+END
 $function$ 
-language plpgsql;
+LANGUAGE plpgsql;
 
 --Cobro Cheque
 create or replace function sp_cobro_cheque(
