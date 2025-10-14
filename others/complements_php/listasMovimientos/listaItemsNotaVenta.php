@@ -40,9 +40,9 @@ if ($tipco_descripcion == "CREDITO" || $tipco_descripcion == "REMISION") {
                   ti.tipit_descripcion 
                when 'PRODUCTO'
                      then 
-                        i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion 
+                        '<b>PRODUCTO:</b> '||i.it_descripcion||' <b>MODELO:</b>' ||m.mod_codigomodelo||' <b>TALLE:</b> '||t.tall_descripcion 
                      else 
-                        i.it_descripcion 
+                        '<b>SERVICIO: </b>'||i.it_descripcion 
             end) it_descripcion2,
             t.tall_descripcion,
             vd.vendet_cantidad notvendet_cantidad,
@@ -67,12 +67,14 @@ if ($tipco_descripcion == "CREDITO" || $tipco_descripcion == "REMISION") {
                   join sucursal s2 on s2.suc_codigo=d.suc_codigo 
                   and s2.emp_codigo=d.emp_codigo 
                      join empresa e on e.emp_codigo=s2.emp_codigo 
-            where i.it_estado='ACTIVO'
-               and ti.tipit_descripcion in('PRODUCTO', 'SERVICIO')
-               and (i.it_descripcion ilike '%$it_descripcion%' or m.mod_codigomodelo ilike '%$it_descripcion%')
+            where ti.tipit_descripcion in('PRODUCTO', 'SERVICIO')
+               and (i.it_descripcion ilike '%$it_descripcion%' 
+               or m.mod_codigomodelo ilike '%$it_descripcion%'
+               or t.tall_descripcion ilike '%$it_descripcion%')
                and vc.ven_codigo=$ven_codigo
                and vc.ven_estado <> 'ANULADO'
-               and vc.suc_codigo=$suc_codigo and vc.emp_codigo=$emp_codigo
+               and vc.suc_codigo=$suc_codigo 
+               and vc.emp_codigo=$emp_codigo
             order by vd.ven_codigo, vd.it_codigo;";
 
    $resultado = pg_query($conexion, $sql);
@@ -100,9 +102,9 @@ if ($tipco_descripcion == "CREDITO" || $tipco_descripcion == "REMISION") {
                      ti.tipit_descripcion 
                   when 'PRODUCTO'
                      then 
-                           i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion 
-                        else 
-                           i.it_descripcion 
+                        '<b>PRODUCTO:</b> '||i.it_descripcion||' <b>MODELO:</b>' ||m.mod_codigomodelo||' <b>TALLE:</b> '||t.tall_descripcion 
+                     else 
+                        '<b>SERVICIO: </b>'||i.it_descripcion 
                end) it_descripcion2,
                t.tall_descripcion,
                (case 
@@ -129,8 +131,12 @@ if ($tipco_descripcion == "CREDITO" || $tipco_descripcion == "REMISION") {
                   join empresa e on e.emp_codigo=s2.emp_codigo 
             where i.it_estado='ACTIVO'
             and ti.tipit_descripcion in('PRODUCTO', 'SERVICIO')
-            and (i.it_descripcion ilike '%$it_descripcion%' or m.mod_codigomodelo ilike '%$it_descripcion%')
-            and s.dep_codigo=$dep_codigo and s.suc_codigo=$suc_codigo and s.emp_codigo=$emp_codigo
+            and (i.it_descripcion ilike '%$it_descripcion%' 
+            or m.mod_codigomodelo ilike '%$it_descripcion%'
+            or t.tall_descripcion ilike '%$it_descripcion%')
+            and s.dep_codigo=$dep_codigo 
+            and s.suc_codigo=$suc_codigo 
+            and s.emp_codigo=$emp_codigo
             order by i.it_codigo;";
 
    $resultado = pg_query($conexion, $sql);

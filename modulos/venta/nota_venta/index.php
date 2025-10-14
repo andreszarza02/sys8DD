@@ -114,7 +114,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco4">
                                  <input type="text" class="form-control no-disabled letras-numeros" id="notven_concepto"
@@ -123,7 +123,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line vent">
                                  <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
@@ -135,7 +135,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line vent">
                                  <input type="hidden" id="cli_codigo" value="0">
@@ -147,6 +147,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line vent">
+                                 <input type="hidden" id="ven_tipofactura" value="0">
                                  <input type="text" class="form-control" id="ven_codigo" disabled>
                                  <label class="form-label">N° Venta</label>
                               </div>
@@ -160,7 +161,15 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-1" id="cantidadCuota" style="display: none;">
+                           <div class="form-group form-float">
+                              <div class="form-line foco5">
+                                 <input type="text" class="form-control solo-numeros" id="ven_cuota" disabled>
+                                 <label class="form-label">Cantidad Cuota</label>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-sm-3" id="empresaTimbrado">
                            <div class="form-group form-float">
                               <div class="form-line foco">
                                  <input type="text" class="form-control" id="notven_timbrado" disabled>
@@ -176,7 +185,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line focused">
                                  <input type="hidden" id="emp_codigo"
@@ -187,7 +196,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line focused">
                                  <input type="hidden" id="suc_codigo"
@@ -198,7 +207,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line focused">
                                  <input type="hidden" id="usu_codigo"
@@ -209,7 +218,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line est">
                                  <input type="text" class="form-control" id="notven_estado" disabled>
@@ -232,6 +241,12 @@ foreach ($permisos as $permiso) {
                               <button type="button" class="btn btn-primary waves-effect" onclick="anular()">
                                  <i class="material-icons">cancel</i>
                                  <span>ANULAR</span>
+                              </button>
+                           <?php } ?>
+                           <?php if ($btnNuevo === true) { ?>
+                              <button type="button" class="btn btn-primary waves-effect" onclick="controlVacio3()">
+                                 <i class="material-icons">attach_money</i>
+                                 <span>ACTUALIZAR CUOTA</span>
                               </button>
                            <?php } ?>
                            <button type="button" class="btn btn-primary waves-effect" onclick="salir()">
@@ -277,7 +292,7 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-6">
                               <div class="form-group form-float">
                                  <div class="form-line func">
-                                    <input type="text" class="form-control" id="funcionario">
+                                    <input type="text" class="form-control" id="funcionario" disabled>
                                     <label class="form-label">Funcionario</label>
                                  </div>
                               </div>
@@ -285,8 +300,9 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-4">
                               <div class="form-group form-float">
                                  <div class="form-line ch">
-                                    <input type="hidden" id="chave_codigo" value="0">
-                                    <input type="text" class="form-control letras-numeros" id="chave_chapa">
+                                    <input type="hidden" id="notven_chapa" value="0">
+                                    <input type="text" class="form-control no-disabled letras-numeros" id="chave_chapa"
+                                       onkeyup="getChapaVehiculo()">
                                     <label class="form-label">Chapa Vehiculo</label>
                                     <div id="listaChapa" style="display: none;">
                                        <ul class="list-group" id="ulChapa" Style="height: 80px; overflow: auto"></ul>
@@ -298,7 +314,7 @@ foreach ($permisos as $permiso) {
                               <div class="form-group form-float">
                                  <div class="form-line ch">
                                     <input type="hidden" id="marve_codigo" value="0">
-                                    <input type="text" class="form-control letras-numeros" id="marve_descripcion">
+                                    <input type="text" class="form-control" id="marve_descripcion" disabled>
                                     <label class="form-label">Marca Vehiculo</label>
                                  </div>
                               </div>
@@ -307,7 +323,7 @@ foreach ($permisos as $permiso) {
                               <div class="form-group form-float">
                                  <div class="form-line ch">
                                     <input type="hidden" id="modve_codigo" value="0">
-                                    <input type="text" class="form-control solo-letras" id="modve_descripcion" disabled>
+                                    <input type="text" class="form-control" id="modve_descripcion" disabled>
                                     <label class="form-label">Modelo Vehiculo</label>
                                  </div>
                               </div>

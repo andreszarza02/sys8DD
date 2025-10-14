@@ -1305,6 +1305,7 @@ const seleccionarFila = (objetoJSON) => {
   $(".vent").attr("class", "form-line vent focused");
   $(".cob").attr("class", "form-line cob focused");
   $("#detalle").attr("style", "display: block;");
+  actualizacionCabecera();
   limpiarDetalle();
   listarDetalle();
   getFormaCobro();

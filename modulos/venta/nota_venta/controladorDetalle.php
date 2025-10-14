@@ -43,6 +43,11 @@ if (isset($_POST['operacion_detalle'])) {
          "mensaje" => "YA SE REGISTRO EL ITEM",
          "tipo" => "error"
       );
+   } else if (strpos($error, "item_de_credito") !== false) {
+      $response = array(
+         "mensaje" => "LA CANTIDAD DEL ITEM A DEVOLVER SUPERA LA CANTIDAD REGISTRADA EN EL DETALLE DE VENTA AL QUE SE HACE REFERENCIA EN NOTA VENTA CABECERA",
+         "tipo" => "error"
+      );
    } else {
       $response = array(
          "mensaje" => pg_last_notice($conexion),

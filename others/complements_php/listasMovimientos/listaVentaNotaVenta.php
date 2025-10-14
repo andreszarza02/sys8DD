@@ -22,7 +22,7 @@ $conexion = $objConexion->getConexion();
 $per_numerodocumento = $_POST['per_numerodocumento'] ?? 0;
 
 //Guardamos el retorno de la funcion, que en este caso es un array asociativo
-$configuracion = obtenerConfiguraciones($conexion, $suc_codigo, $emp_codigo, 1);
+$configuracion = obtenerConfiguraciones($conexion, $_POST['suc_codigo'], $_POST['emp_codigo'], 1);
 
 //Establecemos y mostramos la consulta
 $sql = "select 
@@ -31,13 +31,16 @@ $sql = "select
             p.per_nombre||' '||p.per_apellido cliente,
             vc.ven_codigo,
             vc.ven_numfactura,
-            'VENTA N°:'||vc.ven_codigo||' FACTURA:'||vc.ven_numfactura||' '||'FECHA:'||to_char(vc.ven_fecha , 'DD-MM-YYYY') venta
+            '<b>VENTA N°:</b> '||vc.ven_codigo||'  <b>FACTURA:</b> '||vc.ven_numfactura||' '||'<b>FECHA:</b> '||to_char(vc.ven_fecha , 'DD-MM-YYYY') venta,
+            vc.ven_tipofactura
          from venta_cab vc 
          join cliente c on c.cli_codigo=vc.cli_codigo 
             join personas p on p.per_codigo=c.per_codigo 
          where p.per_numerodocumento ilike '%$per_numerodocumento%'
             and vc.ven_estado <> 'ANULADO'
             and ((current_date-vc.ven_fecha) <= {$configuracion["config_validacion"]})
+            and vc.suc_codigo={$_POST['suc_codigo']}
+            and vc.emp_codigo={$_POST['emp_codigo']}
          order by vc.ven_numfactura;";
 
 //Consultamos y mostramos los resultados
@@ -46,7 +49,7 @@ $datos = pg_fetch_all($resultado);
 
 //validamos si se encontro algun valor
 if (!isset($datos[0]['ven_codigo'])) {
-   $datos = [['dato1' => 'NSE', 'dato2' => 'NO SE ENCUENTRA LA VENTA O EL PLAZO DE 5 DIAS EXPIRO']];
+   $datos = [['dato1' => 'NSE', 'dato2' => "NO SE ENCUENTRA LA VENTA O EL PLAZO DE {$configuracion["config_validacion"]} DIAS EXPIRO"]];
 }
 
 echo json_encode($datos);

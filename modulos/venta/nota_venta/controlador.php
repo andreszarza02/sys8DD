@@ -22,6 +22,9 @@ if (isset($_POST['operacion_cabecera'])) {
 
    $notven_estado = pg_escape_string($conexion, $_POST['notven_estado']);
 
+   // Consultamos los datos de configuracion sucursal
+   $configuracion = obtenerConfiguraciones($conexion, $_POST['suc_codigo'], $_POST['emp_codigo'], 2);
+
    $sql = "select sp_nota_venta_cab(
       {$_POST['notven_codigo']}, 
       '{$_POST['notven_fecha']}', 
@@ -38,6 +41,8 @@ if (isset($_POST['operacion_cabecera'])) {
       {$_POST['emp_codigo']}, 
       {$_POST['usu_codigo']}, 
       {$_POST['cli_codigo']}, 
+      {$_POST['ven_cuota']}, 
+      {$configuracion['config_validacion']}, 
       {$_POST['operacion_cabecera']}
       )";
 
@@ -74,8 +79,8 @@ if (isset($_POST['operacion_cabecera'])) {
 
    //Consultamos y validamos si la nota de credito o debito contiene detalle
    $sql = "select 1
-            from v_nota_compra_det vncd 
-            where vncd.nocom_codigo={$_POST['nocom_codigo']};";
+            from v_nota_venta_det vnvd 
+            where vnvd.notven_codigo={$_POST['notven_codigo']};";
 
    $resultado = pg_query($conexion, $sql);
 
@@ -90,7 +95,7 @@ if (isset($_POST['operacion_cabecera'])) {
       // Si no, especificamos un mensaje de no calculo
       $response = array(
          "calculo_cuota" => "no",
-         "mensaje" => "LA NOTA NO TIENE DETALLE, NO SE PUEDE ACTUALIZAR DATOS DE VENTA"
+         "mensaje" => "LA NOTA NO TIENE DEFINIDO ITEMS EN EL DETALLE, NO SE PUEDE ACTUALIZAR DATOS DE VENTA"
       );
    }
 
@@ -120,7 +125,15 @@ if (isset($_POST['operacion_cabecera'])) {
 
    $datos = pg_fetch_assoc($resultado);
 
-   echo json_encode($datos);
+   // Validación contra el límite
+   if ((int) $datos['proximo_numero'] > (int) $datos['limite']) {
+      echo json_encode(value: [
+         "error" => true,
+         "mensaje" => "Se alcanzó el máximo de número de notas permitidas para este timbrado. Debe ampliar el rango."
+      ]);
+   } else {
+      echo json_encode($datos);
+   }
 
 } else {
    //Si el post no recibe la operacion realizamos una consulta

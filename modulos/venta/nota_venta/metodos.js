@@ -35,10 +35,79 @@ const getTimbrados = () => {
       consulta3: 1,
     },
   }).done(function (respuesta) {
-    $("#notven_numeronota").val(respuesta.notven_numeronota);
-    $("#notven_timbrado").val(respuesta.notven_timbrado);
-    $("#notven_timbrado_venc").val(respuesta.notven_timbrado_venc);
-    $(".foco").attr("class", "form-line foco focused");
+    if (respuesta.error) {
+      swal({
+        title: "RESPUESTA!!",
+        text: respuesta.mensaje.toUpperCase(),
+        type: "error",
+      });
+      $("#notven_numeronota").val("");
+      $("#notven_timbrado").val("");
+      $("#notven_timbrado_venc").val("");
+    } else {
+      $("#notven_numeronota").val(respuesta.notven_numeronota);
+      $("#notven_timbrado").val(respuesta.notven_timbrado);
+      $("#notven_timbrado_venc").val(respuesta.notven_timbrado_venc);
+      $(".foco").attr("class", "form-line foco focused");
+      // Si la nota es de remisión, mostramos el respectivo card
+      if ($("#tipco_codigo").val() == 3) {
+        $("#nota_remision").attr("style", "display: block;");
+      } else {
+        $("#nota_remision").attr("style", "display: none;");
+      }
+    }
+  });
+};
+
+//Muestra el input de deposito
+const mostrarInputDeposito = () => {
+  let tipoComprobante = $("#tipco_codigo").val();
+
+  if (tipoComprobante == 2) {
+    $("#deposito").prop("style", false);
+  } else {
+    $("#deposito").attr("style", "display: none;");
+  }
+};
+
+// Se encarga de preparar la interfaz de nota venta, para actualizar cuota y montocuota de venta_cab
+const actualizarMontoCuota = () => {
+  if ($("#ven_tipofactura").val() == "CONTADO") {
+    $("#ven_cuota").val("1");
+  } else {
+    $("#ven_cuota").val("");
+    $(".foco5").attr("class", "form-line foco5");
+    $("#ven_cuota").prop("disabled", false);
+    // Agregar validacion solo-numeros
+    //validacionInputsVacios1();
+  }
+  $("#operacion_cabecera").val(3);
+  actualizacionCabecera();
+  habilitarBotones(false);
+  $("#cantidadCuota").attr("class", "col-sm-1");
+  $("#cantidadCuota").attr("style", "display: block;");
+  $("#empresaTimbrado").attr("class", "col-sm-2");
+};
+
+// Se encarga de verificar que la nota tenga detalle, para poder modificar los datos de venta_cab
+const verificarNotaDetalle = () => {
+  $.ajax({
+    method: "POST",
+    url: "controlador.php",
+    data: {
+      notven_codigo: $("#notven_codigo").val(),
+      consulta2: 1,
+    },
+  }).done(function (respuesta) {
+    if (respuesta.calculo_cuota == "si") {
+      actualizarMontoCuota();
+    } else {
+      swal({
+        title: "RESPUESTA!!",
+        text: respuesta.mensaje,
+        type: "info",
+      });
+    }
   });
 };
 
@@ -203,47 +272,47 @@ const listarDetalle = () => {
 
       //Mostramos los subtotales y totales
       let lineafoot = "<tr>";
-      lineafoot += "<th colspan='6'>";
+      lineafoot += "<th colspan='7'>";
       lineafoot += "SUBTOTALES";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalExe.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalExe.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalG5.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalG5.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
       lineafoot += "<tr>";
-      lineafoot += "<th colspan='7'>";
+      lineafoot += "<th colspan='8'>";
       lineafoot += "LIQUIDACION DE IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(iva5.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(iva10.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(iva10.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
       lineafoot += "<tr class='bg-green'>";
-      lineafoot += "<th colspan='8'>";
+      lineafoot += "<th colspan='9'>";
       lineafoot += "TOTAL IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalIva.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalIva.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
       lineafoot += "<tr class='bg-blue'>";
-      lineafoot += "<th colspan='8'>";
+      lineafoot += "<th colspan='9'>";
       lineafoot += "TOTAL GENERAL";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
@@ -375,6 +444,19 @@ const imprimir = () => {
     "/sys8DD/report/ventas/reporte/reporte_notas.php?notven_codigo=" + nota;
 };
 
+// Limpia campos de detalle
+const limpiarCamposDetalle = () => {
+  $("#dep_descripcion").val("");
+  $("#it_descripcion").val("");
+  $("#tall_descripcion").val("");
+  $("#notvendet_cantidad").val("");
+  $("#unime_descripcion").val("");
+  $("#notvendet_precio").val("");
+  $(".dep").attr("class", "form-line dep");
+  $(".it").attr("class", "form-line it");
+  $(".foco3").attr("class", "form-line foco3");
+};
+
 //Metodo que establece el alta en cabecera
 const nuevo = () => {
   $("#operacion_cabecera").val(1);
@@ -409,8 +491,8 @@ const nuevo = () => {
   $("#marve_descripcion").val("");
   $("#modve_codigo").val(0);
   $("#modve_descripcion").val("");
-  $(".func").attr("class", "form-line func focused");
-  $(".ch").attr("class", "form-line ch focused");
+  $(".func").attr("class", "form-line func");
+  $(".ch").attr("class", "form-line ch");
   actualizacionCabecera();
   habilitarBotones(false);
   $("#cabecera").attr("style", "display: none");
@@ -420,18 +502,9 @@ const nuevo = () => {
 //Metodo que establece el alta en detalle
 const nuevoDetalle = () => {
   $("#operacion_detalle").val(1);
+  limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
-  $("#dep_descripcion").val("");
-  $("#it_descripcion").val("");
-  $("#tall_descripcion").val("");
-  $("#notvendet_cantidad").val("");
-  $("#unime_descripcion").val("");
-  $("#notvendet_precio").val("");
-  $(".dep").attr("class", "form-line dep");
-  $(".it").attr("class", "form-line it");
-  $(".foco3").attr("class", "form-line foco3");
-  $("#tablaDet").attr("style", "display: none");
 };
 
 //Metodo que establece la baja en cabecera
@@ -462,8 +535,12 @@ const grabar = () => {
     data: {
       notven_codigo: $("#notven_codigo").val(),
       notven_fecha: $("#notven_fecha").val(),
+      notven_timbrado: $("#notven_timbrado").val(),
+      notven_timbrado_venc: $("#notven_timbrado_venc").val(),
       notven_numeronota: $("#notven_numeronota").val(),
       notven_concepto: $("#notven_concepto").val(),
+      notven_funcionario: $("#notven_funcionario").val() || 0,
+      notven_chapa: $("#notven_chapa").val() || 0,
       notven_estado: $("#notven_estado").val(),
       tipco_codigo: $("#tipco_codigo").val(),
       ven_codigo: $("#ven_codigo").val(),
@@ -471,6 +548,7 @@ const grabar = () => {
       emp_codigo: $("#emp_codigo").val(),
       usu_codigo: $("#usu_codigo").val(),
       cli_codigo: $("#cli_codigo").val(),
+      ven_cuota: $("#ven_cuota").val() || 0,
       operacion_cabecera: $("#operacion_cabecera").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
@@ -484,7 +562,6 @@ const grabar = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            setAnulacion();
             limpiarCampos();
           }
         }
@@ -528,7 +605,7 @@ const grabarDetalle = () => {
       emp_codigo: $("#emp_codigo").val(),
       tipco_codigo: $("#tipco_codigo").val(),
       ven_codigo: $("#ven_codigo").val(),
-      libven_numcomprobante: $("#libven_numcomprobante").val(),
+      notven_numeronota: $("#notven_numeronota").val(),
       tipim_codigo: $("#tipim_codigo").val(),
       usu_codigo: $("#usu_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
@@ -544,8 +621,8 @@ const grabarDetalle = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            setMontos();
-            limpiarCampos();
+            habilitarBotones2(true);
+            listarDetalle();
           }
         }
       );
@@ -571,6 +648,7 @@ const grabarDetalle = () => {
     });
 };
 
+//Establece los mensajes para agregar y anular cabecera
 const confirmar = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_cabecera").val();
@@ -583,8 +661,8 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -605,6 +683,7 @@ const confirmar = () => {
   );
 };
 
+//Establece los mensajes para agregar y eliminar detalle
 const confirmar2 = () => {
   //solicitamos el value del input operacion_cabecera
   var oper = $("#operacion_detalle").val();
@@ -617,8 +696,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -646,20 +725,16 @@ const confirmar2 = () => {
   );
 };
 
+//Controla que todos los inputs de cabecera no se pasen con valores vacios
 const controlVacio = () => {
-  let condicion;
+  let condicion = false;
+  let condicion2 = false;
 
-  if ($("#notven_codigo").val() == "") {
+  if ($("#notven_codigo").val() == "0") {
     condicion = true;
   } else if ($("#notven_numeronota").val() == "") {
     condicion = true;
   } else if ($("#notven_fecha").val() == "") {
-    condicion = true;
-  } else if ($("#cli_codigo").val() == 0) {
-    condicion = true;
-  } else if ($("#cliente").val() == "") {
-    condicion = true;
-  } else if ($("#factura").val() == "") {
     condicion = true;
   } else if ($("#tipco_codigo").val() == 0) {
     condicion = true;
@@ -667,37 +742,68 @@ const controlVacio = () => {
     condicion = true;
   } else if ($("#notven_concepto").val() == "") {
     condicion = true;
+  } else if ($("#per_numerodocumento").val() == "") {
+    condicion = true;
+  } else if ($("#cliente").val() == "") {
+    condicion = true;
+  } else if ($("#ven_codigo").val() == 0) {
+    condicion = true;
+  } else if ($("#ven_numfactura").val() == "") {
+    condicion = true;
+  } else if ($("#notven_timbrado").val() == "") {
+    condicion = true;
+  } else if ($("#notven_timbrado_venc").val() == "") {
+    condicion = true;
   } else if ($("#emp_razonsocial").val() == "") {
     condicion = true;
   } else if ($("#suc_descripcion").val() == "") {
     condicion = true;
   } else if ($("#usu_login").val() == "") {
     condicion = true;
-  } else if ($("#cedula").val() == "") {
-    condicion = true;
-  } else if ($("#ven_tipofactura").val() == "") {
-    condicion = true;
-  } else if ($("#vent_montocuota").val() == "") {
-    condicion = true;
   } else if ($("#notven_estado").val() == "") {
     condicion = true;
+  } else if (
+    $("#notven_funcionario").val() == 0 &&
+    $("#tipco_codigo").val() == 3
+  ) {
+    condicion2 = true;
+  } else if ($("#funcionario").val() == "" && $("#tipco_codigo").val() == 3) {
+    condicion2 = true;
+  } else if ($("#notven_chapa").val() == 0 && $("#tipco_codigo").val() == 3) {
+    condicion2 = true;
+  } else if ($("#marve_codigo").val() == 0 && $("#tipco_codigo").val() == 3) {
+    condicion2 = true;
+  } else if ($("#modve_codigo").val() == 0 && $("#tipco_codigo").val() == 3) {
+    condicion2 = true;
   }
 
-  if (condicion) {
-    swal({
-      title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
-      type: "error",
-    });
+  // Dependiendo del tipo de nota, enviamos una
+  if (condicion || condicion2) {
+    if (condicion2) {
+      swal({
+        title: "RESPUESTA!!",
+        text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO, NO SE OLVIDE LOS DATOS DEL FUNCIONARIO Y VEHICULO DE LA EMPRESA, REFERENTE A LA NOTA DE REMISION",
+        type: "error",
+      });
+    } else {
+      swal({
+        title: "RESPUESTA!!",
+        text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
+        type: "error",
+      });
+    }
   } else {
     confirmar();
   }
 };
 
+//Controla que todos los inputs de detalle no se pasen con valores vacios
 const controlVacio2 = () => {
   let condicion;
 
-  if ($("#it_codigo").val() == 0) {
+  if ($("#dep_codigo").val() == 0) {
+    condicion = true;
+  } else if ($("#it_codigo").val() == 0) {
     condicion = true;
   } else if ($("#tipit_codigo").val() == 0) {
     condicion = true;
@@ -718,7 +824,7 @@ const controlVacio2 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE DETALLE QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -728,7 +834,7 @@ const controlVacio2 = () => {
     ) {
       swal({
         title: "RESPUESTA!!",
-        text: "El servicio no lleva cantidad",
+        text: "LA CANTIDAD REFERENTE AL 3 DEBE DE SER CERO (0)",
         type: "error",
       });
     } else {
@@ -737,6 +843,26 @@ const controlVacio2 = () => {
   }
 };
 
+//Controla que el tipo de comprobante credito o debito este definido para poder modificar datos de pago
+const controlVacio3 = () => {
+  let condicion;
+
+  if ($("#tipco_codigo").val() == 0 || $("#tipco_codigo").val() == 3) {
+    condicion = true;
+  }
+
+  if (condicion) {
+    swal({
+      title: "RESPUESTA!!",
+      text: "LA OPCION SOLO SE ENCUENTRA HABILITADA PARA NOTAS DE CREDITO O DEBITO",
+      type: "info",
+    });
+  } else {
+    verificarNotaDetalle();
+  }
+};
+
+//Envia a los inputs de cabecera los seleccionado en la tabla de cabecera
 const seleccionarFila = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
@@ -745,27 +871,40 @@ const seleccionarFila = (objetoJSON) => {
 
   $(".foco").attr("class", "form-line foco focused");
   $(".foco2").attr("class", "form-line foco2 focused");
-  $(".vent").attr("class", "form-line vent focused");
   $(".tip").attr("class", "form-line tip focused");
+  $(".foco4").attr("class", "form-line foco4 focused");
+  $(".vent").attr("class", "form-line vent focused");
   $(".est").attr("class", "form-line est focused");
-  $(".con").attr("class", "form-line con focused");
 
   $("#detalle").attr("style", "display: block;");
+  actualizacionCabecera();
+  mostrarInputDeposito();
   listarDetalle();
+  limpiarCamposDetalle();
   //Mostramos el search de factura
-  showBuscador();
+  //showBuscador();
+  //Si es una nota de remision mostramos los cards
+  if ($("#tipco_codigo").val() == "3") {
+    $("#nota_remision").attr("style", "display: block;");
+    $(".func").attr("class", "form-line func focused");
+    $(".ch").attr("class", "form-line ch focused");
+  } else {
+    $("#nota_remision").attr("style", "display: none;");
+  }
 };
 
+//Envia a los inputs de detalle lo seleccionado en la tabla de detalle
 const seleccionarFila2 = (objetoJSON) => {
   //Enviamos los datos a su respectivos inputs
   Object.keys(objetoJSON).forEach(function (propiedad) {
     $("#" + propiedad).val(objetoJSON[propiedad]);
   });
 
-  if (objetoJSON.tipit_codigo == 3) {
-    $("#descripcion").val(objetoJSON.it_descripcion);
-  }
+  //   if (objetoJSON.tipit_codigo == 3) {
+  //     $("#descripcion").val(objetoJSON.it_descripcion);
+  //   }
 
+  $(".dep").attr("class", "form-line dep focused");
   $(".it").attr("class", "form-line it focused");
   $(".foco3").attr("class", "form-line foco3 focused");
 };
@@ -781,21 +920,6 @@ const seleccionTipoComprobante = (datos) => {
   $(".tip").attr("class", "form-line tip focused");
   // Establecemos los datos de numero nota, timbrado y vencimiento timbrado
   getTimbrados();
-  //   if ($("#tipco_codigo").val() == "1") {
-  //     getConcepto();
-  //   }
-
-  //   if ($("#tipco_codigo").val() == "2") {
-  //     $("#notven_concepto").val("COSTO EXTRA");
-  //     $(".con").attr("class", "form-line con focused");
-  //   }
-
-  //   if ($("#tipco_codigo").val() == "3") {
-  //     $("#notven_concepto").val("ENVIO");
-  //     $(".con").attr("class", "form-line con focused");
-  //   }
-  //Mostramos el search de factura
-  //   showBuscador();
 };
 
 //Busca, filtra y muestra los tipos de comprobantes
@@ -835,6 +959,102 @@ const getTipoComprobante = () => {
     });
 };
 
+//Envia a los input de funcionario lo seleccionado en el autocompletado
+const seleccionFuncionario = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulFuncionario").html();
+  $("#listaFuncionario").attr("style", "display: none;");
+  $(".func").attr("class", "form-line func focused");
+};
+
+//Busca, filtra y muestra los funcionarios
+const getFuncionario = () => {
+  $.ajax({
+    //Solicitamos los datos a listaFuncionario2
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaFuncionario2.php",
+    data: {
+      per_numerodocumento2: $("#per_numerodocumento2").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionFuncionario(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.funcionario +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulFuncionario").html(fila);
+      //hacemos visible la lista
+      $("#listaFuncionario").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width: 100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
+//Envia a los input de chapa vehiculo lo seleccionado en el autocompletado
+const seleccionChapaVehiculo = (datos) => {
+  //Enviamos los datos a su respectivo input
+  Object.keys(datos).forEach((key) => {
+    $("#" + key).val(datos[key]);
+  });
+  $("#ulChapa").html();
+  $("#listaChapa").attr("style", "display: none;");
+  $(".ch").attr("class", "form-line ch focused");
+};
+
+//Busca, filtra y muestra los vehiculos por chapa
+const getChapaVehiculo = () => {
+  $.ajax({
+    //Solicitamos los datos a listaChapaVehiculo2
+    method: "POST",
+    url: "/sys8DD/others/complements_php/listas/listaChapaVehiculo2.php",
+    data: {
+      chave_chapa: $("#chave_chapa").val(),
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (lista) {
+      let fila = "";
+      $.each(lista, function (i, objeto) {
+        if (objeto.dato1 == "NSE") {
+          fila += "<li class='list-group-item'>" + objeto.dato2 + "</li>";
+        } else {
+          fila +=
+            "<li class='list-group-item' onclick='seleccionChapaVehiculo(" +
+            JSON.stringify(objeto) +
+            ")'>" +
+            objeto.vehiculo +
+            "</li>";
+        }
+      });
+      //cargamos la lista
+      $("#ulChapa").html(fila);
+      //hacemos visible la lista
+      $("#listaChapa").attr(
+        "style",
+        "display: block; position:absolute; z-index: 3000; width: 100%;"
+      );
+    })
+    .fail(function (a, b, c) {
+      swal("ERROR", c, "error");
+    });
+};
+
 //Envia a los input de venta lo seleccionado en el autocompletado
 const seleccionVenta = (datos) => {
   //Enviamos los datos a su respectivo input
@@ -854,6 +1074,8 @@ const getVenta = () => {
     url: "/sys8DD/others/complements_php/listasMovimientos/listaVentaNotaVenta.php",
     data: {
       per_numerodocumento: $("#per_numerodocumento").val(),
+      suc_codigo: $("#suc_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -945,10 +1167,7 @@ const seleccionItem = (datos) => {
   $(".it").attr("class", "form-line it focused");
   $(".foco3").attr("class", "form-line foco3 focused");
   //Determina que inputs tocar y cuales no
-  controlInputsDetalle(
-    $("#tipit_descripcion").val(),
-    $("#tipco_descripcion").val()
-  );
+  controlInputsDetalle($("#tipit_codigo").val(), $("#tipco_descripcion").val());
 };
 
 //Busca, filtra y muestra los items
@@ -958,12 +1177,12 @@ const getItem = () => {
     method: "POST",
     url: "/sys8DD/others/complements_php/listasMovimientos/listaItemsNotaVenta.php",
     data: {
+      it_descripcion: $("#it_descripcion").val(),
       tipco_descripcion: $("#tipco_descripcion").val(),
       ven_codigo: $("#ven_codigo").val(),
       dep_codigo: $("#dep_codigo").val(),
       emp_codigo: $("#emp_codigo").val(),
       suc_codigo: $("#suc_codigo").val(),
-      it_descripcion: $("#it_descripcion").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -994,51 +1213,6 @@ const getItem = () => {
     });
 };
 
-const seleccionConcepto = (datos) => {
-  //Enviamos los datos a su respectivo input
-  Object.keys(datos).forEach((key) => {
-    $("#" + key).val(datos[key]);
-  });
-  $("#ulConcepto").html();
-  $("#listaConcepto").attr("style", "display: none;");
-  $(".con").attr("class", "form-line con focused");
-};
-
-const getConcepto = () => {
-  $.ajax({
-    //Solicitamos los datos a listaConcepto
-    method: "GET",
-    url: "/sys8DD/others/complements_php/listas/listaConcepto.php",
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionConcepto(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.notven_concepto +
-          "</li>";
-      });
-
-      //cargamos la lista
-      $("#ulConcepto").html(fila);
-      //hacemos visible la lista
-      $("#listaConcepto").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
-};
-
-//Muestra el search de facturas
-const showBuscador = () => {
-  $("#ci").attr("style", "display: block;");
-};
-
 //Te envia al menu
 const salir = () => {
   window.location = "/sys8DD/menu.php";
@@ -1047,24 +1221,24 @@ const salir = () => {
 //Dependiendo del tipo de item y del tipo de comprobante se habilitaran o deshabilitaran algunos inputs
 const controlInputsDetalle = (tipoItem, tipoComprobante) => {
   if (
-    tipoItem == "PRODUCTO" &&
+    tipoItem == "2" &&
     (tipoComprobante == "DEBITO" || tipoComprobante == "CREDITO")
   ) {
-    $("#notvendet_cantidad").removeAttr("readonly");
-    $("#notvendet_precio").attr("readonly", "");
-  } else if (tipoItem == "SERVICIO" && tipoComprobante == "DEBITO") {
+    $("#notvendet_cantidad").removeAttr("disabled");
+    $("#notvendet_precio").attr("disabled", "");
+  } else if (tipoItem == "3" && tipoComprobante == "DEBITO") {
     $("#notvendet_cantidad").val("0");
-    $("#notvendet_cantidad").attr("readonly", "");
+    $("#notvendet_cantidad").attr("disabled", "");
     $(".foco3").attr("class", "form-line foco3 focused");
-    $("#notvendet_precio").removeAttr("readonly");
+    $("#notvendet_precio").removeAttr("disabled");
   } else if (tipoComprobante == "REMISION") {
-    $("#notvendet_cantidad").attr("readonly", "");
-    $("#notvendet_precio").attr("readonly", "");
-  } else if (tipoItem == "SERVICIO" && tipoComprobante == "CREDITO") {
+    $("#notvendet_cantidad").attr("disabled", "");
+    $("#notvendet_precio").attr("disabled", "");
+  } else if (tipoItem == "3" && tipoComprobante == "CREDITO") {
     $("#notvendet_cantidad").val("0");
-    $("#notvendet_cantidad").attr("readonly", "");
+    $("#notvendet_cantidad").attr("disabled", "");
     $(".foco3").attr("class", "form-line foco3 focused");
-    $("#notvendet_precio").attr("readonly", "");
+    $("#notvendet_precio").attr("disabled", "");
   }
 };
 

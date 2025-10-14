@@ -627,6 +627,7 @@ const listarDetalle = () => {
       lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(2));
       lineafoot += "</th>";
       lineafoot += "</tr>";
+
       //establecemos el body, foot y el formato de la tabla
       $("#tabla_detalle").html(tabla);
       $("#pie_detalle").html(lineafoot);
