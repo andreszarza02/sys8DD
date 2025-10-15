@@ -924,6 +924,21 @@ if (isset($_SESSION['apertura'])) {
                </li>
             <?php } ?>
 
+            <li>
+               <a href="javascript:void(0);" class="menu-toggle">
+                  <i class="material-icons">attach_file</i>
+                  <span>Manuales</span>
+               </a>
+               <ul class="ml-menu">
+                  <li>
+                     <a href="/sys8DD/manuales/Manual_Usuario_SYS_8DD.pdf">Manual de Usuario</a>
+                  </li>
+                  <li>
+                     <a href="/sys8DD/manuales/Manual_Seguridad_SYS_8DD.pdf">Manual de Seguridad</a>
+                  </li>
+               </ul>
+            </li>
+
             <!-- <li class="header">LABELS</li>
             <li>
                <a href="javascript:void(0);">

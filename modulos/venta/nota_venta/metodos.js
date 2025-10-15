@@ -74,6 +74,7 @@ const mostrarInputDeposito = () => {
 const actualizarMontoCuota = () => {
   if ($("#ven_tipofactura").val() == "CONTADO") {
     $("#ven_cuota").val("1");
+    $(".foco5").attr("class", "form-line foco5 focused");
   } else {
     $("#ven_cuota").val("");
     $(".foco5").attr("class", "form-line foco5");
@@ -709,14 +710,7 @@ const confirmar2 = () => {
     function (isConfirm) {
       //Si la operacion_cabecera es correcta llamamos al metodo grabar
       if (isConfirm) {
-        if (
-          $("#tipco_codigo").val() == "1" &&
-          $("#operacion_detalle").val() == "1"
-        ) {
-          validarMontoCredito();
-        } else {
-          grabarDetalle();
-        }
+        grabarDetalle();
       } else {
         //Si cancelamos la operacion_cabecera realizamos un reload
         window.location.reload(true);
@@ -881,8 +875,7 @@ const seleccionarFila = (objetoJSON) => {
   mostrarInputDeposito();
   listarDetalle();
   limpiarCamposDetalle();
-  //Mostramos el search de factura
-  //showBuscador();
+
   //Si es una nota de remision mostramos los cards
   if ($("#tipco_codigo").val() == "3") {
     $("#nota_remision").attr("style", "display: block;");
@@ -890,6 +883,17 @@ const seleccionarFila = (objetoJSON) => {
     $(".ch").attr("class", "form-line ch focused");
   } else {
     $("#nota_remision").attr("style", "display: none;");
+  }
+
+  // Input deposito
+  if ($("#tipco_codigo").val() == "2") {
+    $("#deposito").attr("class", "col-sm-2");
+    $("#deposito").attr("style", "display: block;");
+    $("#item").attr("class", "col-sm-2");
+  } else {
+    $("#deposito").attr("class", "col-sm-2");
+    $("#deposito").attr("style", "display: none;");
+    $("#item").attr("class", "col-sm-4");
   }
 };
 

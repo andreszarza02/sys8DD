@@ -360,7 +360,7 @@ foreach ($permisos as $permiso) {
                                  </div>
                               </div>
                            </div>
-                           <div class="col-sm-4">
+                           <div class="col-sm-4" id="item">
                               <div class="form-group form-float">
                                  <div class="form-line it">
                                     <input type="hidden" id="it_codigo" value="0">
