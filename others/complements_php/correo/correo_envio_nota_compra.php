@@ -1,5 +1,8 @@
 <?php
 
+//Retorno JSON
+header("Content-type: application/json; charset=utf-8");
+
 //Requerimos conexion 
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -8,7 +11,7 @@ $objConexion = new Conexion();
 $conexion = $objConexion->getConexion();
 
 // Definimos variables a utilizar
-$notven_codigo = $_GET['notven_codigo'] ?? 0;
+$notven_codigo = $_POST['notven_codigo'] ?? 0;
 
 $contador = 0;
 $totalIva10 = 0;
@@ -37,6 +40,7 @@ $sql = "select
             UPPER(to_char(nvc.notven_fecha ,'DD \"de\" TMMonth \"de\" YYYY')) as notven_fecha,
             p.per_nombre||' '||p.per_apellido as cliente,
             p.per_numerodocumento,
+            p.per_email,
             c2.cli_direccion,
             p.per_telefono,
             tc.tipco_descripcion,
@@ -478,20 +482,113 @@ $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
 
 <?php
 
+//Descargamos los datos guardados en el buffer en la variable
 $html = ob_get_clean();
 
+//Requerimos la librerias del vendor
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/vendor/autoload.php";
 
+//Llamamos a Dopmpdf
 use Dompdf\Dompdf;
 
+//Creamos el objeto que va agenerar el pdf
 $dompdf = new Dompdf();
 
+//Cargamos el reporte generado en html
 $dompdf->loadHtml($html);
 
+//Establecemos el formato del pdf
 $dompdf->setPaper('A4', 'portrait'); //portrait -> vertical landscape -> horizontal
 
+//Renderizamos el pdf
 $dompdf->render();
 
-$dompdf->stream("8_DE_DICIEMBRE_{$cabecera['tipco_descripcion']}_Nro_{$cabecera['notven_numeronota']}.pdf", array('Attachment' => false));
+//Obtenemos el contenido del pdf generado
+$output = $dompdf->output();
+
+//Llamamos a la libreria PHP Mailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+//Requerimos la librerias del vendor
+require "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/vendor/autoload.php";
+
+//Creamos el objeto mail
+$mail = new PHPMailer(true);
+
+try {
+
+   // Configuración del servidor SMTP
+   $mail->isSMTP();
+   $mail->Host = 'smtp.gmail.com'; // Especifica el servidor SMTP
+   $mail->SMTPAuth = true;
+   $mail->Username = 'adm.8DD@gmail.com'; // establecemos el correo desde donde enviar
+   $mail->Password = 'upav neje qmtf bvpo'; // Establecemos la contraseña de aplicacion
+   $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Habilitar SSL
+   $mail->Port = 465; // Puerto TCP para ssl
+
+   // Remitente y destinatario
+   $mail->setFrom('adm.8DD@gmail.com', '
+   Admnistracion 8 de Diciembre');
+   $mail->addAddress("{$cabecera['per_email']}", "{$cabecera['cliente']}");
+
+   //Guaradamos el pdf generado y le ponemos un nombre y extension
+   $mail->addStringAttachment(
+      $output,
+      "8_DE_DICIEMBRE_{$cabecera['tipco_descripcion']}_Nro_{$cabecera['notven_numeronota']}.pdf"
+   );
+
+   // Contenido del correo
+   $mail->isHTML(true);
+   $mail->Subject = "CONFIRMACION DE NOTA DE {$cabecera['tipco_descripcion']} - Nro{$cabecera['notven_numeronota']}";
+   $mail->Body = '
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 0; }
+            .content { background: #ffffff; margin: 20px auto; padding: 25px; max-width: 600px; border-radius: 6px; box-shadow: 0 0 12px rgba(0,0,0,0.1); }
+            h2 { color: #333333; }
+            p { color: #555555; font-size: 15px; line-height: 1.6; }
+            strong { color: #000000; }
+        </style>
+    </head>
+    <body>
+        <div class="content">
+            <h2>Estimado(a) ' . htmlspecialchars($cabecera['cliente']) . ',</h2>
+            <p>Esperamos que se encuentre bien. Nos complace informarle que la nota de ' . mb_strtolower($cabecera['tipco_descripcion'], 'UTF-8') . ' correspondiente a su gestión ha sido generada exitosamente en nuestro sistema.</p>
+            <p>A continuación, le presentamos los detalles específicos de esta transacción para su control y seguimiento:</p>
+            <p><strong>Número de nota de  ' . mb_strtolower($cabecera['tipco_descripcion'], 'UTF-8') . ':</strong> ' . htmlspecialchars($cabecera['notven_numeronota']) . '</p>
+            <p>Los ítems o servicios indicados en esta nota de ' . mb_strtolower($cabecera['tipco_descripcion'], 'UTF-8') . ' deberán ser entregados o prestados dependiendo del tipo de nota en la siguiente dirección:</p>
+            <p><strong>' . htmlspecialchars($cabecera['cli_direccion']) . '</strong></p>
+            <p>Además, adjuntamos un archivo PDF que contiene toda la información detallada y soporte documental para su conveniencia y archivo.</p>
+            <p>Le invitamos a revisar la información con atención y, si tiene alguna consulta o requiere mayor información, no dude en contactarnos a través de los canales habituales.</p>
+            <p>Agradecemos su confianza y esperamos continuar colaborando estrechamente.</p>
+            <p>Atentamente,<br><strong>8 DE DICIEMBRE - ' . htmlspecialchars($cabecera['suc_descripcion']) . '</strong></p>
+        </div>
+    </body>
+</html>
+';
+
+   // Enviar el correo
+   $mail->send();
+
+   //echo 'Correo enviado con éxito';
+   $response = array(
+      "mensaje" => "LA NOTA DE {$cabecera['tipco_descripcion']} SE ENVIO A EL CLIENTE {$cabecera['cliente']}",
+      "tipo" => "info"
+   );
+
+   echo json_encode($response);
+
+} catch (Exception $e) {
+
+   //echo "El correo no pudo ser enviado. Error: {$mail->ErrorInfo}";
+   $response = array(
+      "mensaje" => "LA NOTA DE {$cabecera['tipco_descripcion']} NO SE ENVIO A EL CLIENTE {$cabecera['cliente']}",
+      "tipo" => "error"
+   );
+
+   echo json_encode($response);
+}
 
 ?>

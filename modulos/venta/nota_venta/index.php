@@ -430,7 +430,7 @@ foreach ($permisos as $permiso) {
                                  <span>IMPRIMIR</span>
                               </button>
                               <?php if ($btnEnviar === true) { ?>
-                                 <button type="button" class="btn btn-primary waves-effect" onclick="enviarOrden()">
+                                 <button type="button" class="btn btn-primary waves-effect" onclick="enviarNota()">
                                     <i class="material-icons">email</i>
                                     <span>ENVIAR NOTA</span>
                                  </button>

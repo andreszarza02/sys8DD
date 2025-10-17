@@ -368,81 +368,30 @@ const getTimestamp = () => {
   return fecha;
 };
 
-//Establece los montos al cargar las notas de credito y debito
-// const setMontos = () => {
-//   $.ajax({
-//     //Enviamos los datos al controladorDetalle2
-//     method: "POST",
-//     url: "controladorDetalle2.php",
-//     data: {
-//       notven_concepto: $("#notven_concepto").val(),
-//       notvendet_cantidad: $("#notvendet_cantidad").val(),
-//       notvendet_precio: $("#notvendet_precio").val(),
-//       ven_codigo: $("#ven_codigo").val(),
-//       tipco_codigo: $("#tipco_codigo").val(),
-//       it_codigo: $("#it_codigo").val(),
-//       tipit_codigo: $("#tipit_codigo").val(),
-//       tipim_codigo: $("#tipim_codigo").val(),
-//       ven_tipofactura: $("#ven_tipofactura").val(),
-//       vent_montocuota: $("#vent_montocuota").val(),
-//       operacion_detalle: $("#operacion_detalle").val(),
-//     },
-//   });
-// };
-
-//Aplica la anulación en base a los tipos de notas
-// const setAnulacion = () => {
-//   $.ajax({
-//     //Enviamos los datos al controladorDetalle2
-//     method: "POST",
-//     url: "controladorDetalle2.php",
-//     data: {
-//       notven_concepto: "ninguna",
-//       notvendet_cantidad: "0",
-//       notvendet_precio: "0",
-//       ven_codigo: $("#ven_codigo").val(),
-//       tipco_codigo: $("#tipco_codigo").val(),
-//       it_codigo: "0",
-//       tipit_codigo: "0",
-//       tipim_codigo: "0",
-//       ven_tipofactura: $("#ven_tipofactura").val(),
-//       vent_montocuota: $("#vent_montocuota").val(),
-//       operacion_detalle: "0",
-//       operacion_cabecera: $("#operacion_cabecera").val(),
-//     },
-//   });
-// };
-
-//Valida el monto del detalle en caso de ser una nota de credito
-// const validarMontoCredito = () => {
-//   $.ajax({
-//     //Enviamos los datos al controladorDetalle3
-//     method: "POST",
-//     url: "controladorDetalle3.php",
-//     data: {
-//       notvendet_cantidad: $("#notvendet_cantidad").val(),
-//       notvendet_precio: $("#notvendet_precio").val(),
-//       ven_codigo: $("#ven_codigo").val(),
-//       consulta: "1",
-//     },
-//   }).done(function (respuesta) {
-//     if (respuesta.tipo == "error") {
-//       swal({
-//         title: "RESPUESTA!!",
-//         text: respuesta.mensaje,
-//         type: respuesta.tipo,
-//       });
-//     } else {
-//       grabarDetalle();
-//     }
-//   });
-// };
-
 //Permite imprimir la nota
 const imprimir = () => {
   let nota = $("#notven_codigo").val();
   window.location =
     "/sys8DD/report/ventas/reporte/reporte_notas.php?notven_codigo=" + nota;
+};
+
+// Envia la nota por correo al cliente
+const enviarNota = () => {
+  $.ajax({
+    //Enviamos datos al controlador
+    method: "POST",
+    url: "/sys8DD/others/complements_php/correo/correo_envio_nota_compra.php",
+    data: {
+      notven_codigo: $("#notven_codigo").val(),
+    },
+  }) //Establecemos un mensaje segun el contenido de la respuesta
+    .done(function (respuesta) {
+      swal({
+        title: "RESPUESTA!",
+        text: respuesta.mensaje,
+        type: respuesta.tipo,
+      });
+    });
 };
 
 // Limpia campos de detalle
