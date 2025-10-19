@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,7 +13,7 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   //Definimos las variables a pasar al sp de cabecera
+   // Definimos y cargamos las variables
    $prod_estado = pg_escape_string($conexion, $_POST['prod_estado']);
 
    $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
@@ -51,6 +53,11 @@ if (isset($_POST['operacion_cabecera'])) {
          "mensaje" => "EL NUMERO DE ORDEN YA SE ENCUENTRA REGISTRADO EN CABECERA",
          "tipo" => "error"
       );
+   } else if (strpos($error, "asociado") !== false) {
+      $response = array(
+         "mensaje" => "LA PRODUCCION YA SE ENCUENTRA ASOCIADA A UNA O VARIAS ETAPAS DE PRODUCCION, LA MISMA NO SE PUEDE ANULAR",
+         "tipo" => "error"
+      );
    } else {
       $response = array(
          "mensaje" => pg_last_notice($conexion),
@@ -60,21 +67,31 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(prod_codigo),0)+1 as prod_codigo from produccion_cab;";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_assoc($resultado);
+
    echo json_encode($datos);
 
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_produccion_cab vpc where vpc.prod_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+           from v_produccion_cab vpc 
+           where vpc.prod_estado <> 'ANULADO';";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
+
 }
 
 ?>

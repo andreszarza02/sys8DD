@@ -279,7 +279,7 @@ foreach ($permisos as $permiso) {
                               <div class="form-group form-float">
                                  <div class="form-line func">
                                     <input type="hidden" id="notven_funcionario" value="0">
-                                    <input type="text" class="form-control numero-algunos-simbolos"
+                                    <input type="text" class="form-control numeros-algunos-simbolos"
                                        id="per_numerodocumento2" onkeyup="getFuncionario()">
                                     <label class="form-label">Documento Funcionario</label>
                                     <div id="listaFuncionario" style="display: none;">
@@ -386,8 +386,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line foco3">
-                                    <input type="text" class="form-control no-disabled2 solo-numeros"
-                                       id="notvendet_cantidad" disabled>
+                                    <input type="text" class="form-control solo-numeros" id="notvendet_cantidad"
+                                       disabled>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>

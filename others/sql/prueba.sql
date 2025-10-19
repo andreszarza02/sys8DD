@@ -2121,3 +2121,59 @@ REFERENCES presupuesto_proveedor_cab (prepro_codigo)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION
 NOT DEFERRABLE;
+
+c_orden cursor is
+		select 
+		it_codigo,
+		tipit_codigo,
+		dep_codigo,
+		suc_codigo,
+		emp_codigo,
+		orprodet_cantidad 
+		from orden_produccion_det opd
+		where orpro_codigo=orprocodigo;
+
+create or replace function sp_orden_produccion_componente_det(
+    orprocodigo integer,
+    comprocodigo integer,
+    itcodigo integer,
+    tipitcodigo integer,
+    orprocomdetcantidad numeric,
+    orprocomdetcosto numeric,
+    operacion integer 
+) returns void as
+$function$
+begin 
+	 --Validamos la operacion en este caso la insercion
+     if operacion = 1 then
+
+		--Insertamos los nuevos registros
+		insert into orden_produccion_componente_det(
+		orpro_codigo, 
+		compro_codigo, 
+		it_codigo, 
+		tipit_codigo, 
+		orprocomdet_cantidad,
+		orprocomdet_costo
+		)
+		values(
+		orprocodigo, 
+		comprocodigo, 
+		itcodigo, 
+		tipitcodigo, 
+		orprocomdetcantidad,
+		orprocomdetcosto
+		);
+
+    end if;
+	--Validamos la operacion en este caso la eliminacion
+    if operacion = 2 then 
+
+		--Se realiza un borrado fisico el cual se audita
+    	delete from orden_produccion_componente_det	 
+    	where orpro_codigo=orprocodigo and compro_codigo=comprocodigo and it_codigo=itcodigo and tipit_codigo=tipitcodigo;
+
+    end if;
+end
+$function$ 
+language plpgsql;

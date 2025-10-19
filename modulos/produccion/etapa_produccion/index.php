@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -82,6 +83,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line fecha">
+                                 <input type="hidden" id="etpro_codigo" value="0">
                                  <input type="text" class="form-control" id="etpro_fecha" disabled>
                                  <label class="form-label">Fecha</label>
                               </div>
@@ -90,8 +92,8 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line pro">
-                                 <input type="text" class="form-control no-disabled" id="secc_descripcion" disabled
-                                    onkeyup="getProduccion()">
+                                 <input type="text" class="form-control no-disabled letras-numeros"
+                                    id="secc_descripcion" disabled onkeyup="getProduccion()">
                                  <label class="form-label">Seccion</label>
                                  <div id="listaProduccion" style="display: none;">
                                     <ul class="list-group" id="ulProduccion" Style="height: 100px; overflow: auto"></ul>
@@ -112,7 +114,8 @@ foreach ($permisos as $permiso) {
                               <div class="form-line it">
                                  <input type="hidden" id="it_codigo" value="0">
                                  <input type="hidden" id="tipit_codigo" value="0">
-                                 <input type="text" class="form-control" id="item" disabled onkeyup="getItem()">
+                                 <input type="text" class="form-control" id="it_descripcion" disabled
+                                    onkeyup="getItem()">
                                  <label class="form-label">Item</label>
                                  <div id="listaItem" style="display: none;">
                                     <ul class="list-group" id="ulItem" Style="height: 100px; overflow: auto"></ul>
@@ -132,8 +135,8 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line tip">
                                  <input type="hidden" id="tipet_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="tipet_descripcion" disabled
-                                    onkeyup="getTipoEtapaProduccion()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="tipet_descripcion"
+                                    disabled onkeyup="getTipoEtapaProduccion()">
                                  <label class="form-label">Etapa</label>
                                  <div id="listaEtapa" style="display: none;">
                                     <ul class="list-group" id="ulEtapa" Style="height: 100px; overflow: auto"></ul>
@@ -145,8 +148,8 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line maq">
                                  <input type="hidden" id="maq_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="maq_descripcion" disabled
-                                    onkeyup="getMaquinaria()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="maq_descripcion"
+                                    disabled onkeyup="getMaquinaria()">
                                  <label class="form-label">Maquinaria</label>
                                  <div id="listaMaquinaria" style="display: none;">
                                     <ul class="list-group" id="ulMaquinaria" Style="height: 100px; overflow: auto"></ul>
@@ -227,7 +230,7 @@ foreach ($permisos as $permiso) {
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>

@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -102,9 +103,9 @@ foreach ($permisos as $permiso) {
                                  <input type="hidden" id="it_codigo" value="0">
                                  <input type="hidden" id="tipit_codigo" value="0">
                                  <input type="hidden" id="tipit_descripcion" value="">
-                                 <input type="text" class="form-control no-disabled" id="item" disabled
+                                 <input type="text" class="form-control no-disabled letras-numeros" id="item" disabled
                                     onkeyup="getItemCabecera()">
-                                 <label class="form-label">Item</label>
+                                 <label class="form-label">Producto</label>
                                  <div id="listaItem" style="display: none;">
                                     <ul class="list-group" id="ulItem" Style="height: 80px; overflow: auto">
                                     </ul>
@@ -204,7 +205,7 @@ foreach ($permisos as $permiso) {
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -231,9 +232,9 @@ foreach ($permisos as $permiso) {
                                  <div class="form-line it2">
                                     <input type="hidden" id="it_codigo" value="0">
                                     <input type="hidden" id="tipit_codigo" value="0">
-                                    <input type="text" class="form-control no-disabled2" id="item2" disabled
-                                       onkeyup="getItemDetalle()">
-                                    <label class="form-label">Item</label>
+                                    <input type="text" class="form-control no-disabled2 letras-numeros" id="item3"
+                                       disabled onkeyup="getItemDetalle()">
+                                    <label class="form-label">Materia Prima</label>
                                     <div id="listaItemDetalle" style="display: none;">
                                        <ul class="list-group" id="ulItemDetalle" Style="height: 80px; overflow: auto">
                                        </ul>
@@ -244,8 +245,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-4">
                               <div class="form-group form-float">
                                  <div class="form-line foco2">
-                                    <input type="number" class="form-control no-disabled2" id="comprodet_cantidad"
-                                       disabled>
+                                    <input type="text" class="form-control no-disabled2 numeros-algunos-simbolos"
+                                       id="comprodet_cantidad" disabled>
                                     <label class="form-label">Cantidad</label>
                                  </div>
                               </div>
@@ -282,7 +283,7 @@ foreach ($permisos as $permiso) {
                                  <i class="material-icons">save</i>
                                  <span>CONFIRMAR</span>
                               </button>
-                              <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                              <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                                  <i class="material-icons">lock</i>
                                  <span>CANCELAR</span>
                               </button>
@@ -295,7 +296,7 @@ foreach ($permisos as $permiso) {
                               <thead>
                                  <tr>
                                     <th>NRO</th>
-                                    <th>ITEM</th>
+                                    <th>MATERIA PRIMA</th>
                                     <th>CANTIDAD</th>
                                     <th>UNIDAD MEDIDA</th>
                                  </tr>
@@ -328,7 +329,7 @@ foreach ($permisos as $permiso) {
                               <tr>
                                  <th>N° COMPONENTE</th>
                                  <th>FECHA</th>
-                                 <th>ITEM</th>
+                                 <th>PRODUCTO</th>
                                  <th>MODELO</th>
                                  <th>COLOR</th>
                                  <th>TALLE</th>

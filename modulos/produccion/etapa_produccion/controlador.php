@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,8 +13,7 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion
 if (isset($_POST['operacion'])) {
 
-   //Definimos las variables a pasar al sp
-
+   // Definimos y cargamos las variables
    $sql = "select sp_etapa_produccion(
       {$_POST['prod_codigo']},  
       {$_POST['it_codigo']},  
@@ -23,6 +24,7 @@ if (isset($_POST['operacion'])) {
       {$_POST['suc_codigo']}, 
       {$_POST['emp_codigo']}, 
       {$_POST['maq_codigo']}, 
+      {$_POST['etpro_codigo']}, 
       {$_POST['operacion']}
       )";
 
@@ -32,7 +34,7 @@ if (isset($_POST['operacion'])) {
 
    if (strpos($error, "produccion_etapa") !== false) {
       $response = array(
-         "mensaje" => "EL ITEM, LA ETAPA Y EL CODIGO DE PRODUCCION YA SE ENCUENTRAN REGISTRADOS",
+         "mensaje" => "EL ITEM, LA ETAPA, LA MAQUINARIA Y EL CODIGO DE PRODUCCION YA SE ENCUENTRAN REGISTRADOS",
          "tipo" => "error"
       );
    } else {
@@ -44,7 +46,7 @@ if (isset($_POST['operacion'])) {
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Definimos variables a utilizar 
    $modificarEstados = true;
@@ -71,7 +73,7 @@ if (isset($_POST['operacion'])) {
       }
    }
 
-   //Si la variable llega a esta seccion siendo true queire decir que todos los productos de produccion detalle tienen el estado de terminado es decir distinto a activo
+   //Si la variable llega a esta seccion siendo true quiere decir que todos los productos de produccion detalle tienen el estado de terminado es decir distinto a activo
    if ($modificarEstados) {
       $sql3 = "DO $$
                   DECLARE
@@ -180,7 +182,7 @@ if (isset($_POST['operacion'])) {
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_etapa_produccion vep";
+   $sql = "select * from v_etapa_produccion vep where vep.prodet_estado <> 'TERMINADO';";
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_all($resultado);
    echo json_encode($datos);

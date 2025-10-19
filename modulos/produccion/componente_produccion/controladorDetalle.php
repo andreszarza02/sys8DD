@@ -1,4 +1,5 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
 //Solicitamos la clase de Conexion
@@ -11,9 +12,8 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion detalle
 if (isset($_POST['operacion_detalle'])) {
 
-
-   $cantidad = $_POST['comprodet_cantidad'];
-   $comprodet_cantidad = str_replace(",", ".", $cantidad);
+   // Definimos y cargamos las variables
+   $comprodet_cantidad = str_replace(",", ".", $_POST['comprodet_cantidad']);
 
 
    $sql = "select sp_componente_produccion_det(
@@ -30,7 +30,7 @@ if (isset($_POST['operacion_detalle'])) {
 
    if (strpos($error, "item") !== false) {
       $response = array(
-         "mensaje" => "YA SE REGISTRO EL ITEM EN EL DETALLE",
+         "mensaje" => "LA MATERIA PRIMA YA SE ENCUENTRA REGISTRADA EN EL DETALLE",
          "tipo" => "error"
       );
    } else {
@@ -45,10 +45,18 @@ if (isset($_POST['operacion_detalle'])) {
 } else if (isset($_POST['componente'])) {
 
    $componente = $_POST['componente'];
-   $sql = "select * from v_componente_produccion_det vcpd where vcpd.compro_codigo=$componente";
+
+   $sql = "select 
+               * 
+            from v_componente_produccion_det vcpd 
+            where vcpd.compro_codigo=$componente";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
+
 }
 
 ?>

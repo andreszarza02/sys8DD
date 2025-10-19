@@ -13,7 +13,7 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   //Definimos las variables a pasar al sp de cabecera
+   // Definimos y cargamos las variables
    $orpro_estado = pg_escape_string($conexion, $_POST['orpro_estado']);
 
    $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
@@ -61,6 +61,11 @@ if (isset($_POST['operacion_cabecera'])) {
          "mensaje" => "LA FECHA DE INICIO ES MAYOR A LA FECHA DE CULMINACION",
          "tipo" => "error"
       );
+   } else if (strpos($error, "asociado") !== false) {
+      $response = array(
+         "mensaje" => "LA ORDEN DE PRODUCCION YA SE ENCUENTRA ASOCIADA A UNA PRODUCCION, LA MISMA NO SE PUEDE ANULAR",
+         "tipo" => "error"
+      );
    } else {
       $response = array(
          "mensaje" => pg_last_notice($conexion),
@@ -71,20 +76,29 @@ if (isset($_POST['operacion_cabecera'])) {
    //Enviamos una respuesta
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(orpro_codigo),0)+1 as orpro_codigo from orden_produccion_cab;";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_assoc($resultado);
+
    echo json_encode($datos);
 
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_orden_produccion_cab vopc where vopc.orpro_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+            from v_orden_produccion_cab vopc 
+            where vopc.orpro_estado <> 'ANULADO';";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
 }
 

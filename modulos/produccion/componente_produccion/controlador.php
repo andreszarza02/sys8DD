@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -71,21 +73,31 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(compro_codigo),0)+1 as compro_codigo from componente_produccion_cab;";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_assoc($resultado);
+
    echo json_encode($datos);
 
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_componente_produccion_cab vcpc where vcpc.compro_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+            from v_componente_produccion_cab vcpc 
+            where vcpc.compro_estado <> 'ANULADO';";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
+
 }
 
 ?>

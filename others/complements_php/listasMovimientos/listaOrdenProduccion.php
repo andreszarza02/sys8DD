@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -16,7 +18,7 @@ $emp_codigo = $_POST['emp_codigo'];
 //Establecemos y mostramos la consulta
 $sql = "select 
          s.secc_descripcion,
-         'Orden Produccion N°'||opc.orpro_codigo||' '||to_char(opc.orpro_fecha, 'DD-MM-YYYY') as orden,
+         'ORDEN PRODUCCION N°'||opc.orpro_codigo||' '||to_char(opc.orpro_fecha, 'DD-MM-YYYY') as orden,
          opc.orpro_codigo,
          opc.orpro_fechainicio,
          opc.orpro_fechaculminacion

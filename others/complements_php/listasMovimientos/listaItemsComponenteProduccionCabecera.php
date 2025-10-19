@@ -2,6 +2,7 @@
 
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -17,18 +18,21 @@ $sql = "select
             i.tipit_codigo,
             ti.tipit_descripcion,
             i.it_descripcion as item,
-            i.it_descripcion||' COD:'||m.mod_codigomodelo||' COL:'||cp.col_descripcion||' TALL:'||t.tall_descripcion as item2,
+            i.it_descripcion||', <b>CODIGO:</b>'||m.mod_codigomodelo||', <b>COLOR:</b>'||cp.col_descripcion||', <b>TALLE:</b>'||t.tall_descripcion as item2,
             m.mod_codigomodelo,
             cp.col_descripcion,
             t.tall_descripcion
          from items i 
-         join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
-         join modelo m on m.mod_codigo=i.mod_codigo
-         join color_prenda cp on cp.col_codigo=m.col_codigo
-         join talle t on t.tall_codigo=i.tall_codigo
-         where (i.it_descripcion ilike '%$item%' or m.mod_codigomodelo ilike '%$item%')
-         and i.it_estado='ACTIVO'
-         and i.tipit_codigo=2
+         	join tipo_item ti on ti.tipit_codigo=i.tipit_codigo
+         	join modelo m on m.mod_codigo=i.mod_codigo
+         	join color_prenda cp on cp.col_codigo=m.col_codigo
+         	join talle t on t.tall_codigo=i.tall_codigo
+         where (i.it_descripcion ilike '%$item%' 
+	         or m.mod_codigomodelo ilike '%$item%'
+	         or cp.col_descripcion ilike '%$item%'
+	         or t.tall_descripcion ilike '%$item%')
+            and i.it_estado='ACTIVO'
+            and i.tipit_codigo=2
          order by i.it_codigo;
 ";
 

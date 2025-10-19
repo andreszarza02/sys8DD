@@ -276,7 +276,11 @@ $detalle = pg_fetch_all($resultado2);
             <?php foreach ($detalle as $indice => $filaDetalle) {
                $totalExenta += floatval($filaDetalle['exenta']);
                $totalIva5 += floatval($filaDetalle['grav5']);
-               $totalIva10 += floatval($filaDetalle['grav10']);
+               if ($filaDetalle['tipit_codigo'] == 3) { //Servicio
+                  $totalIva10 += floatval($filaDetalle['presdet_precio']);
+               } else {
+                  $totalIva10 += floatval($filaDetalle['grav10']);
+               }
 
                ?>
                <tr>
@@ -334,7 +338,11 @@ $detalle = pg_fetch_all($resultado2);
                   </td>
                   <td>
                      <?php if (isset($filaDetalle['grav10'])) {
-                        echo number_format($filaDetalle['grav10'], 0, ',', '.');
+                        if ($filaDetalle['tipit_codigo'] == 3) {// servicio
+                           echo number_format($filaDetalle['presdet_precio'], 0, ',', '.');
+                        } else {
+                           echo number_format($filaDetalle['grav10'], 0, ',', '.');
+                        }
                      } else {
                         echo '-';
                      } ?>

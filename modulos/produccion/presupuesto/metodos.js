@@ -1,3 +1,196 @@
+//Controla que los inputs no se queden vacios al perder el foco y que no contengan letras o simbolos excepto el guion -
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase numeros-algunos-simbolos realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("numeros-algunos-simbolos")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$^&*()_~+\=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o simbolo distinto a -
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene letras o simbolo distinto a -
+          if (
+            tieneSimbolo.test(input.value) &&
+            (tieneMayuscula.test(input.value) ||
+              tieneMinuscula.test(input.value))
+          ) {
+            mensaje = `El campo ${labelText} contiene letras y símbolos distintos a guion(-)`;
+          } else if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos distintos a guion(-)`;
+          } else if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} contiene letras`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras y numeros
+const validacionInputsVacios2 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan numeros
+const validacionInputsVacios3 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase solo-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("solo-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneMinuscula = /[a-z]/;
+        const tieneMayuscula = /[A-Z]/;
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (
+            tieneMayuscula.test(input.value) ||
+            tieneMinuscula.test(input.value) ||
+            tieneSimbolo.test(input.value)
+          ) {
+            mensaje = `El campo ${labelText} solo acepta valores numéricos, Ej: 123456...`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -16,11 +209,40 @@ const getCodigo = () => {
     method: "POST",
     url: "controlador.php",
     data: {
-      consulta: 1,
+      consulta1: 1,
     },
   }).done(function (respuesta) {
     $("#pres_codigo").val(respuesta.pres_codigo);
   });
+};
+
+// Valida si el presupuesto esta asociado a una orden
+const consultaAsociacion = (escenario, mensaje) => {
+  $.ajax({
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      pres_codigo: $("#pres_codigo").val(),
+      consulta1: 1,
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (respuesta) {
+      if (respuesta.validacion == "asociado") {
+        swal(
+          {
+            title: "VALIDACION " + escenario.toUpperCase(),
+            text: mensaje.toUpperCase(),
+            type: "error",
+            confirmButtonText: "OK",
+          },
+          function (isConfirm) {
+            if (isConfirm) {
+              window.location.reload(true);
+            }
+          }
+        );
+      }
+    });
 };
 
 //Permite aplicar un formato de tabla a la lista de presupuesto cabecera
@@ -128,7 +350,7 @@ const listarDetalle = () => {
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
           ")'>";
         tabla += "<td>";
-        tabla += objeto.item;
+        tabla += objeto.it_descripcion;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.tall_descripcion;
@@ -174,13 +396,13 @@ const listarDetalle = () => {
       lineafoot += "SUBTOTALES";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalExe.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalExe.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalG5.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalG5.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalG10.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
@@ -189,10 +411,10 @@ const listarDetalle = () => {
       lineafoot += "LIQUIDACION DE IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(iva5.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(iva5.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(iva10.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(iva10.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
@@ -201,7 +423,7 @@ const listarDetalle = () => {
       lineafoot += "TOTAL IVA";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalIva.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalIva.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
 
@@ -210,7 +432,7 @@ const listarDetalle = () => {
       lineafoot += "TOTAL GENERAL";
       lineafoot += "</th>";
       lineafoot += "<th>";
-      lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(2));
+      lineafoot += new Intl.NumberFormat("us-US").format(totalGral.toFixed(0));
       lineafoot += "</th>";
       lineafoot += "</tr>";
       //establecemos el body y foot
@@ -286,14 +508,14 @@ const nuevo = () => {
   habilitarBotones(false);
   $("#cabecera").attr("style", "display: none");
   $("#detalle").attr("style", "display: none");
+  validacionInputsVacios1();
 };
 
-//Metodo que establece el alta del detalle
-const nuevoDetalle = () => {
-  $("#operacion_detalle").val(1);
+// Metodo que se encarga de limpiar los campos del detalle
+const limpiarCamposDetalle = () => {
   $("#it_codigo").val(0);
   $("#tipit_codigo").val(0);
-  $("#item").val("");
+  $("#it_descripcion").val("");
   $("#tall_descripcion").val("");
   $("#presdet_cantidad").val("");
   $("#unime_codigo").val(0);
@@ -301,8 +523,21 @@ const nuevoDetalle = () => {
   $("#presdet_precio").val("");
   $(".it").attr("class", "form-line it");
   $(".foco2").attr("class", "form-line foco2");
+  $(".foco3").attr("class", "form-line foco3");
+};
+
+//Metodo que establece el alta del detalle
+const nuevoDetalle = () => {
+  $("#operacion_detalle").val(1);
+  limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
+  validacionInputsVacios2();
+  validacionInputsVacios3();
+  consultaAsociacion(
+    "Nuevo",
+    "Este presupuesto de producción ya está asociado a una orden de producción; no se pueden añadir más ítems."
+  );
 };
 
 //Metodo que establece la baja en presupuesto cabecera
@@ -318,6 +553,10 @@ const anular = () => {
 const eliminar = () => {
   $("#operacion_detalle").val(2);
   habilitarBotones2(false);
+  consultaAsociacion(
+    "Eliminar",
+    "Este presupuesto de producción ya está asociado a una orden de producción; no se pueden eliminar más ítems."
+  );
 };
 
 //Se encarga de limpiar campos
@@ -438,7 +677,8 @@ const grabarDetalle = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            limpiarCampos();
+            habilitarBotones2(true);
+            listarDetalle();
           }
         }
       );
@@ -477,8 +717,8 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -512,8 +752,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -563,7 +803,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -590,11 +830,22 @@ const controlVacio2 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE DETALLE QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
-    confirmar2();
+    if (
+      $("#tipit_codigo").val() == "3" &&
+      $("#presdet_cantidad").val() !== "0"
+    ) {
+      swal({
+        title: "RESPUESTA!!",
+        text: "LA CANTIDAD CUANDO EL ITEM ES SERVICIO DEBE DE SER CERO (0)",
+        type: "error",
+      });
+    } else {
+      confirmar2();
+    }
   }
 };
 
@@ -613,6 +864,7 @@ const seleccionarFila = (objetoJSON) => {
   $("#detalle").attr("style", "display: block;");
   actualizacionCabecera();
   listarDetalle();
+  limpiarCamposDetalle();
 };
 
 //Envia a los inputs de detalle lo seleccionado en la tabla de detalle
@@ -624,6 +876,7 @@ const seleccionarFila2 = (objetoJSON) => {
 
   $(".it").attr("class", "form-line it focused");
   $(".foco2").attr("class", "form-line foco2 focused");
+  $(".foco3").attr("class", "form-line foco3 focused");
 };
 
 //Envia a los input de pedido venta lo seleccionado en el autocompletado
@@ -645,6 +898,8 @@ const getPedidoVenta = () => {
     url: "/sys8DD/others/complements_php/listasMovimientos/listaPedidoVenta.php",
     data: {
       per_numerodocumento: $("#per_numerodocumento").val(),
+      suc_codigo: $("#suc_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -685,6 +940,20 @@ const seleccionItem = (datos) => {
   $("#listaItem").attr("style", "display: none;");
   $(".it").attr("class", "form-line it focused");
   $(".foco2").attr("class", "form-line foco2 focused");
+  $(".foco3").attr("class", "form-line foco3 focused");
+
+  // Establecemos los valores de cantidad y precio de acuerdo al tipo de item
+  if ($("#tipit_codigo").val() == 2) {
+    $("#presdet_cantidad").removeAttr("disabled");
+    $("#presdet_precio").attr("disabled", true);
+  } else {
+    $("#presdet_cantidad").attr("disabled", true);
+    $("#presdet_cantidad").val(0);
+    $(".foco2").attr("class", "form-line foco2 focused");
+    $("#presdet_precio").attr("disabled", false);
+    $("#presdet_precio").val("");
+    $(".foco3").attr("class", "form-line foco3");
+  }
 };
 
 //Busca, filtra y muestra los items
@@ -695,7 +964,7 @@ const getItem = () => {
     url: "/sys8DD/others/complements_php/listasMovimientos/listaItemsPresupuestoProduccion.php",
     data: {
       peven_codigo: $("#peven_codigo").val(),
-      item: $("#item").val(),
+      it_descripcion: $("#it_descripcion").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -708,7 +977,7 @@ const getItem = () => {
             "<li class='list-group-item' onclick='seleccionItem(" +
             JSON.stringify(objeto) +
             ")'>" +
-            objeto.item2 +
+            objeto.it_descripcion2 +
             "</li>";
         }
       });

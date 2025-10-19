@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -10,11 +12,13 @@ $conexion = $objConexion->getConexion();
 
 //Recibimos y definimos la variable
 $per_numerodocumento = pg_escape_string($conexion, $_POST['per_numerodocumento']);
+$suc_codigo = $_POST['suc_codigo'];
+$emp_codigo = $_POST['emp_codigo'];
 
 //Establecemos y mostramos la consulta
 $sql = "select 
          pvc.peven_codigo,
-         'Pedido N°'||pvc.peven_codigo||' '||to_char(pvc.peven_fecha , 'DD-MM-YYYY') as pedido,
+         'PEDIDO VENTA N°'||pvc.peven_codigo||' '||to_char(pvc.peven_fecha , 'DD-MM-YYYY') as pedido,
          pvc.cli_codigo,
          p.per_nombre||' '||p.per_apellido as cliente,
          p.per_numerodocumento 
@@ -22,6 +26,8 @@ $sql = "select
          join cliente c on c.cli_codigo=pvc.cli_codigo
          join personas p on p.per_codigo=c.per_codigo
         where p.per_numerodocumento ilike '%$per_numerodocumento%'
+         and pvc.suc_codigo=$suc_codigo
+         and pvc.emp_codigo=$emp_codigo
          and pvc.peven_estado='PENDIENTE'
       order by pvc.peven_codigo;";
 
