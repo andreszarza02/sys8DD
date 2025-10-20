@@ -8,17 +8,24 @@ class Conexion
    private $password = "Pokemon29";
    private $conexion;
 
+   // private $host = "localhost";
+   // private $port = "5432";
+   // private $dbname = "sys8DD";
+   // private $user = "postgres";
+   // private $password = "123";
+   // private $conexion;
+
    //postgres1 5432 postgres 123
    //postgres2 5433 postgres 123
 
-   /*function _construct()
-   {
-      $this->host = "localhost";
-      $this->port = "5432";
-      $this->dbname = "tp_comunidad_vecinos";
-      $this->user = "postgres";
-      $this->password = "123";
-   }*/
+   // /*function _construct()
+   // {
+   //    $this->host = "localhost";
+   //    $this->port = "5432";
+   //    $this->dbname = "tp_comunidad_vecinos";
+   //    $this->user = "postgres";
+   //    $this->password = "123";
+   // }*/
 
    function getConexion()
    {

@@ -106,3 +106,22 @@
 </script>
 
 <script src="/sys8DD/others/complements_js/busquedaMenu.js"></script>
+
+<script>
+   // Función para ocultar todas las listas
+   function ocultarLista() {
+      $("[id^='lista']").hide();
+   }
+
+   // Ocultar con un pequeño retraso al perder el foco
+   $("[id^='lista']").closest(".form-line").find(".form-control").on("blur", function () {
+      setTimeout(() => ocultarLista(), 2000);
+   });
+
+   //Abre una pagina del manual
+   function abrirPDF(pagina) {
+      const ruta = "/sys8DD/manuales/Manual_Usuario_SYS_8DD.pdf#page=" + pagina;
+      window.open(ruta, "_blank"); // Abre en una nueva pestaña
+   }
+
+</script>

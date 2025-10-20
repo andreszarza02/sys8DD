@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -53,9 +54,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Personas -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE PERSONAS<small>Mantener referencial personas</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE PERSONAS<small style="color: white; font-weight: bold;">Mantener referencial
+                           personas</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -75,7 +77,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="per_nombre" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="per_nombre"
+                                    disabled>
                                  <label class="form-label">Nombre</label>
                               </div>
                            </div>
@@ -83,7 +86,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="per_apellido" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="per_apellido"
+                                    disabled>
                                  <label class="form-label">Apellido</label>
                               </div>
                            </div>
@@ -92,8 +96,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line td">
                                  <input type="hidden" id="tipdo_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="tipdo_descripcion" disabled
-                                    onkeyup="getTipoDocumento()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="tipdo_descripcion"
+                                    disabled onkeyup="getTipoDocumento()">
                                  <label class="form-label">Tipo Documento</label>
                                  <div id="listaTD" style="display: none;">
                                     <ul class="list-group" id="ulTD" Style="height: 100px; width: overflow: auto"></ul>
@@ -104,7 +108,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="per_numerodocumento" disabled>
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="per_numerodocumento" disabled>
                                  <label class="form-label">N° Documento</label>
                               </div>
                            </div>
@@ -112,7 +117,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="per_telefono" disabled>
+                                 <input type="text" class="form-control no-disabled solo-numeros" id="per_telefono"
+                                    disabled>
                                  <label class="form-label">Telefono</label>
                               </div>
                            </div>
@@ -128,7 +134,7 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line est">
-                                 <input type="text" class="form-control no-disabled" id="per_estado" disabled>
+                                 <input type="text" class="form-control" id="per_estado" disabled>
                                  <label class="form-label">Estado</label>
                               </div>
                            </div>
@@ -168,7 +174,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -182,9 +188,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="personas" style="display: block">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           PERSONAS REGISTRADAS <small>Lista de personas registradas</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           PERSONAS REGISTRADAS <small style="color: white; font-weight: bold;">Lista de personas
+                              registradas</small>
                         </h2>
                      </div>
                      <div class="body">

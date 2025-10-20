@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -100,8 +101,8 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line prot">
-                                 <input type="text" class="form-control no-disabled" id="secc_descripcion" disabled
-                                    onkeyup="getProduccionTerminada()">
+                                 <input type="text" class="form-control no-disabled letras-numeros"
+                                    id="secc_descripcion" disabled onkeyup="getProduccionTerminada()">
                                  <label class="form-label">Seccion</label>
                                  <div id="listaProduccionTerminada" style="display: none;">
                                     <ul class="list-group" id="ulProduccionTerminada"
@@ -121,7 +122,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line prot">
-                                 <input type="text" class="form-control" id="proter_codigo" disabled>
+                                 <input type="text" class="form-control" id="orpro_codigo" disabled>
                                  <label class="form-label">N° O. Producción</pelabel>
                               </div>
                            </div>
@@ -194,7 +195,7 @@ foreach ($permisos as $permiso) {
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -221,8 +222,8 @@ foreach ($permisos as $permiso) {
                                  <div class="form-line it">
                                     <input type="hidden" id="it_codigo" value="0">
                                     <input type="hidden" id="tipit_codigo" value="0">
-                                    <input type="text" class="form-control no-disabled2" id="item" disabled
-                                       onkeyup="getItem()">
+                                    <input type="text" class="form-control no-disabled2 letras-numeros"
+                                       id="it_descripcion" disabled onkeyup="getItem()">
                                     <label class="form-label">Item</label>
                                     <div id="listaItem" style="display: none;">
                                        <ul class="list-group" id="ulItem" Style="height: 100px; overflow: auto"></ul>
@@ -242,8 +243,8 @@ foreach ($permisos as $permiso) {
                               <div class="form-group form-float">
                                  <div class="form-line paco">
                                     <input type="hidden" id="pacoca_codigo" value="0">
-                                    <input type="text" class="form-control no-disabled2" id="pacoca_descripcion"
-                                       disabled onkeyup="getParametro()">
+                                    <input type="text" class="form-control no-disabled2 solo-letras"
+                                       id="pacoca_descripcion" disabled onkeyup="getParametro()">
                                     <label class="form-label">Parametro Control Calidad</label>
                                     <div id="listaParametro" style="display: none;">
                                        <ul class="list-group" id="ulParametro" Style="height: 100px; overflow: auto">
@@ -255,8 +256,8 @@ foreach ($permisos as $permiso) {
                            <div class="col-sm-2">
                               <div class="form-group form-float">
                                  <div class="form-line foco2">
-                                    <input type="number" class="form-control no-disabled2" id="concadet_cantidadfallida"
-                                       disabled>
+                                    <input type="text" class="form-control no-disabled2 solo-numeros"
+                                       id="concadet_cantidadfallida" disabled>
                                     <label class="form-label">Cantidad Fallida</label>
                                  </div>
                               </div>
@@ -293,7 +294,7 @@ foreach ($permisos as $permiso) {
                                  <i class="material-icons">save</i>
                                  <span>CONFIRMAR</span>
                               </button>
-                              <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                              <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                                  <i class="material-icons">lock</i>
                                  <span>CANCELAR</span>
                               </button>

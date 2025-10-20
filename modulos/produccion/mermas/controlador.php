@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -58,7 +60,7 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(mer_codigo),0)+1 as mer_codigo from mermas_cab;";
@@ -69,10 +71,17 @@ if (isset($_POST['operacion_cabecera'])) {
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_mermas_cab vmc where vmc.mer_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+            from v_mermas_cab vmc 
+            where vmc.mer_estado <> 'ANULADO';";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
+
 }
 
 ?>

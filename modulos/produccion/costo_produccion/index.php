@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -100,8 +101,8 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-6">
                            <div class="form-group form-float">
                               <div class="form-line ord">
-                                 <input type="text" class="form-control no-disabled" id="secc_descripcion" disabled
-                                    onkeyup="getOrdenProduccion()">
+                                 <input type="text" class="form-control no-disabled letras-numeros"
+                                    id="secc_descripcion" disabled onkeyup="getOrdenProduccion()">
                                  <label class="form-label">Seccion</label>
                                  <div id="listaOrdenProduccion" style="display: none;">
                                     <ul class="list-group" id="ulOrdenProduccion" Style="height: 100px; overflow: auto">
@@ -165,7 +166,7 @@ foreach ($permisos as $permiso) {
                      <div class="icon-and-text-button-demo">
                         <div class="botonesExtra1">
                            <?php if ($btnNuevo === true) { ?>
-                              <button type="button" class="btn btn-primary waves-effect" onclick="nuevo()">
+                              <button type="button" class="btn btn-primary waves-effect" onclick="nuevo();">
                                  <i class="material-icons">add</i>
                                  <span>NUEVO</span>
                               </button>
@@ -186,7 +187,7 @@ foreach ($permisos as $permiso) {
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -216,31 +217,9 @@ foreach ($permisos as $permiso) {
                                     <th>SUBTOTAL</th>
                                  </tr>
                               </thead>
-                              <tbody id="tabla_detalle2">
-                                 <tr>
-                                    <td>HILO NEGRO MAQUITEX</td>
-                                    <td>2</td>
-                                    <td>6.000</td>
-                                    <td>12.0000</td>
-                                 </tr>
-                                 <tr>
-                                    <td>MANO DE OBRA</td>
-                                    <td>1</td>
-                                    <td>330.000</td>
-                                    <td>330.000</td>
-                                 </tr>
-                                 <tr>
-                                    <td>ELECTRICIDAD</td>
-                                    <td>1</td>
-                                    <td>6.600</td>
-                                    <td>6.600</td>
-                                 </tr>
-                                 <tr>
-                                    <td colspan="3">TOTAL GENERAL</td>
-                                    <td>3336.600</td>
-                                 </tr>
+                              <tbody id="tabla_detalle">
                               </tbody>
-                              <tfoot id="pie_detalle2">
+                              <tfoot id="pie_detalle">
                               </tfoot>
                            </table>
                         </div>

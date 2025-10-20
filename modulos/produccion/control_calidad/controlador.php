@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -11,7 +13,7 @@ $conexion = $objConexion->getConexion();
 //Consultamos si existe la variable operacion cabecera
 if (isset($_POST['operacion_cabecera'])) {
 
-   //Definimos las variables a pasar al sp de cabecera
+   // Definimos y cargamos las variables
    $conca_estado = pg_escape_string($conexion, $_POST['conca_estado']);
 
    $usu_login = pg_escape_string($conexion, $_POST['usu_login']);
@@ -58,21 +60,31 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(conca_codigo),0)+1 as conca_codigo from control_calidad_cab;";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_assoc($resultado);
+
    echo json_encode($datos);
 
 } else {
 
    //Si el post no recibe la operacion realizamos una consulta
-   $sql = "select * from v_control_calidad_cab vccc where vccc.conca_estado <> 'ANULADO';";
+   $sql = "select 
+               * 
+            from v_control_calidad_cab vccc 
+            where vccc.conca_estado <> 'ANULADO';";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
+
 }
 
 ?>

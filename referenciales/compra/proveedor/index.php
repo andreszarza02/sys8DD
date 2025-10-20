@@ -51,6 +51,11 @@ $permisos = pg_fetch_all($resultado);
 
             <!-- Formulario Proveedor -->
             <div class="col-lg-12 col-md-12 col-sm-12">
+               <div class="icon-button-demo">
+                  <button class="btn bg-teal btn-circle waves-effect waves-circle waves-float" onclick="abrirPDF(34)">
+                     <i class="material-icons">priority_high</i>
+                  </button>
+               </div>
                <div class="card">
                   <div class="header" style="background: #4DC18B;">
                      <h2 style="color: white; font-weight: bold;">

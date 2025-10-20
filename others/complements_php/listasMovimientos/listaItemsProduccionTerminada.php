@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -16,20 +18,21 @@ $it_descripcion = pg_escape_string($conexion, $_POST['it_descripcion']);
 $sql = "select 
          pd.it_codigo,
          pd.tipit_codigo,
-         i.it_descripcion||' '||m.mod_codigomodelo as item,
-         i.it_descripcion||' '||m.mod_codigomodelo||' '||t.tall_descripcion as item2,
+         i.it_descripcion||', MODELO:'||m.mod_codigomodelo as it_descripcion,
+         i.it_descripcion||', <b>MODELO:</b>'||m.mod_codigomodelo||', <b>TALLE:</b>'||t.tall_descripcion as it_descripcion2,
          t.tall_descripcion,
          pd.prodet_cantidad as proterdet_cantidad,
          um.unime_codigo,
          um.unime_descripcion 
       from produccion_det pd 
          join items i on i.it_codigo=pd.it_codigo
-         and i.tipit_codigo=pd.tipit_codigo
-         join modelo m on m.mod_codigo=i.mod_codigo
-         join talle t on t.tall_codigo=i.tall_codigo
-         join unidad_medida um on um.unime_codigo=i.unime_codigo 
-         where (i.it_descripcion ilike '%$it_descripcion%' or m.mod_codigomodelo ilike '%$it_descripcion%') 
-         and i.it_estado='ACTIVO'
+            and i.tipit_codigo=pd.tipit_codigo
+            join modelo m on m.mod_codigo=i.mod_codigo
+            join talle t on t.tall_codigo=i.tall_codigo
+            join unidad_medida um on um.unime_codigo=i.unime_codigo 
+         where  (i.it_descripcion ilike '%$it_descripcion%'
+            or m.mod_codigomodelo ilike '%$it_descripcion%'
+            or t.tall_descripcion ilike '%$it_descripcion%') 
          and i.tipit_codigo=2
          and pd.prod_codigo=$prod_codigo
       order by pd.it_codigo;";

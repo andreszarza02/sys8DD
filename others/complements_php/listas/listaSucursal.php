@@ -1,6 +1,8 @@
 <?php
+
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -23,7 +25,7 @@ $resultado = pg_query($conexion, $sql);
 $datos = pg_fetch_all($resultado);
 
 if (!isset($datos[0]['suc_codigo'])) {
-   $datos = [['dato1' => 'NSE', 'dato2' => 'No se encuentra']];
+   $datos = [['dato1' => 'NSE', 'dato2' => 'NO SE ENCUENTRA']];
 }
 
 echo json_encode($datos);

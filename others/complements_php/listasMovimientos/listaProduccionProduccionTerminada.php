@@ -2,6 +2,7 @@
 
 //Retorno JSON
 header('Content-type: application/json; charset=utf-8');
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -12,11 +13,12 @@ $conexion = $objConexion->getConexion();
 //Recibimos y definimos las variables
 $secc_descripcion = pg_escape_string($conexion, $_POST['secc_descripcion']);
 $suc_codigo = $_POST['suc_codigo'];
+$emp_codigo = $_POST['emp_codigo'];
 
 //Establecemos y mostramos la consulta
 $sql = "select 
             s.secc_descripcion,
-            'Produccion N°'||pc.prod_codigo||' '||to_char(pc.prod_fecha,'DD-MM-YYYY') as produccion,
+            'PRODUCCION N°'||pc.prod_codigo||' '||to_char(pc.prod_fecha,'DD-MM-YYYY') as produccion,
             pc.prod_codigo,
             opc.orpro_fechaculminacion as proter_fechaculminacion
          from produccion_cab pc 
@@ -24,6 +26,7 @@ $sql = "select
             join seccion s on s.secc_codigo=opc.secc_codigo 
             where pc.prod_estado='TERMINADO'
             and opc.suc_codigo=$suc_codigo
+            and opc.emp_codigo=$emp_codigo
             and pc.prod_codigo not in (select ptc.prod_codigo from produccion_terminada_cab ptc where ptc.proter_estado='ACTIVO')
             and s.secc_descripcion ilike '%$secc_descripcion%'
          order by pc.prod_codigo;";

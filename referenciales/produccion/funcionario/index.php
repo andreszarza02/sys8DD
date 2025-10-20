@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -52,9 +53,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Funcionario-->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE FUNCIONARIO<small>Mantener referencial funcionario</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE FUNCIONARIO<small style="color: white; font-weight: bold;">Mantener referencial
+                           funcionario</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -83,8 +85,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line per">
                                  <input type="hidden" id="per_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="per_numerodocumento" disabled
-                                    onkeyup="getPersona()">
+                                 <input type="text" class="form-control no-disabled numeros-algunos-simbolos"
+                                    id="per_numerodocumento" disabled onkeyup="getPersona()">
                                  <label class="form-label">Cedula</label>
                                  <div id="listaPersona" style="display: none;">
                                     <ul class="list-group" id="ulPersona" Style="height: 100px; overflow: auto"></ul>
@@ -104,8 +106,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line ciu">
                                  <input type="hidden" id="ciu_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="ciu_descripcion" disabled
-                                    onkeyup="getCiudad()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="ciu_descripcion"
+                                    disabled onkeyup="getCiudad()">
                                  <label class="form-label">Ciudad</label>
                                  <div id="listaCiudad" style="display: none;">
                                     <ul class="list-group" id="ulCiudad" Style="height: 100px; overflow: auto"></ul>
@@ -117,8 +119,8 @@ $permisos = pg_fetch_all($resultado);
                            <div class="form-group form-float">
                               <div class="form-line car">
                                  <input type="hidden" id="car_codigo" value="0">
-                                 <input type="text" class="form-control no-disabled" id="car_descripcion" disabled
-                                    onkeyup="getCargo()">
+                                 <input type="text" class="form-control no-disabled solo-letras" id="car_descripcion"
+                                    disabled onkeyup="getCargo()">
                                  <label class="form-label">Cargo</label>
                                  <div id="listaCargo" style="display: none;">
                                     <ul class="list-group" id="ulCargo" Style="height: 100px; overflow: auto"></ul>
@@ -139,12 +141,14 @@ $permisos = pg_fetch_all($resultado);
                         </div>
                         <div class="col-sm-3">
                            <div class="form-group form-float">
-                              <div class="form-line foco">
-                                 <input type="hidden" id="suc_codigo"
-                                    value="<?php echo $_SESSION['usuario']['suc_codigo']; ?>">
-                                 <input type="text" class="form-control" id="suc_descripcion" disabled
-                                    value="<?php echo $_SESSION['usuario']['suc_descripcion']; ?>">
+                              <div class="form-line suc">
+                                 <input type="hidden" id="suc_codigo" value="0">
+                                 <input type="text" class="form-control no-disabled letras-numeros" id="suc_descripcion"
+                                    disabled onkeyup="getSucursal()">
                                  <label class="form-label">Sucursal</label>
+                                 <div id="listaSucursal" style="display: none;">
+                                    <ul class="list-group" id="ulSucursal" Style="height: 100px; overflow: auto"></ul>
+                                 </div>
                               </div>
                            </div>
                         </div>
@@ -191,7 +195,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -205,9 +209,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="funcionarios" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           FUNCIONARIOS REGISTRADOS <small>Lista de funcionarios registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           FUNCIONARIOS REGISTRADOS <small style="color: white; font-weight: bold;">Lista de
+                              funcionarios registrados</small>
                         </h2>
                      </div>
                      <div class="body">

@@ -2,6 +2,7 @@
 
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -13,6 +14,7 @@ $conexion = $objConexion->getConexion();
 if (isset($_POST['operacion_detalle'])) {
 
    //Definimos las variables a pasar al sp de detalle
+   $proterdet_cantidad = str_replace(",", ".", $_POST['proterdet_cantidad']);
 
    $sql = "select sp_produccion_terminada_det(
       {$_POST['proter_codigo']}, 
@@ -21,7 +23,8 @@ if (isset($_POST['operacion_detalle'])) {
       {$_POST['dep_codigo']}, 
       {$_POST['suc_codigo']}, 
       {$_POST['emp_codigo']}, 
-      {$_POST['proterdet_cantidad']}, 
+      $proterdet_cantidad, 
+      {$_POST['usu_codigo']},
       {$_POST['operacion_detalle']}
       )";
 
@@ -32,6 +35,11 @@ if (isset($_POST['operacion_detalle'])) {
    if (strpos($error, "item") !== false) {
       $response = array(
          "mensaje" => "EL ITEM YA SE ENCUENTRA REGISTRADO EN EL DETALLE",
+         "tipo" => "error"
+      );
+   } else if (strpos($error, "item_stock") !== false) {
+      $response = array(
+         "mensaje" => "EL ITEM YA SE ENCUENTRA REGISTRADO EN EL STOCK, VERIFICAR DETALLE",
          "tipo" => "error"
       );
    } else {
@@ -46,10 +54,39 @@ if (isset($_POST['operacion_detalle'])) {
 } else if (isset($_POST['produccion_terminada'])) {
 
    $produccion_terminada = $_POST['produccion_terminada'];
-   $sql = "select * from v_produccion_terminada_det vptd where vptd.proter_codigo=$produccion_terminada";
+   $sql = "select 
+               * 
+            from v_produccion_terminada_det vptd 
+            where vptd.proter_codigo=$produccion_terminada";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
+
+} else if (isset($_POST['consulta1'])) {
+
+   //Consultamos si el numero de produccion terminada ya se encuentra asociado a un control de calidad
+   $sql = "select 1 from control_calidad_cab ccc 
+			   where ccc.proter_codigo={$_POST['proter_codigo']} and ccc.conca_estado <> 'ANULADO'";
+
+   $resultado = pg_query($conexion, $sql);
+
+   // Si devuelve alguna fila generamos una respuesta con "asociado"
+   if (pg_num_rows($resultado) > 0) {
+      // Al menos un registro encontrado
+      $response = array(
+         "validacion" => "asociado",
+      );
+   } else {
+      // Si no, generamos una respuesta con "no_asociado"
+      $response = array(
+         "validacion" => "no_asociado",
+      );
+   }
+
+   echo json_encode($response);
 }
 
 ?>

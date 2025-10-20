@@ -666,9 +666,9 @@ if (isset($_SESSION['apertura'])) {
                                  </li>
                               <?php } ?>
                               <?php if ($permisos_interfaz['ref_tipoCliente']) { ?>
-                                 <li>
+                                 <!-- <li>
                                     <a href="/sys8DD/referenciales/venta/tipo_cliente/index.php">Tipo Cliente</a>
-                                 </li>
+                                 </li> -->
                               <?php } ?>
                            </ul>
                         </li>

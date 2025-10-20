@@ -1,3 +1,61 @@
+//Controla que los inputs no se queden vacios al perder el foco y que solo contengan letras y numeros
+const validacionInputsVacios1 = () => {
+  // Agregamos un listener al evento blur a nivel de documento
+  document.body.addEventListener(
+    "blur",
+    (event) => {
+      // Capturamos el input que disparó el evento, mediante delegacion de eventos
+      const input = event.target;
+
+      //Si el input tiene la clase letras-numeros realizamos las validaciones
+      if (
+        input.tagName === "INPUT" &&
+        input.classList.contains("letras-numeros")
+      ) {
+        //Definimos variables a utilizar
+        let mensaje = "";
+        const tieneSimbolo = /[¨!°¬@#$%^&*()_~+\-=\[\]{};':"\\|,.<>\/?]/;
+
+        // Comprobamos si el input esta vacio
+        if (input.value.trim() === "") {
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+
+          // Armamos el mensaje a mostrar
+          const labelText = label ? label.textContent.trim() : "VACIO";
+          mensaje = `El campo ${labelText} se encuentra vacío.`;
+        } else {
+          // Si no está vacío, comprobamos si contiene letras o símbolos
+          // Obtenemos la clase padre del input y sacamos el valor del elemento label
+          const label = input
+            .closest(".form-line")
+            ?.querySelector("label.form-label");
+          const labelText = label ? label.textContent.trim() : "VACIO";
+
+          // Verificamos si el input contiene números o símbolos
+          if (tieneSimbolo.test(input.value)) {
+            mensaje = `El campo ${labelText} contiene símbolos`;
+          }
+        }
+
+        // Si mensaje no está vacío, mostramos la alerta
+        if (mensaje !== "") {
+          swal({
+            title: "VALIDACION DE CAMPO",
+            text: mensaje.toUpperCase(),
+            type: "info",
+          });
+          // Limpiamos el valor del input
+          input.value = "";
+        }
+      }
+    },
+    true
+  ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({
@@ -16,11 +74,40 @@ const getCodigo = () => {
     method: "POST",
     url: "controlador.php",
     data: {
-      consulta: 1,
+      consulta1: 1,
     },
   }).done(function (respuesta) {
     $("#proter_codigo").val(respuesta.proter_codigo);
   });
+};
+
+// Valida si la orden de produccion esta asociada a una produccion
+const consultaAsociacion = (escenario, mensaje) => {
+  $.ajax({
+    method: "POST",
+    url: "controladorDetalle.php",
+    data: {
+      proter_codigo: $("#proter_codigo").val(),
+      consulta1: 1,
+    },
+  }) //Individualizamos los datos del array y lo separamos por lista
+    .done(function (respuesta) {
+      if (respuesta.validacion == "asociado") {
+        swal(
+          {
+            title: "VALIDACION " + escenario.toUpperCase(),
+            text: mensaje.toUpperCase(),
+            type: "error",
+            confirmButtonText: "OK",
+          },
+          function (isConfirm) {
+            if (isConfirm) {
+              window.location.reload(true);
+            }
+          }
+        );
+      }
+    });
 };
 
 //Permite aplicar un formato de tabla a la lista de produccion terminada cabecera
@@ -116,7 +203,7 @@ const listarDetalle = () => {
           JSON.stringify(objeto).replace(/'/g, "&#39;") +
           ")'>";
         tabla += "<td>";
-        tabla += objeto.item;
+        tabla += objeto.it_descripcion;
         tabla += "</td>";
         tabla += "<td>";
         tabla += objeto.tall_descripcion;
@@ -213,24 +300,35 @@ const nuevo = () => {
   habilitarBotones(false);
   $("#cabecera").attr("style", "display: none");
   $("#detalle").attr("style", "display: none");
+  validacionInputsVacios1();
 };
 
-//Metodo que establece el alta del detalle
-const nuevoDetalle = () => {
-  $("#operacion_detalle").val(1);
+// Metodo que se encarga de limpiar los campos del detalle
+const limpiarCamposDetalle = () => {
   $("#dep_codigo").val(0);
   $("#dep_descripcion").val("");
   $("#it_codigo").val(0);
   $("#tipit_codigo").val(0);
-  $("#item").val("");
+  $("#it_descripcion").val("");
   $("#tall_descripcion").val("");
   $("#proterdet_cantidad").val("");
   $("#unime_codigo").val(0);
   $("#unime_descripcion").val("");
   $(".dep").attr("class", "form-line dep");
   $(".it").attr("class", "form-line it");
+};
+
+//Metodo que establece el alta del detalle
+const nuevoDetalle = () => {
+  $("#operacion_detalle").val(1);
+  limpiarCamposDetalle();
   habilitarCampos(false);
   habilitarBotones2(false);
+  validacionInputsVacios1();
+  consultaAsociacion(
+    "Nuevo",
+    "Esta producción terminada ya está asociada a uno o varios registros de control de calidad; no se pueden añadir más ítems."
+  );
 };
 
 //Metodo que establece la baja en cabecera
@@ -246,6 +344,10 @@ const anular = () => {
 const eliminar = () => {
   $("#operacion_detalle").val(2);
   habilitarBotones2(false);
+  consultaAsociacion(
+    "Eliminar",
+    "Esta producción terminada ya está asociada a uno o varios registros de control de calidad; no se pueden añadir más ítems."
+  );
 };
 
 //Se encarga de limpiar campos
@@ -326,6 +428,7 @@ const grabarDetalle = () => {
       suc_codigo: $("#suc_codigo").val(),
       emp_codigo: $("#emp_codigo").val(),
       proterdet_cantidad: $("#proterdet_cantidad").val(),
+      usu_codigo: $("#usu_codigo").val(),
       operacion_detalle: $("#operacion_detalle").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
@@ -339,7 +442,8 @@ const grabarDetalle = () => {
         function () {
           //Si la respuesta devuelve un success recargamos la pagina
           if (respuesta.tipo == "info") {
-            limpiarCampos();
+            habilitarBotones2(true);
+            listarDetalle();
           }
         }
       );
@@ -378,8 +482,8 @@ const confirmar = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -413,8 +517,8 @@ const confirmar2 = () => {
 
   swal(
     {
-      title: "Atención!!!",
-      text: preg,
+      title: "ATENCIÓN!!!",
+      text: preg.toUpperCase(),
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -462,7 +566,7 @@ const controlVacio = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE CABECERA QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -476,7 +580,7 @@ const controlVacio2 = () => {
 
   if ($("#dep_descripcion").val() == "") {
     condicion = true;
-  } else if ($("#item").val() == "") {
+  } else if ($("#it_decripcion").val() == "") {
     condicion = true;
   } else if ($("#tall_descripcion").val() == "") {
     condicion = true;
@@ -489,7 +593,7 @@ const controlVacio2 = () => {
   if (condicion) {
     swal({
       title: "RESPUESTA!!",
-      text: "Cargue todos los campos en blanco",
+      text: "COMPLETE TODOS LOS CAMPOS DE DETALLE QUE ESTÉN EN BLANCO",
       type: "error",
     });
   } else {
@@ -513,6 +617,7 @@ const seleccionarFila = (objetoJSON) => {
   $("#detalle").attr("style", "display: block;");
   actualizacionCabecera();
   listarDetalle();
+  limpiarCamposDetalle();
 };
 
 //Envia a los inputs de detalle lo seleccionado en la tabla de detalle
@@ -546,6 +651,7 @@ const getProduccion = () => {
     data: {
       secc_descripcion: $("#secc_descripcion").val(),
       suc_codigo: $("#suc_codigo").val(),
+      emp_codigo: $("#emp_codigo").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -644,7 +750,7 @@ const getItem = () => {
     url: "/sys8DD/others/complements_php/listasMovimientos/listaItemsProduccionTerminada.php",
     data: {
       prod_codigo: $("#prod_codigo").val(),
-      it_descripcion: $("#item").val(),
+      it_descripcion: $("#it_descripcion").val(),
     },
   }) //Individualizamos los datos del array y lo separamos por lista
     .done(function (lista) {
@@ -657,7 +763,7 @@ const getItem = () => {
             "<li class='list-group-item' onclick='seleccionItem(" +
             JSON.stringify(objeto) +
             ")'>" +
-            objeto.item2 +
+            objeto.it_descripcion2 +
             "</li>";
         }
       });

@@ -64,7 +64,7 @@ $permisos = pg_fetch_all($resultado);
                      <input type="hidden" id="usu_codigo" value="<?php echo $_SESSION['usuario']['usu_codigo']; ?>">
                      <input type="hidden" id="usu_login" value="<?php echo $_SESSION['usuario']['usu_login']; ?>">
                      <div class="row clearfix">
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line activar">
                                  <input type="text" class="form-control" id="cli_codigo" disabled>
@@ -72,19 +72,7 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
-                           <div class="form-group form-float">
-                              <div class="form-line cli">
-                                 <input type="text" class="form-control no-disabled" id="cli_tipocliente" disabled
-                                    onclick="getTipoCliente()">
-                                 <label class="form-label">Tipo Cliente</label>
-                                 <div id="listaCliente" style="display: none;">
-                                    <ul class="list-group" id="ulCliente" Style="height: 100px; overflow: auto"></ul>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line per">
                                  <input type="hidden" id="per_codigo" value="0">
@@ -97,7 +85,7 @@ $permisos = pg_fetch_all($resultado);
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line per">
                                  <input type="text" class="form-control" id="persona" disabled>
@@ -165,7 +153,7 @@ $permisos = pg_fetch_all($resultado);
                            </button>
                         </div>
                         <div class="botonesExtra2" style="display: none;">
-                           <button type="button" class="btn bg-red waves-effect" onclick="controlVacio()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="controlVacio()">
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
@@ -194,7 +182,6 @@ $permisos = pg_fetch_all($resultado);
                               <thead>
                                  <tr>
                                     <th>CODIGO</th>
-                                    <th>TIPO CLIENTE</th>
                                     <th>NOMBRE Y APELLIDO</th>
                                     <th>CIUDAD</th>
                                     <th>DIRECCION</th>

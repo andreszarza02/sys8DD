@@ -32,7 +32,6 @@ if (isset($_POST['operacion'])) {
    $sql = "select sp_cliente(
    {$_POST['cli_codigo']}, 
    '$cli_direccion', 
-   '{$_POST['cli_tipocliente']}', 
    '$cli_estado', 
    {$_POST['per_codigo']}, 
    {$_POST['ciu_codigo']}, 
@@ -77,7 +76,6 @@ if (isset($_POST['operacion'])) {
    $sql = "select 
                c.cli_codigo,
                c.cli_direccion,
-               c.cli_tipocliente, 
                c.cli_estado,
                c.per_codigo,
                c.ciu_codigo,

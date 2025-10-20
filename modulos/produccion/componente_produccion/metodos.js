@@ -102,7 +102,7 @@ const validacionInputsVacios2 = () => {
           ) {
             mensaje = `El campo ${labelText} contiene letras y símbolos distintos a punto(.) y coma(,)`;
           } else if (tieneSimbolo.test(input.value)) {
-            mensaje = `El campo ${labelText} contiene símbolos distintos a guion(-)`;
+            mensaje = `El campo ${labelText} contiene símbolos distintos a punto(.) y coma(,)`;
           } else if (
             tieneMayuscula.test(input.value) ||
             tieneMinuscula.test(input.value)

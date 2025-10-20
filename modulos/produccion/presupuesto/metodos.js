@@ -815,7 +815,7 @@ const controlVacio = () => {
 const controlVacio2 = () => {
   let condicion;
 
-  if ($("#item").val() == "") {
+  if ($("#it_decripcion").val() == "") {
     condicion = true;
   } else if ($("#tall_descripcion").val() == "") {
     condicion = true;

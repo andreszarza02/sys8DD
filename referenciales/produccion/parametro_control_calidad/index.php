@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -52,9 +53,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Parametro Control Calidad -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE PARAMETROS CONTROL CALIDAD<small>Mantener referencial parametros control
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE PARAMETROS CONTROL CALIDAD<small style="color: white; font-weight: bold;">Mantener
+                           referencial parametros control
                            calidad</small>
                      </h2>
                   </div>
@@ -75,7 +77,8 @@ $permisos = pg_fetch_all($resultado);
                         <div class="col-sm-4">
                            <div class="form-group form-float">
                               <div class="form-line foco">
-                                 <input type="text" class="form-control no-disabled" id="pacoca_descripcion" disabled>
+                                 <input type="text" class="form-control no-disabled solo-letras" id="pacoca_descripcion"
+                                    disabled>
                                  <label class="form-label">Descripcion</label>
                               </div>
                            </div>
@@ -137,9 +140,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="parametros" style="display: block">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           PARAMETROS DE CONTROL DE CALIDAD REGISTRADOS <small>Lista de parametros de control de calidad
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           PARAMETROS DE CONTROL DE CALIDAD REGISTRADOS <small
+                              style="color: white; font-weight: bold;">Lista de parametros de control de calidad
                               registrados</small>
                         </h2>
                      </div>

@@ -43,9 +43,6 @@ const listar = () => {
         tabla += objeto.cli_codigo;
         tabla += "</td>";
         tabla += "<td>";
-        tabla += objeto.cli_tipocliente;
-        tabla += "</td>";
-        tabla += "<td>";
         tabla += objeto.persona;
         tabla += "</td>";
         tabla += "<td>";
@@ -95,7 +92,7 @@ const agregar = () => {
   $(".ciu").attr("class", "form-line ciu");
   $(".foco").attr("class", "form-line foco");
   $("#cli_estado").val("ACTIVO");
-  $("#cli_tipocliente").val("");
+  //$("#cli_tipocliente").val("");
   $("#per_codigo").val(0);
   $("#per_numerodocumento").val("");
   $("#persona").val("");
@@ -134,7 +131,6 @@ const abm = () => {
     data: {
       cli_codigo: $("#cli_codigo").val(),
       cli_direccion: $("#cli_direccion").val(),
-      cli_tipocliente: $("#cli_tipocliente").val(),
       cli_estado: $("#cli_estado").val(),
       per_codigo: $("#per_codigo").val(),
       ciu_codigo: $("#ciu_codigo").val(),
@@ -227,8 +223,6 @@ const controlVacio = () => {
   if ($("#cli_codigo").val() == 0) {
     condicion = true;
   } else if ($("#cli_direccion").val() == "") {
-    condicion = true;
-  } else if ($("#cli_tipocliente").val() == "") {
     condicion = true;
   } else if ($("#cli_estado").val() == "") {
     condicion = true;
@@ -359,45 +353,45 @@ const getCiudad = () => {
     });
 };
 
-const seleccionTipoCliente = (datos) => {
-  //Enviamos los datos a su respectivo input
-  Object.keys(datos).forEach((key) => {
-    $("#" + key).val(datos[key]);
-  });
-  $("#ulCliente").html();
-  $("#listaCliente").attr("style", "display: none;");
-  $(".cli").attr("class", "form-line cli focused");
-};
+// const seleccionTipoCliente = (datos) => {
+//   //Enviamos los datos a su respectivo input
+//   Object.keys(datos).forEach((key) => {
+//     $("#" + key).val(datos[key]);
+//   });
+//   $("#ulCliente").html();
+//   $("#listaCliente").attr("style", "display: none;");
+//   $(".cli").attr("class", "form-line cli focused");
+// };
 
-const getTipoCliente = () => {
-  $.ajax({
-    //Solicitamos los datos a listaModulo
-    method: "GET",
-    url: "/sys8DD/others/complements_php/listas/listaTipoCliente.php",
-  }) //Individualizamos los datos del array y lo separamos por lista
-    .done(function (lista) {
-      let fila = "";
-      $.each(lista, function (i, objeto) {
-        fila +=
-          "<li class='list-group-item' onclick='seleccionTipoCliente(" +
-          JSON.stringify(objeto) +
-          ")'>" +
-          objeto.cli_tipocliente +
-          "</li>";
-      });
+// const getTipoCliente = () => {
+//   $.ajax({
+//     //Solicitamos los datos a listaModulo
+//     method: "GET",
+//     url: "/sys8DD/others/complements_php/listas/listaTipoCliente.php",
+//   }) //Individualizamos los datos del array y lo separamos por lista
+//     .done(function (lista) {
+//       let fila = "";
+//       $.each(lista, function (i, objeto) {
+//         fila +=
+//           "<li class='list-group-item' onclick='seleccionTipoCliente(" +
+//           JSON.stringify(objeto) +
+//           ")'>" +
+//           objeto.cli_tipocliente +
+//           "</li>";
+//       });
 
-      //cargamos la lista
-      $("#ulCliente").html(fila);
-      //hacemos visible la lista
-      $("#listaCliente").attr(
-        "style",
-        "display: block; position:absolute; z-index: 3000; width:100%;"
-      );
-    })
-    .fail(function (a, b, c) {
-      swal("ERROR", c, "error");
-    });
-};
+//       //cargamos la lista
+//       $("#ulCliente").html(fila);
+//       //hacemos visible la lista
+//       $("#listaCliente").attr(
+//         "style",
+//         "display: block; position:absolute; z-index: 3000; width:100%;"
+//       );
+//     })
+//     .fail(function (a, b, c) {
+//       swal("ERROR", c, "error");
+//     });
+// };
 
 const salir = () => {
   window.location = "/sys8DD/menu.php";

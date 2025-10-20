@@ -2,6 +2,7 @@
 
 //Retorno JSON
 header("Content-type: application/json; charset=utf-8");
+
 //Solicitamos la clase de Conexion
 require_once "{$_SERVER['DOCUMENT_ROOT']}/sys8DD/others/conexion/conexion.php";
 
@@ -13,13 +14,14 @@ $conexion = $objConexion->getConexion();
 if (isset($_POST['operacion_detalle'])) {
 
    //Definimos las variables a pasar al sp de detalle
+   $concadet_cantidadfallida = str_replace(",", ".", $_POST['concadet_cantidadfallida']);
 
    $sql = "select sp_control_calidad_det(
       {$_POST['conca_codigo']}, 
       {$_POST['it_codigo']}, 
       {$_POST['tipit_codigo']}, 
       {$_POST['pacoca_codigo']}, 
-      {$_POST['concadet_cantidadfallida']}, 
+      $concadet_cantidadfallida, 
       {$_POST['operacion_detalle']}
       )";
 
@@ -44,20 +46,26 @@ if (isset($_POST['operacion_detalle'])) {
 } else if (isset($_POST['control'])) {
 
    $control = $_POST['control'];
-   $sql = "select * from v_control_calidad_det vccd where vccd.conca_codigo=$control;";
+   $sql = "select 
+            * 
+         from v_control_calidad_det vccd 
+         where vccd.conca_codigo=$control;";
+
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos el listado de productos separado por control
    $sql = "select 
             ptd.it_codigo,
-            i.it_descripcion||' COD:'||m.mod_codigomodelo||' TALL:'||t.tall_descripcion as item2,
+            i.it_descripcion||', MODELO:'||m.mod_codigomodelo||', TALLE:'||t.tall_descripcion as it_descripcion2,
             ptd.proterdet_cantidad as cantidad_total,
-            (select 
-               coalesce(sum(ccd.concadet_cantidadfallida), 0)
+            (select distinct
+               coalesce(max(ccd.concadet_cantidadfallida), 0)
             from control_calidad_det ccd 
                join control_calidad_cab ccc on ccc.conca_codigo=ccd.conca_codigo 
             where ccc.proter_codigo={$_POST['proter_codigo']}
@@ -66,7 +74,7 @@ if (isset($_POST['operacion_detalle'])) {
             (ptd.proterdet_cantidad)
             -
             (select 
-               coalesce(sum(ccd.concadet_cantidadfallida),0) 
+               coalesce(max(ccd.concadet_cantidadfallida),0) 
             from control_calidad_det ccd 
                join control_calidad_cab ccc on ccc.conca_codigo=ccd.conca_codigo 
             where ccc.proter_codigo={$_POST['proter_codigo']}
@@ -86,8 +94,35 @@ if (isset($_POST['operacion_detalle'])) {
          where ptd.proter_codigo={$_POST['proter_codigo']};";
 
    $resultado = pg_query($conexion, $sql);
+
    $datos = pg_fetch_all($resultado);
+
    echo json_encode($datos);
+
+} else if (isset($_POST['consulta2'])) {
+
+   //Consultamos la cantidad del item en la produccion terminada
+   $sql = "select ptd.proterdet_cantidad 
+            from produccion_terminada_det ptd 
+            where ptd.it_codigo={$_POST['it_codigo']} 
+            and ptd.proter_codigo={$_POST['proter_codigo']};";
+
+   $resultado = pg_query($conexion, $sql);
+   $datos = pg_fetch_assoc($resultado);
+
+   if ((int) $datos['proterdet_cantidad'] < (int) $_POST['concadet_cantidadfallida']) {
+      $response = array(
+         "mensaje" => "LA CANTIDAD EN EL CONTROL DE CALIDAD ES MAYOR A LA CANTIDAD TOTAL DEL ITEM EN PRODUCCION TERMINADA DETALLE",
+         "tipo" => "error"
+      );
+   } else {
+      $response = array(
+         "mensaje" => "NADA",
+         "tipo" => "success"
+      );
+   }
+
+   echo json_encode($response);
 
 }
 
