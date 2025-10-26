@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -46,9 +47,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Perfil -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE PERFIL<small>Mantener referencial perfil</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE PERFIL<small style="color: white; font-weight: bold;">Mantener referencial
+                           perfil</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -116,7 +118,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -130,9 +132,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="perfiles" style="display: block">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           PERFILES REGISTRADOS <small>Lista de perfiles registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           PERFILES REGISTRADOS <small style="color: white; font-weight: bold;">Lista de perfiles
+                              registrados</small>
                         </h2>
                      </div>
                      <div class="body">

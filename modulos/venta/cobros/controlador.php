@@ -74,7 +74,8 @@ if (isset($_POST['operacion_cabecera'])) {
             (max(cast(t.timb_numero_comp as integer))+1) as proximo_numero,
             t.timb_numero_comp_lim as limite
          from timbrados t where tipco_codigo=5
-         group by timb_numero_comp, t.timb_numero_comp_lim;";
+         group by timb_numero_comp, t.timb_numero_comp_lim
+        order by cob_num_recibo desc limit 1;";
 
    $resultado = pg_query($conexion, $sql);
    $datos = pg_fetch_assoc($resultado);

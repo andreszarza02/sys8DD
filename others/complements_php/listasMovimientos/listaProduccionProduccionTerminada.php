@@ -20,9 +20,12 @@ $sql = "select
             s.secc_descripcion,
             'PRODUCCION N°'||pc.prod_codigo||' '||to_char(pc.prod_fecha,'DD-MM-YYYY') as produccion,
             pc.prod_codigo,
-            opc.orpro_fechaculminacion as proter_fechaculminacion
+            opc.orpro_fechaculminacion as proter_fechaculminacion,
+            pc2.peven_codigo 
          from produccion_cab pc 
             join orden_produccion_cab opc on opc.orpro_codigo=pc.orpro_codigo 
+            join orden_presupuesto op on op.orpro_codigo=opc.orpro_codigo 
+            join presupuesto_cab pc2 on pc2.pres_codigo=op.pres_codigo 
             join seccion s on s.secc_codigo=opc.secc_codigo 
             where pc.prod_estado='TERMINADO'
             and opc.suc_codigo=$suc_codigo

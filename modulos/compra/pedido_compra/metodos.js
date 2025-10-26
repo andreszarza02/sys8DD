@@ -962,7 +962,7 @@ const getCodigo = () => {
     method: "POST",
     url: "controlador.php",
     data: {
-      consulta: 1,
+      consulta1: 1,
     },
   }).done(function (respuesta) {
     $("#pedco_codigo").val(respuesta.pedco_codigo);

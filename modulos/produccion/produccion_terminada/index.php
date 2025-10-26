@@ -113,6 +113,7 @@ foreach ($permisos as $permiso) {
                         <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line pro">
+                                 <input type="hidden" id="peven_codigo" value="0">
                                  <input type="text" class="form-control" id="prod_codigo" disabled>
                                  <label class="form-label">N° Produccion</pelabel>
                               </div>

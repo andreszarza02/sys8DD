@@ -86,7 +86,7 @@ foreach ($permisos as $permiso) {
                               <div class="form-line activar">
                                  <input type="hidden" id="nocom_codigo">
                                  <input type="text" class="form-control no-disabled solo-numeros" id="nocom_numeronota"
-                                    disabled>
+                                    disabled onblur="validarNota()">
                                  <label class="form-label">N° Nota</label>
                               </div>
                            </div>
@@ -121,7 +121,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                            <div class="form-group form-float">
                               <div class="form-line comp">
                                  <input type="hidden" id="pro_codigo" value="0">
@@ -137,7 +137,7 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-1">
+                        <div class="col-sm-2">
                            <div class="form-group form-float">
                               <div class="form-line comp">
                                  <input type="hidden" id="comp_tipofactura" value="0">
@@ -162,16 +162,16 @@ foreach ($permisos as $permiso) {
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2" id="proveedorTimbrado">
+                        <div class="col-sm-1" id="proveedorTimbrado">
                            <div class="form-group form-float">
                               <div class="form-line foco4">
                                  <input type="text" class="form-control no-disabled solo-numeros" id="nocom_timbrado"
-                                    disabled>
+                                    disabled onblur="validarTimbrado()">
                                  <label class="form-label">Timbrado</label>
                               </div>
                            </div>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-1">
                            <div class="form-group form-float">
                               <div class="form-line focused">
                                  <input type="date" class="form-control no-disabled" id="nocom_timbrado_venc" disabled>

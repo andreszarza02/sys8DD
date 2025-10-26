@@ -1,4 +1,5 @@
 <?php
+
 //Iniciamos sesion
 session_start();
 $usuario = $_SESSION['usuario']['usu_codigo'];
@@ -52,9 +53,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Entidad Emisora -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE ENTIDAD EMISORA<small>Mantener referencial entidad emisora</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE ENTIDAD EMISORA<small style="color: white; font-weight: bold;">Mantener
+                           referencial entidad emisora</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -146,7 +148,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>GRABAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -160,9 +162,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="entidades" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           ENTIDADES EMISORAS REGISTRADAS <small>Lista de entidades emisoras registradas</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           ENTIDADES EMISORAS REGISTRADAS <small style="color: white; font-weight: bold;">Lista de
+                              entidades emisoras registradas</small>
                         </h2>
                      </div>
                      <div class="body">

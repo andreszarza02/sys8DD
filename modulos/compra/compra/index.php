@@ -127,7 +127,7 @@ foreach ($permisos as $permiso) {
                                  <input type="hidden" id="tipco_codigo" value="4">
                                  <input type="hidden" id="tipco_descripcion" value="FACTURA">
                                  <input type="text" class="form-control no-disabled solo-numeros" id="comp_numfactura"
-                                    disabled>
+                                    disabled onblur="validarFactura()">
                                  <label class="form-label">N° Factura</label>
                               </div>
                            </div>
@@ -136,7 +136,7 @@ foreach ($permisos as $permiso) {
                            <div class="form-group form-float">
                               <div class="form-line foco3">
                                  <input type="text" class="form-control no-disabled solo-numeros" id="comp_timbrado"
-                                    disabled>
+                                    disabled onblur="validarTimbrado()">
                                  <label class="form-label">Timbrado</label>
                               </div>
                            </div>
@@ -249,7 +249,7 @@ foreach ($permisos as $permiso) {
                               <i class="material-icons">save</i>
                               <span>CONFIRMAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>

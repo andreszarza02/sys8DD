@@ -53,9 +53,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Modelo -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE MODELO<small>Mantener referencial modelo</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE MODELO<small style="color: white; font-weight: bold;">Mantener referencial
+                           modelo</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -172,9 +173,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="modelos" style="display: block;">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           MODELOS REGISTRADOS <small>Lista de modelos registrados</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           MODELOS REGISTRADOS <small style="color: white; font-weight: bold;">Lista de modelos
+                              registrados</small>
                         </h2>
                      </div>
                      <div class="body">

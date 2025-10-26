@@ -393,6 +393,42 @@ const getCodigo = () => {
   });
 };
 
+// Se encarga de validar que el numero de nota no exceda los 13 caracteres
+const validarNota = () => {
+  nro_nota = $("#nocom_numeronota").val();
+  if (nro_nota.length > 13) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE NOTA NO PUEDE EXCEDER LOS 13 CARACTERES, EJEMPLO: 000-000-0000001",
+      type: "info",
+    });
+  } else if (nro_nota.length < 13) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE NOTA NO PUEDE TENER MENOS DE 13 CARACTERES, EJEMPLO: 000-000-0000001",
+      type: "info",
+    });
+  }
+};
+
+// Se encarga de validar que el numero de timbrado no exceda los 13 caracteres
+const validarTimbrado = () => {
+  nro_timbrado = $("#nocom_timbrado").val();
+  if (nro_timbrado.length > 8) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE TIMBRADO NO PUEDE EXCEDER LOS 8 CARACTERES, EJEMPLO: 15515544",
+      type: "info",
+    });
+  } else if (nro_timbrado.length < 8) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE TIMBRADO NO PUEDE TENER MENOS DE 8 CARACTERES, EJEMPLO: 15515544",
+      type: "info",
+    });
+  }
+};
+
 //Muestra el input de deposito
 const mostrarInputDeposito = () => {
   let tipoComprobante = $("#tipco_codigo").val();

@@ -39,6 +39,11 @@ foreach ($permisos as $permiso) {
       $btnEliminar = true;
    }
 
+   if (($permiso['perm_descripcion'] === 'ENVIAR') && ($permiso['asigperm_estado'] === 'ACTIVO')) {
+      $btnEnviar = true;
+   }
+
+
 }
 
 ?>
@@ -380,6 +385,12 @@ foreach ($permisos as $permiso) {
                                     <i class="material-icons">insert_drive_file</i>
                                     <span>IMPRIMIR</span>
                                  </button>
+                                 <?php if ($btnEnviar === true) { ?>
+                                    <button type="button" class="btn btn-primary waves-effect" onclick="enviarFactura()">
+                                       <i class="material-icons">email</i>
+                                       <span>ENVIAR FACTURA</span>
+                                    </button>
+                                 <?php } ?>
                               </div>
                               <div class="botonesExtra4" style="display: none;">
                                  <button type="button" class="btn bg-red waves-effect" onclick="controlVacio2()">

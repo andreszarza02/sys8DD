@@ -223,6 +223,11 @@ if (isset($_POST['operacion_cabecera'])) {
          "mensaje" => "EL NUMERO DE NOTA YA SE ENCUENTRA REGISTRADA",
          "tipo" => "error"
       );
+   } else if (strpos($error, "fecha_timbrado_venc") !== false) {
+      $response = array(
+         "mensaje" => "LA FECHA DE VENCIMIENTO DEL TIMBRADO NO PUEDE SER ANTERIOR A LA FECHA DE EMISION DE LA NOTA DE COMPRA",
+         "tipo" => "error"
+      );
    } else {
       $response = array(
          "mensaje" => pg_last_notice($conexion),

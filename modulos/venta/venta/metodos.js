@@ -400,6 +400,25 @@ const calculoCuota = () => {
   }
 };
 
+// Envia la factura por correo al cliente
+const enviarFactura = () => {
+  $.ajax({
+    //Enviamos datos al controlador
+    method: "POST",
+    url: "/sys8DD/others/complements_php/correo/correo_envio_factura.php",
+    data: {
+      ven_codigo: $("#ven_codigo").val(),
+    },
+  }) //Establecemos un mensaje segun el contenido de la respuesta
+    .done(function (respuesta) {
+      swal({
+        title: "RESPUESTA!",
+        text: respuesta.mensaje,
+        type: respuesta.tipo,
+      });
+    });
+};
+
 //Actualiza datos como empresa, sucursal y usuario en cabecera
 const actualizacionCabecera = () => {
   $.ajax({

@@ -82,6 +82,11 @@ if (isset($_POST['operacion_cabecera'])) {
          "mensaje" => "YA SE ENCUENTRA ASOCIADO LA COMPRA A UNA NOTA DE COMPRA",
          "tipo" => "error"
       );
+   } else if (strpos($error, "fecha_timbrado_venc") !== false) {
+      $response = array(
+         "mensaje" => "LA FECHA DE VENCIMIENTO DEL TIMBRADO NO PUEDE SER ANTERIOR A LA FECHA DE EMISIÓN DE LA FACTURA DE COMPRA",
+         "tipo" => "error"
+      );
    } else {
       $response = array(
          "mensaje" => pg_last_notice($conexion),

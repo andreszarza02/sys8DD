@@ -376,6 +376,7 @@ const grabar = () => {
       secc_descripcion: $("#secc_descripcion").val(),
       emp_razonsocial: $("#emp_razonsocial").val(),
       suc_descripcion: $("#suc_descripcion").val(),
+      peven_codigo: $("#peven_codigo").val(),
     },
   }) //Establecemos un mensaje segun el contenido de la respuesta
     .done(function (respuesta) {

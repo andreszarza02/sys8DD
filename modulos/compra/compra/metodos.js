@@ -249,6 +249,42 @@ const validacionInputsVacios4 = () => {
   ); // usa true para captar el evento en la fase de captura y asegurar que blur funciona bien
 };
 
+// Se encarga de validar que el numero de factura no exceda los 13 caracteres
+const validarFactura = () => {
+  nro_factura = $("#comp_numfactura").val();
+  if (nro_factura.length > 13) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE FACTURA NO PUEDE EXCEDER LOS 13 CARACTERES, EJEMPLO: 000-000-0000001",
+      type: "info",
+    });
+  } else if (nro_factura.length < 13) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE FACTURA NO PUEDE TENER MENOS DE 13 CARACTERES, EJEMPLO: 000-000-0000001",
+      type: "info",
+    });
+  }
+};
+
+// Se encarga de validar que el numero de timbrado no exceda los 13 caracteres
+const validarTimbrado = () => {
+  nro_timbrado = $("#comp_timbrado").val();
+  if (nro_timbrado.length > 8) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE TIMBRADO NO PUEDE EXCEDER LOS 8 CARACTERES, EJEMPLO: 15515544",
+      type: "info",
+    });
+  } else if (nro_timbrado.length < 8) {
+    swal({
+      title: "VALIDACION DE CAMPO",
+      text: "EL NÚMERO DE TIMBRADO NO PUEDE TENER MENOS DE 8 CARACTERES, EJEMPLO: 15515544",
+      type: "info",
+    });
+  }
+};
+
 // Valida si la compra esta asociado a una nota de compra
 const consultaAsociacion = (escenario, mensaje) => {
   $.ajax({

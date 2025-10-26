@@ -52,9 +52,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Unidad Medida -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE UNIDAD MEDIDA<small>Mantener referencial unidad medida</small>
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE UNIDAD MEDIDA<small style="color: white; font-weight: bold;">Mantener referencial
+                           unidad medida</small>
                      </h2>
                   </div>
                   <div class="body">
@@ -130,7 +131,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>GRABAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -144,9 +145,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="unidades" style="display: block">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           UNIDADES DE MEDIDAS REGISTRADAS <small>Lista de unidades de medidas registradas</small>
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           UNIDADES DE MEDIDAS REGISTRADAS <small style="color: white; font-weight: bold;">Lista de
+                              unidades de medidas registradas</small>
                         </h2>
                      </div>
                      <div class="body">

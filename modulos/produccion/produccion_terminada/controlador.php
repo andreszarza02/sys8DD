@@ -40,7 +40,8 @@ if (isset($_POST['operacion_cabecera'])) {
       '$procedimiento',
       '$secc_descripcion',
       '$emp_razonsocial',
-      '$suc_descripcion'
+      '$suc_descripcion',
+      {$_POST['peven_codigo']}
       )";
 
    //Validamos la consulta

@@ -56,7 +56,7 @@ if (isset($_POST['operacion_cabecera'])) {
 
    echo json_encode($response);
 
-} else if (isset($_POST['consulta']) == 1) {
+} else if (isset($_POST['consulta1'])) {
 
    //Consultamos y enviamos el ultimo codigo
    $sql = "select coalesce(max(pedco_codigo),0)+1 as pedco_codigo from pedido_compra_cab;";

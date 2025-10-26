@@ -53,9 +53,10 @@ $permisos = pg_fetch_all($resultado);
             <!-- Formulario Configuraciones Interfaz Sucursal -->
             <div class="col-lg-12 col-md-12 col-sm-12">
                <div class="card">
-                  <div class="header">
-                     <h2>
-                        FORMULARIO DE CONFIGURACIONES DE INTERFAZ DE SUCURSAL<small>Mantener referencial configuraciones
+                  <div class="header" style="background: #4DC18B;">
+                     <h2 style="color: white; font-weight: bold;">
+                        FORMULARIO DE CONFIGURACIONES DE INTERFAZ DE SUCURSAL<small
+                           style="color: white; font-weight: bold;">Mantener referencial configuraciones
                            interfaz
                            sucursal</small>
                      </h2>
@@ -156,7 +157,7 @@ $permisos = pg_fetch_all($resultado);
                               <i class="material-icons">save</i>
                               <span>GRABAR</span>
                            </button>
-                           <button type="button" class="btn bg-red waves-effect" onclick="limpiarCampos()">
+                           <button type="button" class="btn bg-orange waves-effect" onclick="limpiarCampos()">
                               <i class="material-icons">lock</i>
                               <span>CANCELAR</span>
                            </button>
@@ -170,9 +171,10 @@ $permisos = pg_fetch_all($resultado);
             <div id="configuracionesSucursal" style="display: block">
                <div class="col-lg-12 col-md-12 col-sm-12">
                   <div class="card">
-                     <div class="header">
-                        <h2>
-                           CONFIGURACIONES DE INTERFAZ DE SUCURSAL REGISTRADAS <small>Lista de configuraciones de
+                     <div class="header" style="background: #4DC18B;">
+                        <h2 style="color: white; font-weight: bold;">
+                           CONFIGURACIONES DE INTERFAZ DE SUCURSAL REGISTRADAS <small
+                              style="color: white; font-weight: bold;">Lista de configuraciones de
                               interfaz de sucursal
                               registradas</small>
                         </h2>

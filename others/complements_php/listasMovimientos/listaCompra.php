@@ -16,7 +16,7 @@ $proveedor = pg_escape_string($conexion, $_POST['pro_razonsocial']);
 //Establecemos y mostramos la consulta
 $sql = "select 
          cc.comp_codigo,
-         'COMPRA N°'||cc.comp_codigo||' '||to_char(cc.comp_fecha, 'DD-MM-YYYY') as compra,
+         'COMPRA N°'||cc.comp_codigo||' '||to_char(cc.comp_fecha, 'DD-MM-YYYY')||' '||cc.comp_numfactura as compra,
          cc.pro_codigo,
          cc.comp_tipofactura,
          cc.comp_cuota,
